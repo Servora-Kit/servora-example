@@ -50,6 +50,14 @@ servora 是一个基于 **Go Kratos v2** 的微服务快开框架，采用 **DDD
 └── Makefile                     # 根目录统一入口
 ```
 
+## 🧰 共享工具（pkg/helpers）
+
+- `pkg/helpers/helpers.go`：时间耗时格式化（`MicrosecondsStr`）
+- `pkg/helpers/hash.go`：密码哈希能力，统一由 `helpers` 包对外提供
+  - `BcryptHash()`：生成 bcrypt 哈希
+  - `BcryptCheck()`：校验明文与哈希
+  - `BcryptIsHashed()`：判断字符串是否已是 bcrypt 哈希
+
 ## 🚀 快速开始
 
 ### 1) 前置要求
