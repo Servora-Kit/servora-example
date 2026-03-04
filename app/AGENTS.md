@@ -1043,7 +1043,7 @@ make compose.build  # 构建生产镜像（servora + sayhello）
 **Kubernetes 部署**：
 ```bash
 # 部署服务
-kubectl apply -f deployment/kubernetes/
+kubectl apply -f ../manifests/k8s/servora/
 
 # 查看状态
 kubectl get pods -l app=servora

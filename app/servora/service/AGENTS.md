@@ -1217,7 +1217,7 @@ cd /Users/horonlee/projects/go/servora
 make compose.build
 
 # Kubernetes 部署
-kubectl apply -f deployment/kubernetes/
+kubectl apply -f ../../../manifests/k8s/servora/
 ```
 
 ## 注意事项

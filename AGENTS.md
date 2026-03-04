@@ -118,18 +118,19 @@ OpenSpec 变更管理系统，用于结构化跟踪架构变更和提案。
 - `AGENTS.md` - OpenSpec AI 协作指南
 - `changes/` - 变更提案目录（proposal → approved → deployed）
 
-### `deployment/` - 部署配置
-容器化和云原生部署配置。
+### `manifests/` - 部署清单
+统一的部署配置目录，包含 Kubernetes 资源和可观测性配置。
 
 **子目录**：
-- `docker/` - Docker Compose 配置
-- `kubernetes/` - Kubernetes 部署清单（service 级）
-
-### `manifests/` - Kubernetes 配置
-项目级 K8s 资源配置。
-
-**子目录**：
+- `k8s/` - Kubernetes 部署清单
+  - `base/` - 基础设施配置（namespace, rbac）
+  - `servora/` - servora 服务的 K8s 清单（deployment, service, configmap, postgres, redis）
+  - `sayhello/` - sayhello 服务的 K8s 清单（deployment, service, configmap）
 - `certs/` - TLS 证书配置
+- `grafana/` - Grafana 仪表盘和数据源配置
+- `loki/` - Loki 日志聚合配置
+- `otel/` - OpenTelemetry Collector 配置
+- `prometheus/` - Prometheus 监控配置
 
 ### `docs/` - 文档
 项目文档和知识库。
@@ -400,6 +401,7 @@ make build
 make compose.build
 
 # K8s 部署
-kubectl apply -f manifests/
-kubectl apply -f app/servora/service/deployment/kubernetes/
+kubectl apply -f manifests/k8s/base/
+kubectl apply -f manifests/k8s/servora/
+kubectl apply -f manifests/k8s/sayhello/
 ```
