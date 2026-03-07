@@ -1,11 +1,9 @@
 package server
 
 import (
-	"crypto/tls"
-
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
-	"github.com/go-kratos/kratos/v2/transport/http"
+	kratoshttp "github.com/go-kratos/kratos/v2/transport/http"
 
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	servorav1 "github.com/Servora-Kit/servora/api/gen/go/servora/service/v1"
@@ -14,15 +12,13 @@ import (
 	"github.com/Servora-Kit/servora/app/servora/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/logger"
-	mwpkg "github.com/Servora-Kit/servora/pkg/middleware"
-	"github.com/Servora-Kit/servora/pkg/middleware/cors"
+	"github.com/Servora-Kit/servora/pkg/transport/server/http"
 	coremw "github.com/Servora-Kit/servora/pkg/transport/server/middleware"
 )
 
 // HTTPMiddleware 用于 Wire 注入的中间件切片包装类型
 type HTTPMiddleware []middleware.Middleware
 
-// NewHTTPMiddleware 创建 HTTP 中间件（使用白名单机制）
 func NewHTTPMiddleware(
 	trace *conf.Trace,
 	m *telemetry.Metrics,
@@ -34,8 +30,7 @@ func NewHTTPMiddleware(
 		WithMetrics(m).
 		Build()
 
-	// 公开接口白名单（无需认证）
-	publicWhitelist := mwpkg.NewWhiteList(mwpkg.Exact,
+	publicWhitelist := coremw.NewWhiteList(coremw.Exact,
 		servorav1.OperationAuthServiceLoginByEmailPassword,
 		servorav1.OperationAuthServiceRefreshToken,
 		servorav1.OperationAuthServiceSignupByEmail,
@@ -43,8 +38,7 @@ func NewHTTPMiddleware(
 		servorav1.OperationTestServiceHello,
 	)
 
-	// User 级接口白名单（需要 User 权限但跳过 Admin 检查）
-	userWhitelist := mwpkg.NewWhiteList(mwpkg.Exact,
+	userWhitelist := coremw.NewWhiteList(coremw.Exact,
 		servorav1.OperationUserServiceCurrentUserInfo,
 		servorav1.OperationUserServiceUpdateUser,
 		servorav1.OperationAuthServiceLogout,
@@ -75,49 +69,23 @@ func NewHTTPServer(
 	auth *service.AuthService,
 	user *service.UserService,
 	test *service.TestService,
-) *http.Server {
+) *kratoshttp.Server {
 	hlog := logger.With(l, logger.WithModule("http/server/servora-service"))
-	log := logger.NewHelper(hlog)
 
-	var opts = []http.ServerOption{
-		http.Middleware(mw...),
-		http.Logger(hlog),
+	opts := []http.ServerOption{
+		http.WithLogger(hlog),
+		http.WithMiddleware(mw...),
+		http.WithMetrics(mtc),
+		http.WithServices(
+			func(s *kratoshttp.Server) { servorav1.RegisterAuthServiceHTTPServer(s, auth) },
+			func(s *kratoshttp.Server) { servorav1.RegisterUserServiceHTTPServer(s, user) },
+			func(s *kratoshttp.Server) { servorav1.RegisterTestServiceHTTPServer(s, test) },
+		),
 	}
 	if c != nil && c.Http != nil {
-		if c.Http.Network != "" {
-			opts = append(opts, http.Network(c.Http.Network))
-		}
-		if c.Http.Addr != "" {
-			opts = append(opts, http.Address(c.Http.Addr))
-		}
-		if c.Http.Timeout != nil {
-			opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
-		}
-		if cors.IsEnabled(c.Http.Cors) {
-			opts = append(opts, http.Filter(cors.Middleware(c.Http.Cors)))
-			log.Infof("CORS middleware enabled: allowed_origins=%v", cors.GetAllowedOrigins(c.Http.Cors))
-		}
-	}
-	if c != nil && c.Http != nil && c.Http.Tls != nil && c.Http.Tls.Enable {
-		if c.Http.Tls.CertPath == "" || c.Http.Tls.KeyPath == "" {
-			log.Fatal("Server TLS: can't find TLS key pairs")
-		}
-		cert, err := tls.LoadX509KeyPair(c.Http.Tls.CertPath, c.Http.Tls.KeyPath)
-		if err != nil {
-			log.Fatalf("Server TLS: Failed to load key pair: %v", err)
-		}
-		opts = append(opts, http.TLSConfig(&tls.Config{Certificates: []tls.Certificate{cert}}))
+		opts = append(opts, http.WithConfig(c.Http))
+		opts = append(opts, http.WithCORS(c.Http.Cors))
 	}
 
-	srv := http.NewServer(opts...)
-
-	if mtc != nil {
-		srv.Handle("/metrics", mtc.Handler)
-	}
-
-	servorav1.RegisterAuthServiceHTTPServer(srv, auth)
-	servorav1.RegisterUserServiceHTTPServer(srv, user)
-	servorav1.RegisterTestServiceHTTPServer(srv, test)
-
-	return srv
+	return http.NewServer(opts...)
 }
