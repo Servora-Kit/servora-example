@@ -11,7 +11,9 @@ import (
 	innermw "github.com/Servora-Kit/servora/app/servora/service/internal/server/middleware"
 	"github.com/Servora-Kit/servora/app/servora/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
+	"github.com/Servora-Kit/servora/pkg/health"
 	"github.com/Servora-Kit/servora/pkg/logger"
+	"github.com/Servora-Kit/servora/pkg/redis"
 	"github.com/Servora-Kit/servora/pkg/transport/server/http"
 	svrmw "github.com/Servora-Kit/servora/pkg/transport/server/middleware"
 )
@@ -60,12 +62,19 @@ func NewHTTPMiddleware(
 	return ms
 }
 
+func NewHealthHandler(redisClient *redis.Client) *health.Handler {
+	return health.NewHandlerWithDefaults(health.DefaultDeps{
+		Redis: redisClient,
+	})
+}
+
 // NewHTTPServer new an HTTP server.
 func NewHTTPServer(
 	c *conf.Server,
 	mw HTTPMiddleware,
 	mtc *telemetry.Metrics,
 	l logger.Logger,
+	h *health.Handler,
 	auth *service.AuthService,
 	user *service.UserService,
 	test *service.TestService,
@@ -76,6 +85,7 @@ func NewHTTPServer(
 		http.WithLogger(hlog),
 		http.WithMiddleware(mw...),
 		http.WithMetrics(mtc),
+		http.WithHealthCheck(h),
 		http.WithServices(
 			func(s *khttp.Server) { servorav1.RegisterAuthServiceHTTPServer(s, auth) },
 			func(s *khttp.Server) { servorav1.RegisterUserServiceHTTPServer(s, user) },

@@ -38,17 +38,20 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger)
 	authJWT := middleware.NewAuthMiddleware(app)
 	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, authJWT)
+	redisClient, cleanup, err := data.NewRedis(confData, logger)
+	if err != nil {
+		return nil, nil, err
+	}
+	handler := server.NewHealthHandler(redisClient)
 	entClient, err := data.NewDBClient(confData, app, logger)
 	if err != nil {
+		cleanup()
 		return nil, nil, err
 	}
 	registryDiscovery := registry.NewDiscovery(discovery)
 	clientClient, err := client.NewClient(confData, trace, registryDiscovery, logger)
 	if err != nil {
-		return nil, nil, err
-	}
-	redisClient, cleanup, err := data.NewRedis(confData, logger)
-	if err != nil {
+		cleanup()
 		return nil, nil, err
 	}
 	dataData, cleanup2, err := data.NewData(entClient, confData, logger, clientClient, redisClient)
@@ -65,7 +68,7 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	testRepo := data.NewTestRepo(dataData, logger)
 	testUsecase := biz.NewTestUsecase(testRepo, logger)
 	testService := service.NewTestService(testUsecase)
-	httpServer := server.NewHTTPServer(confServer, httpMiddleware, telemetryMetrics, logger, authService, userService, testService)
+	httpServer := server.NewHTTPServer(confServer, httpMiddleware, telemetryMetrics, logger, handler, authService, userService, testService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer)
 	return kratosApp, func() {
 		cleanup2()
