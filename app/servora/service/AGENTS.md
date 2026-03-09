@@ -1,7 +1,6 @@
-# AGENTS.md - app/servora/service 主服务
+# AGENTS.md - app/servora/service/
 
-<!-- Parent: ../../AGENTS.md -->
-<!-- Generated: 2026-02-09 | Updated: 2026-03-06 -->
+<!-- Generated: 2026-03-09 | Commit: 1f79cd0 -->
 
 ## 目录定位
 

@@ -1,7 +1,6 @@
-# AGENTS.md - servora Web 前端
+# AGENTS.md - app/servora/service/web/
 
-<!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-02-09 | Updated: 2026-03-06 -->
+<!-- Generated: 2026-03-09 | Commit: 1f79cd0 -->
 
 ## 目录定位
 
