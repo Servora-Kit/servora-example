@@ -5,19 +5,19 @@
 
 ### Requirement: 加载服务配置
 
-系统必须能够从服务的 `configs/config.yaml` 加载完整的 Bootstrap 配置，包括数据库连接信息。
+系统必须能够从服务的 `configs/local/` 目录加载完整的 Bootstrap 配置，包括数据库连接信息。
 
 #### Scenario: 成功加载配置
 
 - **WHEN** 系统调用 `LoadServiceConfig("servora")`
-- **THEN** 系统读取 `app/servora/service/configs/config.yaml`
+- **THEN** 系统读取 `app/servora/service/configs/local/` 目录下所有 YAML 文件并合并
 - **THEN** 系统使用 `pkg/bootstrap/config/loader.LoadBootstrap()` 加载配置
 - **THEN** 系统返回包含 Bootstrap 配置的 ServiceConfig 结构
 - **THEN** ServiceConfig 包含服务名称、路径和 Bootstrap 配置
 
 #### Scenario: 配置文件不存在
 
-- **WHEN** 系统调用 `LoadServiceConfig("servora")` 但配置文件不存在
+- **WHEN** 系统调用 `LoadServiceConfig("servora")` 但 `configs/local/` 目录不存在或为空
 - **THEN** 系统返回错误 "load config failed: <具体错误>"
 
 #### Scenario: 配置解析失败
