@@ -3,7 +3,6 @@ package client
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -79,30 +78,14 @@ func GetGRPCConn(ctx context.Context, c Client, serviceName string) (gogrpc.Clie
 }
 
 // createGrpcConnection 创建gRPC连接的内部函数
-func createGrpcConnection(ctx context.Context, serviceName string, dataCfg *conf.Data,
+func createGrpcConnection(ctx context.Context, serviceName string, grpcConfigs map[string]*conf.Data_Client_GRPC,
 	traceCfg *conf.Trace, discovery registry.Discovery, l logger.Logger) (gogrpc.ClientConnInterface, error) {
 	setupLogger := logger.NewHelper(l, logger.WithField("operation", "createGrpcConnection"))
 
-	timeout := 5 * time.Second
 	defaultEndpoint := fmt.Sprintf("discovery:///%s", serviceName)
-	endpoint := defaultEndpoint
-
-	if dataCfg != nil && dataCfg.Client != nil {
-		for _, c := range dataCfg.Client.GetGrpc() {
-			if c == nil || c.ServiceName != serviceName {
-				continue
-			}
-			if cfgTimeout := c.GetTimeout(); cfgTimeout != nil {
-				if d := cfgTimeout.AsDuration(); d > 0 {
-					timeout = d
-				}
-			}
-			if configuredEndpoint := strings.TrimSpace(c.GetEndpoint()); configuredEndpoint != "" {
-				endpoint = configuredEndpoint
-				setupLogger.Infof("using configured endpoint: service_name=%s endpoint=%s", serviceName, endpoint)
-			}
-			break
-		}
+	endpoint, timeout, configured := resolveGRPCConnectionConfig(serviceName, grpcConfigs, defaultEndpoint, 5*time.Second)
+	if configured {
+		setupLogger.Infof("using configured endpoint: service_name=%s endpoint=%s", serviceName, endpoint)
 	}
 
 	mds := []middleware.Middleware{
@@ -134,4 +117,31 @@ func createGrpcConnection(ctx context.Context, serviceName string, dataCfg *conf
 	setupLogger.Infof("successfully created grpc client: service_name=%s endpoint=%s timeout=%s", serviceName, endpoint, timeout.String())
 
 	return conn, nil
+}
+
+// resolveGRPCConnectionConfig 根据服务名解析连接配置，并在缺省时回落到默认端点与超时。
+func resolveGRPCConnectionConfig(
+	serviceName string,
+	grpcConfigs map[string]*conf.Data_Client_GRPC,
+	defaultEndpoint string,
+	defaultTimeout time.Duration,
+) (string, time.Duration, bool) {
+	endpoint := defaultEndpoint
+	timeout := defaultTimeout
+
+	grpcCfg, ok := grpcConfigs[serviceName]
+	if !ok || grpcCfg == nil {
+		return endpoint, timeout, false
+	}
+
+	if cfgTimeout := grpcCfg.GetTimeout(); cfgTimeout != nil {
+		if d := cfgTimeout.AsDuration(); d > 0 {
+			timeout = d
+		}
+	}
+	if configuredEndpoint := grpcCfg.GetEndpoint(); configuredEndpoint != "" {
+		endpoint = configuredEndpoint
+	}
+
+	return endpoint, timeout, true
 }
