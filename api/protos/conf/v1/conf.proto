@@ -13,13 +13,12 @@ option go_package = "github.com/Servora-Kit/servora/api/gen/go/conf/v1;conf";
 message Bootstrap {
   App app = 1; // 应用基础配置
   Server server = 2; // 服务端配置
-  reserved 3; // 历史字段：顶层 client（已废弃，保留编号避免兼容性问题）
-  Data data = 4; // 数据源配置
-  Registry registry = 5; // 注册中心配置
-  Discovery discovery = 6; // 服务发现配置
-  Config config = 7; // 配置中心配置
-  Trace trace = 8; // 链路追踪配置
-  Metrics metrics = 9; // 指标配置
+  Data data = 3; // 数据源配置
+  Registry registry = 4; // 注册中心配置
+  Discovery discovery = 5; // 服务发现配置
+  Config config = 6; // 配置中心配置
+  Trace trace = 7; // 链路追踪配置
+  Metrics metrics = 8; // 指标配置
 }
 
 // =============================================================================
@@ -43,48 +42,6 @@ message CORS {
   repeated string exposed_headers = 5; // 暴露的头部
   bool allow_credentials = 6; // 是否允许凭证
   google.protobuf.Duration max_age = 7; // 预检请求缓存时间
-}
-
-// =============================================================================
-// 服务发现与注册中心通用配置
-// =============================================================================
-
-// Consul 配置
-message ConsulConfig {
-  string addr = 1; // Consul 地址
-  string scheme = 2; // 协议
-  string token = 3; // 访问令牌
-  string datacenter = 4; // 数据中心
-  google.protobuf.Duration timeout = 5; // 超时时间
-  repeated string tags = 6; // 服务标签
-  string key = 7; // 配置键名 (仅 Config 使用)
-}
-
-// Etcd 配置
-message EtcdConfig {
-  repeated string endpoints = 1; // Etcd 端点列表
-  string username = 2; // 用户名
-  string password = 3; // 密码
-  google.protobuf.Duration timeout = 4; // 超时时间
-  string key = 5; // 配置键名 (仅 Config 使用)
-  string namespace = 6; // 命名空间 (仅 Registry 和 Discovery 使用)
-}
-
-// Nacos 配置
-message NacosConfig {
-  string addr = 1; // Nacos 地址
-  uint64 port = 2; // Nacos 端口
-  string namespace = 3; // 命名空间
-  string group = 4; // 分组
-  string username = 5; // 用户名
-  string password = 6; // 密码
-  google.protobuf.Duration timeout = 7; // 超时时间
-  string data_id = 8; // 数据ID (仅 Config 使用)
-}
-
-// Kubernetes 配置
-message KubernetesConfig {
-  bool enable = 1; // 是否启用 K8s 服务发现/注册（在 Pod 中运行时设为 true）
 }
 
 // =============================================================================
@@ -223,12 +180,57 @@ message Config {
 }
 
 // =============================================================================
+// 服务发现与注册中心通用配置
+// =============================================================================
+
+// Consul 配置
+message ConsulConfig {
+  string addr = 1; // Consul 地址
+  string scheme = 2; // 协议
+  string token = 3; // 访问令牌
+  string datacenter = 4; // 数据中心
+  google.protobuf.Duration timeout = 5; // 超时时间
+  repeated string tags = 6; // 服务标签
+  string key = 7; // 配置键名 (仅 Config 使用)
+}
+
+// Etcd 配置
+message EtcdConfig {
+  repeated string endpoints = 1; // Etcd 端点列表
+  string username = 2; // 用户名
+  string password = 3; // 密码
+  google.protobuf.Duration timeout = 4; // 超时时间
+  string key = 5; // 配置键名 (仅 Config 使用)
+  string namespace = 6; // 命名空间 (仅 Registry 和 Discovery 使用)
+}
+
+// Nacos 配置
+message NacosConfig {
+  string addr = 1; // Nacos 地址
+  uint64 port = 2; // Nacos 端口
+  string namespace = 3; // 命名空间
+  string group = 4; // 分组
+  string username = 5; // 用户名
+  string password = 6; // 密码
+  google.protobuf.Duration timeout = 7; // 超时时间
+  string data_id = 8; // 数据ID (仅 Config 使用)
+}
+
+// Kubernetes 配置
+message KubernetesConfig {
+  bool enable = 1; // 是否启用 K8s 服务发现/注册（在 Pod 中运行时设为 true）
+}
+
+// =============================================================================
 // 监控配置
 // =============================================================================
 
 // 链路追踪配置
 message Trace {
-  string endpoint = 1;
+  string endpoint = 1; // OTLP Trace 导出端点
+  bool insecure = 2; // 是否允许明文传输
+  double sampling_ratio = 3; // Trace 采样率，范围 [0,1]
+  string ca_path = 4; // 自定义 CA 证书路径
 }
 
 // Metrics 配置

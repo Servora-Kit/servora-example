@@ -27,12 +27,12 @@ type Bootstrap struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	App           *App                   `protobuf:"bytes,1,opt,name=app,proto3" json:"app,omitempty"`             // 应用基础配置
 	Server        *Server                `protobuf:"bytes,2,opt,name=server,proto3" json:"server,omitempty"`       // 服务端配置
-	Data          *Data                  `protobuf:"bytes,4,opt,name=data,proto3" json:"data,omitempty"`           // 数据源配置
-	Registry      *Registry              `protobuf:"bytes,5,opt,name=registry,proto3" json:"registry,omitempty"`   // 注册中心配置
-	Discovery     *Discovery             `protobuf:"bytes,6,opt,name=discovery,proto3" json:"discovery,omitempty"` // 服务发现配置
-	Config        *Config                `protobuf:"bytes,7,opt,name=config,proto3" json:"config,omitempty"`       // 配置中心配置
-	Trace         *Trace                 `protobuf:"bytes,8,opt,name=trace,proto3" json:"trace,omitempty"`         // 链路追踪配置
-	Metrics       *Metrics               `protobuf:"bytes,9,opt,name=metrics,proto3" json:"metrics,omitempty"`     // 指标配置
+	Data          *Data                  `protobuf:"bytes,3,opt,name=data,proto3" json:"data,omitempty"`           // 数据源配置
+	Registry      *Registry              `protobuf:"bytes,4,opt,name=registry,proto3" json:"registry,omitempty"`   // 注册中心配置
+	Discovery     *Discovery             `protobuf:"bytes,5,opt,name=discovery,proto3" json:"discovery,omitempty"` // 服务发现配置
+	Config        *Config                `protobuf:"bytes,6,opt,name=config,proto3" json:"config,omitempty"`       // 配置中心配置
+	Trace         *Trace                 `protobuf:"bytes,7,opt,name=trace,proto3" json:"trace,omitempty"`         // 链路追踪配置
+	Metrics       *Metrics               `protobuf:"bytes,8,opt,name=metrics,proto3" json:"metrics,omitempty"`     // 指标配置
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -285,330 +285,6 @@ func (x *CORS) GetMaxAge() *durationpb.Duration {
 	return nil
 }
 
-// Consul 配置
-type ConsulConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`             // Consul 地址
-	Scheme        string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`         // 协议
-	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`           // 访问令牌
-	Datacenter    string                 `protobuf:"bytes,4,opt,name=datacenter,proto3" json:"datacenter,omitempty"` // 数据中心
-	Timeout       *durationpb.Duration   `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`       // 超时时间
-	Tags          []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`             // 服务标签
-	Key           string                 `protobuf:"bytes,7,opt,name=key,proto3" json:"key,omitempty"`               // 配置键名 (仅 Config 使用)
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *ConsulConfig) Reset() {
-	*x = ConsulConfig{}
-	mi := &file_conf_v1_conf_proto_msgTypes[3]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *ConsulConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ConsulConfig) ProtoMessage() {}
-
-func (x *ConsulConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[3]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ConsulConfig.ProtoReflect.Descriptor instead.
-func (*ConsulConfig) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{3}
-}
-
-func (x *ConsulConfig) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *ConsulConfig) GetScheme() string {
-	if x != nil {
-		return x.Scheme
-	}
-	return ""
-}
-
-func (x *ConsulConfig) GetToken() string {
-	if x != nil {
-		return x.Token
-	}
-	return ""
-}
-
-func (x *ConsulConfig) GetDatacenter() string {
-	if x != nil {
-		return x.Datacenter
-	}
-	return ""
-}
-
-func (x *ConsulConfig) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
-	}
-	return nil
-}
-
-func (x *ConsulConfig) GetTags() []string {
-	if x != nil {
-		return x.Tags
-	}
-	return nil
-}
-
-func (x *ConsulConfig) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-// Etcd 配置
-type EtcdConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Endpoints     []string               `protobuf:"bytes,1,rep,name=endpoints,proto3" json:"endpoints,omitempty"` // Etcd 端点列表
-	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`   // 用户名
-	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`   // 密码
-	Timeout       *durationpb.Duration   `protobuf:"bytes,4,opt,name=timeout,proto3" json:"timeout,omitempty"`     // 超时时间
-	Key           string                 `protobuf:"bytes,5,opt,name=key,proto3" json:"key,omitempty"`             // 配置键名 (仅 Config 使用)
-	Namespace     string                 `protobuf:"bytes,6,opt,name=namespace,proto3" json:"namespace,omitempty"` // 命名空间 (仅 Registry 和 Discovery 使用)
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *EtcdConfig) Reset() {
-	*x = EtcdConfig{}
-	mi := &file_conf_v1_conf_proto_msgTypes[4]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *EtcdConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*EtcdConfig) ProtoMessage() {}
-
-func (x *EtcdConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[4]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use EtcdConfig.ProtoReflect.Descriptor instead.
-func (*EtcdConfig) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{4}
-}
-
-func (x *EtcdConfig) GetEndpoints() []string {
-	if x != nil {
-		return x.Endpoints
-	}
-	return nil
-}
-
-func (x *EtcdConfig) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *EtcdConfig) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-func (x *EtcdConfig) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
-	}
-	return nil
-}
-
-func (x *EtcdConfig) GetKey() string {
-	if x != nil {
-		return x.Key
-	}
-	return ""
-}
-
-func (x *EtcdConfig) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-// Nacos 配置
-type NacosConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`                   // Nacos 地址
-	Port          uint64                 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`                  // Nacos 端口
-	Namespace     string                 `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`         // 命名空间
-	Group         string                 `protobuf:"bytes,4,opt,name=group,proto3" json:"group,omitempty"`                 // 分组
-	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`           // 用户名
-	Password      string                 `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`           // 密码
-	Timeout       *durationpb.Duration   `protobuf:"bytes,7,opt,name=timeout,proto3" json:"timeout,omitempty"`             // 超时时间
-	DataId        string                 `protobuf:"bytes,8,opt,name=data_id,json=dataId,proto3" json:"data_id,omitempty"` // 数据ID (仅 Config 使用)
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *NacosConfig) Reset() {
-	*x = NacosConfig{}
-	mi := &file_conf_v1_conf_proto_msgTypes[5]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *NacosConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*NacosConfig) ProtoMessage() {}
-
-func (x *NacosConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[5]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use NacosConfig.ProtoReflect.Descriptor instead.
-func (*NacosConfig) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *NacosConfig) GetAddr() string {
-	if x != nil {
-		return x.Addr
-	}
-	return ""
-}
-
-func (x *NacosConfig) GetPort() uint64 {
-	if x != nil {
-		return x.Port
-	}
-	return 0
-}
-
-func (x *NacosConfig) GetNamespace() string {
-	if x != nil {
-		return x.Namespace
-	}
-	return ""
-}
-
-func (x *NacosConfig) GetGroup() string {
-	if x != nil {
-		return x.Group
-	}
-	return ""
-}
-
-func (x *NacosConfig) GetUsername() string {
-	if x != nil {
-		return x.Username
-	}
-	return ""
-}
-
-func (x *NacosConfig) GetPassword() string {
-	if x != nil {
-		return x.Password
-	}
-	return ""
-}
-
-func (x *NacosConfig) GetTimeout() *durationpb.Duration {
-	if x != nil {
-		return x.Timeout
-	}
-	return nil
-}
-
-func (x *NacosConfig) GetDataId() string {
-	if x != nil {
-		return x.DataId
-	}
-	return ""
-}
-
-// Kubernetes 配置
-type KubernetesConfig struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Enable        bool                   `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"` // 是否启用 K8s 服务发现/注册（在 Pod 中运行时设为 true）
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *KubernetesConfig) Reset() {
-	*x = KubernetesConfig{}
-	mi := &file_conf_v1_conf_proto_msgTypes[6]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *KubernetesConfig) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*KubernetesConfig) ProtoMessage() {}
-
-func (x *KubernetesConfig) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[6]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use KubernetesConfig.ProtoReflect.Descriptor instead.
-func (*KubernetesConfig) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *KubernetesConfig) GetEnable() bool {
-	if x != nil {
-		return x.Enable
-	}
-	return false
-}
-
 // 通信服务端配置
 type Server struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -620,7 +296,7 @@ type Server struct {
 
 func (x *Server) Reset() {
 	*x = Server{}
-	mi := &file_conf_v1_conf_proto_msgTypes[7]
+	mi := &file_conf_v1_conf_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -632,7 +308,7 @@ func (x *Server) String() string {
 func (*Server) ProtoMessage() {}
 
 func (x *Server) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[7]
+	mi := &file_conf_v1_conf_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -645,7 +321,7 @@ func (x *Server) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Server.ProtoReflect.Descriptor instead.
 func (*Server) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{7}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *Server) GetHttp() *Server_HTTP {
@@ -673,7 +349,7 @@ type Client struct {
 
 func (x *Client) Reset() {
 	*x = Client{}
-	mi := &file_conf_v1_conf_proto_msgTypes[8]
+	mi := &file_conf_v1_conf_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -685,7 +361,7 @@ func (x *Client) String() string {
 func (*Client) ProtoMessage() {}
 
 func (x *Client) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[8]
+	mi := &file_conf_v1_conf_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -698,7 +374,7 @@ func (x *Client) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Client.ProtoReflect.Descriptor instead.
 func (*Client) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{8}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *Client) GetGrpc() map[string]*Client_GRPC {
@@ -720,7 +396,7 @@ type Data struct {
 
 func (x *Data) Reset() {
 	*x = Data{}
-	mi := &file_conf_v1_conf_proto_msgTypes[9]
+	mi := &file_conf_v1_conf_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -732,7 +408,7 @@ func (x *Data) String() string {
 func (*Data) ProtoMessage() {}
 
 func (x *Data) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[9]
+	mi := &file_conf_v1_conf_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -745,7 +421,7 @@ func (x *Data) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data.ProtoReflect.Descriptor instead.
 func (*Data) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *Data) GetDatabase() *Data_Database {
@@ -784,7 +460,7 @@ type App struct {
 
 func (x *App) Reset() {
 	*x = App{}
-	mi := &file_conf_v1_conf_proto_msgTypes[10]
+	mi := &file_conf_v1_conf_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -796,7 +472,7 @@ func (x *App) String() string {
 func (*App) ProtoMessage() {}
 
 func (x *App) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[10]
+	mi := &file_conf_v1_conf_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -809,7 +485,7 @@ func (x *App) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use App.ProtoReflect.Descriptor instead.
 func (*App) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{10}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *App) GetEnv() string {
@@ -870,7 +546,7 @@ type Registry struct {
 
 func (x *Registry) Reset() {
 	*x = Registry{}
-	mi := &file_conf_v1_conf_proto_msgTypes[11]
+	mi := &file_conf_v1_conf_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -882,7 +558,7 @@ func (x *Registry) String() string {
 func (*Registry) ProtoMessage() {}
 
 func (x *Registry) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[11]
+	mi := &file_conf_v1_conf_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -895,7 +571,7 @@ func (x *Registry) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Registry.ProtoReflect.Descriptor instead.
 func (*Registry) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{11}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *Registry) GetRegistry() isRegistry_Registry {
@@ -985,7 +661,7 @@ type Discovery struct {
 
 func (x *Discovery) Reset() {
 	*x = Discovery{}
-	mi := &file_conf_v1_conf_proto_msgTypes[12]
+	mi := &file_conf_v1_conf_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -997,7 +673,7 @@ func (x *Discovery) String() string {
 func (*Discovery) ProtoMessage() {}
 
 func (x *Discovery) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[12]
+	mi := &file_conf_v1_conf_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1010,7 +686,7 @@ func (x *Discovery) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Discovery.ProtoReflect.Descriptor instead.
 func (*Discovery) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{12}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Discovery) GetDiscovery() isDiscovery_Discovery {
@@ -1099,7 +775,7 @@ type Config struct {
 
 func (x *Config) Reset() {
 	*x = Config{}
-	mi := &file_conf_v1_conf_proto_msgTypes[13]
+	mi := &file_conf_v1_conf_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1111,7 +787,7 @@ func (x *Config) String() string {
 func (*Config) ProtoMessage() {}
 
 func (x *Config) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[13]
+	mi := &file_conf_v1_conf_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1124,7 +800,7 @@ func (x *Config) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Config.ProtoReflect.Descriptor instead.
 func (*Config) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{13}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *Config) GetConfig() isConfig_Config {
@@ -1183,10 +859,337 @@ func (*Config_Etcd) isConfig_Config() {}
 
 func (*Config_Nacos) isConfig_Config() {}
 
+// Consul 配置
+type ConsulConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`             // Consul 地址
+	Scheme        string                 `protobuf:"bytes,2,opt,name=scheme,proto3" json:"scheme,omitempty"`         // 协议
+	Token         string                 `protobuf:"bytes,3,opt,name=token,proto3" json:"token,omitempty"`           // 访问令牌
+	Datacenter    string                 `protobuf:"bytes,4,opt,name=datacenter,proto3" json:"datacenter,omitempty"` // 数据中心
+	Timeout       *durationpb.Duration   `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`       // 超时时间
+	Tags          []string               `protobuf:"bytes,6,rep,name=tags,proto3" json:"tags,omitempty"`             // 服务标签
+	Key           string                 `protobuf:"bytes,7,opt,name=key,proto3" json:"key,omitempty"`               // 配置键名 (仅 Config 使用)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ConsulConfig) Reset() {
+	*x = ConsulConfig{}
+	mi := &file_conf_v1_conf_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ConsulConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ConsulConfig) ProtoMessage() {}
+
+func (x *ConsulConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_v1_conf_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ConsulConfig.ProtoReflect.Descriptor instead.
+func (*ConsulConfig) Descriptor() ([]byte, []int) {
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *ConsulConfig) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *ConsulConfig) GetScheme() string {
+	if x != nil {
+		return x.Scheme
+	}
+	return ""
+}
+
+func (x *ConsulConfig) GetToken() string {
+	if x != nil {
+		return x.Token
+	}
+	return ""
+}
+
+func (x *ConsulConfig) GetDatacenter() string {
+	if x != nil {
+		return x.Datacenter
+	}
+	return ""
+}
+
+func (x *ConsulConfig) GetTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.Timeout
+	}
+	return nil
+}
+
+func (x *ConsulConfig) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *ConsulConfig) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+// Etcd 配置
+type EtcdConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Endpoints     []string               `protobuf:"bytes,1,rep,name=endpoints,proto3" json:"endpoints,omitempty"` // Etcd 端点列表
+	Username      string                 `protobuf:"bytes,2,opt,name=username,proto3" json:"username,omitempty"`   // 用户名
+	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`   // 密码
+	Timeout       *durationpb.Duration   `protobuf:"bytes,4,opt,name=timeout,proto3" json:"timeout,omitempty"`     // 超时时间
+	Key           string                 `protobuf:"bytes,5,opt,name=key,proto3" json:"key,omitempty"`             // 配置键名 (仅 Config 使用)
+	Namespace     string                 `protobuf:"bytes,6,opt,name=namespace,proto3" json:"namespace,omitempty"` // 命名空间 (仅 Registry 和 Discovery 使用)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EtcdConfig) Reset() {
+	*x = EtcdConfig{}
+	mi := &file_conf_v1_conf_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EtcdConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EtcdConfig) ProtoMessage() {}
+
+func (x *EtcdConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_v1_conf_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EtcdConfig.ProtoReflect.Descriptor instead.
+func (*EtcdConfig) Descriptor() ([]byte, []int) {
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *EtcdConfig) GetEndpoints() []string {
+	if x != nil {
+		return x.Endpoints
+	}
+	return nil
+}
+
+func (x *EtcdConfig) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *EtcdConfig) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *EtcdConfig) GetTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.Timeout
+	}
+	return nil
+}
+
+func (x *EtcdConfig) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *EtcdConfig) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+// Nacos 配置
+type NacosConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Addr          string                 `protobuf:"bytes,1,opt,name=addr,proto3" json:"addr,omitempty"`                   // Nacos 地址
+	Port          uint64                 `protobuf:"varint,2,opt,name=port,proto3" json:"port,omitempty"`                  // Nacos 端口
+	Namespace     string                 `protobuf:"bytes,3,opt,name=namespace,proto3" json:"namespace,omitempty"`         // 命名空间
+	Group         string                 `protobuf:"bytes,4,opt,name=group,proto3" json:"group,omitempty"`                 // 分组
+	Username      string                 `protobuf:"bytes,5,opt,name=username,proto3" json:"username,omitempty"`           // 用户名
+	Password      string                 `protobuf:"bytes,6,opt,name=password,proto3" json:"password,omitempty"`           // 密码
+	Timeout       *durationpb.Duration   `protobuf:"bytes,7,opt,name=timeout,proto3" json:"timeout,omitempty"`             // 超时时间
+	DataId        string                 `protobuf:"bytes,8,opt,name=data_id,json=dataId,proto3" json:"data_id,omitempty"` // 数据ID (仅 Config 使用)
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *NacosConfig) Reset() {
+	*x = NacosConfig{}
+	mi := &file_conf_v1_conf_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *NacosConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*NacosConfig) ProtoMessage() {}
+
+func (x *NacosConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_v1_conf_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use NacosConfig.ProtoReflect.Descriptor instead.
+func (*NacosConfig) Descriptor() ([]byte, []int) {
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *NacosConfig) GetAddr() string {
+	if x != nil {
+		return x.Addr
+	}
+	return ""
+}
+
+func (x *NacosConfig) GetPort() uint64 {
+	if x != nil {
+		return x.Port
+	}
+	return 0
+}
+
+func (x *NacosConfig) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *NacosConfig) GetGroup() string {
+	if x != nil {
+		return x.Group
+	}
+	return ""
+}
+
+func (x *NacosConfig) GetUsername() string {
+	if x != nil {
+		return x.Username
+	}
+	return ""
+}
+
+func (x *NacosConfig) GetPassword() string {
+	if x != nil {
+		return x.Password
+	}
+	return ""
+}
+
+func (x *NacosConfig) GetTimeout() *durationpb.Duration {
+	if x != nil {
+		return x.Timeout
+	}
+	return nil
+}
+
+func (x *NacosConfig) GetDataId() string {
+	if x != nil {
+		return x.DataId
+	}
+	return ""
+}
+
+// Kubernetes 配置
+type KubernetesConfig struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Enable        bool                   `protobuf:"varint,1,opt,name=enable,proto3" json:"enable,omitempty"` // 是否启用 K8s 服务发现/注册（在 Pod 中运行时设为 true）
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *KubernetesConfig) Reset() {
+	*x = KubernetesConfig{}
+	mi := &file_conf_v1_conf_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *KubernetesConfig) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*KubernetesConfig) ProtoMessage() {}
+
+func (x *KubernetesConfig) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_v1_conf_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use KubernetesConfig.ProtoReflect.Descriptor instead.
+func (*KubernetesConfig) Descriptor() ([]byte, []int) {
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *KubernetesConfig) GetEnable() bool {
+	if x != nil {
+		return x.Enable
+	}
+	return false
+}
+
 // 链路追踪配置
 type Trace struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Endpoint      string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`
+	Endpoint      string                 `protobuf:"bytes,1,opt,name=endpoint,proto3" json:"endpoint,omitempty"`                                  // OTLP Trace 导出端点
+	Insecure      bool                   `protobuf:"varint,2,opt,name=insecure,proto3" json:"insecure,omitempty"`                                 // 是否允许明文传输
+	SamplingRatio float64                `protobuf:"fixed64,3,opt,name=sampling_ratio,json=samplingRatio,proto3" json:"sampling_ratio,omitempty"` // Trace 采样率，范围 [0,1]
+	CaPath        string                 `protobuf:"bytes,4,opt,name=ca_path,json=caPath,proto3" json:"ca_path,omitempty"`                        // 自定义 CA 证书路径
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -1224,6 +1227,27 @@ func (*Trace) Descriptor() ([]byte, []int) {
 func (x *Trace) GetEndpoint() string {
 	if x != nil {
 		return x.Endpoint
+	}
+	return ""
+}
+
+func (x *Trace) GetInsecure() bool {
+	if x != nil {
+		return x.Insecure
+	}
+	return false
+}
+
+func (x *Trace) GetSamplingRatio() float64 {
+	if x != nil {
+		return x.SamplingRatio
+	}
+	return 0
+}
+
+func (x *Trace) GetCaPath() string {
+	if x != nil {
+		return x.CaPath
 	}
 	return ""
 }
@@ -1319,7 +1343,7 @@ func (x *Server_HTTP) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Server_HTTP.ProtoReflect.Descriptor instead.
 func (*Server_HTTP) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{7, 0}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{3, 0}
 }
 
 func (x *Server_HTTP) GetNetwork() string {
@@ -1394,7 +1418,7 @@ func (x *Server_GRPC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Server_GRPC.ProtoReflect.Descriptor instead.
 func (*Server_GRPC) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{7, 1}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{3, 1}
 }
 
 func (x *Server_GRPC) GetNetwork() string {
@@ -1460,7 +1484,7 @@ func (x *Client_GRPC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Client_GRPC.ProtoReflect.Descriptor instead.
 func (*Client_GRPC) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{8, 0}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *Client_GRPC) GetEndpoint() string {
@@ -1512,7 +1536,7 @@ func (x *Data_Database) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Database.ProtoReflect.Descriptor instead.
 func (*Data_Database) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9, 0}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5, 0}
 }
 
 func (x *Data_Database) GetDriver() string {
@@ -1570,7 +1594,7 @@ func (x *Data_Redis) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Redis.ProtoReflect.Descriptor instead.
 func (*Data_Redis) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9, 1}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5, 1}
 }
 
 func (x *Data_Redis) GetNetwork() string {
@@ -1664,7 +1688,7 @@ func (x *Data_Client) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Client.ProtoReflect.Descriptor instead.
 func (*Data_Client) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9, 2}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5, 2}
 }
 
 func (x *Data_Client) GetGrpc() []*Data_Client_GRPC {
@@ -1717,7 +1741,7 @@ func (x *Data_Client_HTTP) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Client_HTTP.ProtoReflect.Descriptor instead.
 func (*Data_Client_HTTP) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9, 2, 0}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5, 2, 0}
 }
 
 func (x *Data_Client_HTTP) GetServiceName() string {
@@ -1777,7 +1801,7 @@ func (x *Data_Client_GRPC) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Data_Client_GRPC.ProtoReflect.Descriptor instead.
 func (*Data_Client_GRPC) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{9, 2, 1}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{5, 2, 1}
 }
 
 func (x *Data_Client_GRPC) GetServiceName() string {
@@ -1840,7 +1864,7 @@ func (x *App_Jwt) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use App_Jwt.ProtoReflect.Descriptor instead.
 func (*App_Jwt) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{10, 0}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6, 0}
 }
 
 func (x *App_Jwt) GetAccessSecret() string {
@@ -1924,7 +1948,7 @@ func (x *App_Log) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use App_Log.ProtoReflect.Descriptor instead.
 func (*App_Log) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{10, 1}
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6, 1}
 }
 
 func (x *App_Log) GetLevel() int32 {
@@ -1973,16 +1997,16 @@ var File_conf_v1_conf_proto protoreflect.FileDescriptor
 
 const file_conf_v1_conf_proto_rawDesc = "" +
 	"\n" +
-	"\x12conf/v1/conf.proto\x12\aconf.v1\x1a\x1egoogle/protobuf/duration.proto\"\xd9\x02\n" +
+	"\x12conf/v1/conf.proto\x12\aconf.v1\x1a\x1egoogle/protobuf/duration.proto\"\xd3\x02\n" +
 	"\tBootstrap\x12\x1e\n" +
 	"\x03app\x18\x01 \x01(\v2\f.conf.v1.AppR\x03app\x12'\n" +
 	"\x06server\x18\x02 \x01(\v2\x0f.conf.v1.ServerR\x06server\x12!\n" +
-	"\x04data\x18\x04 \x01(\v2\r.conf.v1.DataR\x04data\x12-\n" +
-	"\bregistry\x18\x05 \x01(\v2\x11.conf.v1.RegistryR\bregistry\x120\n" +
-	"\tdiscovery\x18\x06 \x01(\v2\x12.conf.v1.DiscoveryR\tdiscovery\x12'\n" +
-	"\x06config\x18\a \x01(\v2\x0f.conf.v1.ConfigR\x06config\x12$\n" +
-	"\x05trace\x18\b \x01(\v2\x0e.conf.v1.TraceR\x05trace\x12*\n" +
-	"\ametrics\x18\t \x01(\v2\x10.conf.v1.MetricsR\ametricsJ\x04\b\x03\x10\x04\"t\n" +
+	"\x04data\x18\x03 \x01(\v2\r.conf.v1.DataR\x04data\x12-\n" +
+	"\bregistry\x18\x04 \x01(\v2\x11.conf.v1.RegistryR\bregistry\x120\n" +
+	"\tdiscovery\x18\x05 \x01(\v2\x12.conf.v1.DiscoveryR\tdiscovery\x12'\n" +
+	"\x06config\x18\x06 \x01(\v2\x0f.conf.v1.ConfigR\x06config\x12$\n" +
+	"\x05trace\x18\a \x01(\v2\x0e.conf.v1.TraceR\x05trace\x12*\n" +
+	"\ametrics\x18\b \x01(\v2\x10.conf.v1.MetricsR\ametrics\"t\n" +
 	"\tTLSConfig\x12\x16\n" +
 	"\x06enable\x18\x01 \x01(\bR\x06enable\x12\x1b\n" +
 	"\tcert_path\x18\x02 \x01(\tR\bcertPath\x12\x19\n" +
@@ -1995,36 +2019,7 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x0fallowed_headers\x18\x04 \x03(\tR\x0eallowedHeaders\x12'\n" +
 	"\x0fexposed_headers\x18\x05 \x03(\tR\x0eexposedHeaders\x12+\n" +
 	"\x11allow_credentials\x18\x06 \x01(\bR\x10allowCredentials\x122\n" +
-	"\amax_age\x18\a \x01(\v2\x19.google.protobuf.DurationR\x06maxAge\"\xcb\x01\n" +
-	"\fConsulConfig\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x16\n" +
-	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
-	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1e\n" +
-	"\n" +
-	"datacenter\x18\x04 \x01(\tR\n" +
-	"datacenter\x123\n" +
-	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x12\n" +
-	"\x04tags\x18\x06 \x03(\tR\x04tags\x12\x10\n" +
-	"\x03key\x18\a \x01(\tR\x03key\"\xc7\x01\n" +
-	"\n" +
-	"EtcdConfig\x12\x1c\n" +
-	"\tendpoints\x18\x01 \x03(\tR\tendpoints\x12\x1a\n" +
-	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x03 \x01(\tR\bpassword\x123\n" +
-	"\atimeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x10\n" +
-	"\x03key\x18\x05 \x01(\tR\x03key\x12\x1c\n" +
-	"\tnamespace\x18\x06 \x01(\tR\tnamespace\"\xef\x01\n" +
-	"\vNacosConfig\x12\x12\n" +
-	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x12\n" +
-	"\x04port\x18\x02 \x01(\x04R\x04port\x12\x1c\n" +
-	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12\x14\n" +
-	"\x05group\x18\x04 \x01(\tR\x05group\x12\x1a\n" +
-	"\busername\x18\x05 \x01(\tR\busername\x12\x1a\n" +
-	"\bpassword\x18\x06 \x01(\tR\bpassword\x123\n" +
-	"\atimeout\x18\a \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x17\n" +
-	"\adata_id\x18\b \x01(\tR\x06dataId\"*\n" +
-	"\x10KubernetesConfig\x12\x16\n" +
-	"\x06enable\x18\x01 \x01(\bR\x06enable\"\xa3\x03\n" +
+	"\amax_age\x18\a \x01(\v2\x19.google.protobuf.DurationR\x06maxAge\"\xa3\x03\n" +
 	"\x06Server\x12(\n" +
 	"\x04http\x18\x01 \x01(\v2\x14.conf.v1.Server.HTTPR\x04http\x12(\n" +
 	"\x04grpc\x18\x02 \x01(\v2\x14.conf.v1.Server.GRPCR\x04grpc\x1a\xb2\x01\n" +
@@ -2120,9 +2115,41 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x06consul\x18\x01 \x01(\v2\x15.conf.v1.ConsulConfigH\x00R\x06consul\x12)\n" +
 	"\x04etcd\x18\x02 \x01(\v2\x13.conf.v1.EtcdConfigH\x00R\x04etcd\x12,\n" +
 	"\x05nacos\x18\x03 \x01(\v2\x14.conf.v1.NacosConfigH\x00R\x05nacosB\b\n" +
-	"\x06config\"#\n" +
+	"\x06config\"\xcb\x01\n" +
+	"\fConsulConfig\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x16\n" +
+	"\x06scheme\x18\x02 \x01(\tR\x06scheme\x12\x14\n" +
+	"\x05token\x18\x03 \x01(\tR\x05token\x12\x1e\n" +
+	"\n" +
+	"datacenter\x18\x04 \x01(\tR\n" +
+	"datacenter\x123\n" +
+	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x12\n" +
+	"\x04tags\x18\x06 \x03(\tR\x04tags\x12\x10\n" +
+	"\x03key\x18\a \x01(\tR\x03key\"\xc7\x01\n" +
+	"\n" +
+	"EtcdConfig\x12\x1c\n" +
+	"\tendpoints\x18\x01 \x03(\tR\tendpoints\x12\x1a\n" +
+	"\busername\x18\x02 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x03 \x01(\tR\bpassword\x123\n" +
+	"\atimeout\x18\x04 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x10\n" +
+	"\x03key\x18\x05 \x01(\tR\x03key\x12\x1c\n" +
+	"\tnamespace\x18\x06 \x01(\tR\tnamespace\"\xef\x01\n" +
+	"\vNacosConfig\x12\x12\n" +
+	"\x04addr\x18\x01 \x01(\tR\x04addr\x12\x12\n" +
+	"\x04port\x18\x02 \x01(\x04R\x04port\x12\x1c\n" +
+	"\tnamespace\x18\x03 \x01(\tR\tnamespace\x12\x14\n" +
+	"\x05group\x18\x04 \x01(\tR\x05group\x12\x1a\n" +
+	"\busername\x18\x05 \x01(\tR\busername\x12\x1a\n" +
+	"\bpassword\x18\x06 \x01(\tR\bpassword\x123\n" +
+	"\atimeout\x18\a \x01(\v2\x19.google.protobuf.DurationR\atimeout\x12\x17\n" +
+	"\adata_id\x18\b \x01(\tR\x06dataId\"*\n" +
+	"\x10KubernetesConfig\x12\x16\n" +
+	"\x06enable\x18\x01 \x01(\bR\x06enable\"\x7f\n" +
 	"\x05Trace\x12\x1a\n" +
-	"\bendpoint\x18\x01 \x01(\tR\bendpoint\"@\n" +
+	"\bendpoint\x18\x01 \x01(\tR\bendpoint\x12\x1a\n" +
+	"\binsecure\x18\x02 \x01(\bR\binsecure\x12%\n" +
+	"\x0esampling_ratio\x18\x03 \x01(\x01R\rsamplingRatio\x12\x17\n" +
+	"\aca_path\x18\x04 \x01(\tR\x06caPath\"@\n" +
 	"\aMetrics\x12\x16\n" +
 	"\x06enable\x18\x01 \x01(\bR\x06enable\x12\x1d\n" +
 	"\n" +
@@ -2146,17 +2173,17 @@ var file_conf_v1_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: conf.v1.Bootstrap
 	(*TLSConfig)(nil),           // 1: conf.v1.TLSConfig
 	(*CORS)(nil),                // 2: conf.v1.CORS
-	(*ConsulConfig)(nil),        // 3: conf.v1.ConsulConfig
-	(*EtcdConfig)(nil),          // 4: conf.v1.EtcdConfig
-	(*NacosConfig)(nil),         // 5: conf.v1.NacosConfig
-	(*KubernetesConfig)(nil),    // 6: conf.v1.KubernetesConfig
-	(*Server)(nil),              // 7: conf.v1.Server
-	(*Client)(nil),              // 8: conf.v1.Client
-	(*Data)(nil),                // 9: conf.v1.Data
-	(*App)(nil),                 // 10: conf.v1.App
-	(*Registry)(nil),            // 11: conf.v1.Registry
-	(*Discovery)(nil),           // 12: conf.v1.Discovery
-	(*Config)(nil),              // 13: conf.v1.Config
+	(*Server)(nil),              // 3: conf.v1.Server
+	(*Client)(nil),              // 4: conf.v1.Client
+	(*Data)(nil),                // 5: conf.v1.Data
+	(*App)(nil),                 // 6: conf.v1.App
+	(*Registry)(nil),            // 7: conf.v1.Registry
+	(*Discovery)(nil),           // 8: conf.v1.Discovery
+	(*Config)(nil),              // 9: conf.v1.Config
+	(*ConsulConfig)(nil),        // 10: conf.v1.ConsulConfig
+	(*EtcdConfig)(nil),          // 11: conf.v1.EtcdConfig
+	(*NacosConfig)(nil),         // 12: conf.v1.NacosConfig
+	(*KubernetesConfig)(nil),    // 13: conf.v1.KubernetesConfig
 	(*Trace)(nil),               // 14: conf.v1.Trace
 	(*Metrics)(nil),             // 15: conf.v1.Metrics
 	(*Server_HTTP)(nil),         // 16: conf.v1.Server.HTTP
@@ -2174,38 +2201,38 @@ var file_conf_v1_conf_proto_goTypes = []any{
 	(*durationpb.Duration)(nil), // 28: google.protobuf.Duration
 }
 var file_conf_v1_conf_proto_depIdxs = []int32{
-	10, // 0: conf.v1.Bootstrap.app:type_name -> conf.v1.App
-	7,  // 1: conf.v1.Bootstrap.server:type_name -> conf.v1.Server
-	9,  // 2: conf.v1.Bootstrap.data:type_name -> conf.v1.Data
-	11, // 3: conf.v1.Bootstrap.registry:type_name -> conf.v1.Registry
-	12, // 4: conf.v1.Bootstrap.discovery:type_name -> conf.v1.Discovery
-	13, // 5: conf.v1.Bootstrap.config:type_name -> conf.v1.Config
+	6,  // 0: conf.v1.Bootstrap.app:type_name -> conf.v1.App
+	3,  // 1: conf.v1.Bootstrap.server:type_name -> conf.v1.Server
+	5,  // 2: conf.v1.Bootstrap.data:type_name -> conf.v1.Data
+	7,  // 3: conf.v1.Bootstrap.registry:type_name -> conf.v1.Registry
+	8,  // 4: conf.v1.Bootstrap.discovery:type_name -> conf.v1.Discovery
+	9,  // 5: conf.v1.Bootstrap.config:type_name -> conf.v1.Config
 	14, // 6: conf.v1.Bootstrap.trace:type_name -> conf.v1.Trace
 	15, // 7: conf.v1.Bootstrap.metrics:type_name -> conf.v1.Metrics
 	28, // 8: conf.v1.CORS.max_age:type_name -> google.protobuf.Duration
-	28, // 9: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
-	28, // 10: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
-	28, // 11: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
-	16, // 12: conf.v1.Server.http:type_name -> conf.v1.Server.HTTP
-	17, // 13: conf.v1.Server.grpc:type_name -> conf.v1.Server.GRPC
-	19, // 14: conf.v1.Client.grpc:type_name -> conf.v1.Client.GrpcEntry
-	20, // 15: conf.v1.Data.database:type_name -> conf.v1.Data.Database
-	21, // 16: conf.v1.Data.redis:type_name -> conf.v1.Data.Redis
-	22, // 17: conf.v1.Data.client:type_name -> conf.v1.Data.Client
-	25, // 18: conf.v1.App.jwt:type_name -> conf.v1.App.Jwt
-	26, // 19: conf.v1.App.log:type_name -> conf.v1.App.Log
-	27, // 20: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
-	3,  // 21: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
-	4,  // 22: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
-	5,  // 23: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
-	6,  // 24: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
-	3,  // 25: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
-	4,  // 26: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
-	5,  // 27: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
-	6,  // 28: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
-	3,  // 29: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
-	4,  // 30: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
-	5,  // 31: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
+	16, // 9: conf.v1.Server.http:type_name -> conf.v1.Server.HTTP
+	17, // 10: conf.v1.Server.grpc:type_name -> conf.v1.Server.GRPC
+	19, // 11: conf.v1.Client.grpc:type_name -> conf.v1.Client.GrpcEntry
+	20, // 12: conf.v1.Data.database:type_name -> conf.v1.Data.Database
+	21, // 13: conf.v1.Data.redis:type_name -> conf.v1.Data.Redis
+	22, // 14: conf.v1.Data.client:type_name -> conf.v1.Data.Client
+	25, // 15: conf.v1.App.jwt:type_name -> conf.v1.App.Jwt
+	26, // 16: conf.v1.App.log:type_name -> conf.v1.App.Log
+	27, // 17: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
+	10, // 18: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
+	11, // 19: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 20: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
+	13, // 21: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 22: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
+	11, // 23: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 24: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
+	13, // 25: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 26: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
+	11, // 27: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 28: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
+	28, // 29: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
+	28, // 30: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
+	28, // 31: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
 	28, // 32: conf.v1.Server.HTTP.timeout:type_name -> google.protobuf.Duration
 	1,  // 33: conf.v1.Server.HTTP.tls:type_name -> conf.v1.TLSConfig
 	2,  // 34: conf.v1.Server.HTTP.cors:type_name -> conf.v1.CORS
@@ -2232,19 +2259,19 @@ func file_conf_v1_conf_proto_init() {
 	if File_conf_v1_conf_proto != nil {
 		return
 	}
-	file_conf_v1_conf_proto_msgTypes[11].OneofWrappers = []any{
+	file_conf_v1_conf_proto_msgTypes[7].OneofWrappers = []any{
 		(*Registry_Consul)(nil),
 		(*Registry_Etcd)(nil),
 		(*Registry_Nacos)(nil),
 		(*Registry_Kubernetes)(nil),
 	}
-	file_conf_v1_conf_proto_msgTypes[12].OneofWrappers = []any{
+	file_conf_v1_conf_proto_msgTypes[8].OneofWrappers = []any{
 		(*Discovery_Consul)(nil),
 		(*Discovery_Etcd)(nil),
 		(*Discovery_Nacos)(nil),
 		(*Discovery_Kubernetes)(nil),
 	}
-	file_conf_v1_conf_proto_msgTypes[13].OneofWrappers = []any{
+	file_conf_v1_conf_proto_msgTypes[9].OneofWrappers = []any{
 		(*Config_Consul)(nil),
 		(*Config_Etcd)(nil),
 		(*Config_Nacos)(nil),

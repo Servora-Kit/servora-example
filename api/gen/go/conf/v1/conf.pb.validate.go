@@ -604,524 +604,6 @@ var _ interface {
 	ErrorName() string
 } = CORSValidationError{}
 
-// Validate checks the field values on ConsulConfig with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *ConsulConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on ConsulConfig with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in ConsulConfigMultiError, or
-// nil if none found.
-func (m *ConsulConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *ConsulConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Addr
-
-	// no validation rules for Scheme
-
-	// no validation rules for Token
-
-	// no validation rules for Datacenter
-
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ConsulConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, ConsulConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ConsulConfigValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for Key
-
-	if len(errors) > 0 {
-		return ConsulConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// ConsulConfigMultiError is an error wrapping multiple validation errors
-// returned by ConsulConfig.ValidateAll() if the designated constraints aren't met.
-type ConsulConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m ConsulConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m ConsulConfigMultiError) AllErrors() []error { return m }
-
-// ConsulConfigValidationError is the validation error returned by
-// ConsulConfig.Validate if the designated constraints aren't met.
-type ConsulConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e ConsulConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e ConsulConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e ConsulConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e ConsulConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e ConsulConfigValidationError) ErrorName() string { return "ConsulConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e ConsulConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sConsulConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = ConsulConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = ConsulConfigValidationError{}
-
-// Validate checks the field values on EtcdConfig with the rules defined in the
-// proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *EtcdConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on EtcdConfig with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in EtcdConfigMultiError, or
-// nil if none found.
-func (m *EtcdConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *EtcdConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Username
-
-	// no validation rules for Password
-
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, EtcdConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, EtcdConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return EtcdConfigValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for Key
-
-	// no validation rules for Namespace
-
-	if len(errors) > 0 {
-		return EtcdConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// EtcdConfigMultiError is an error wrapping multiple validation errors
-// returned by EtcdConfig.ValidateAll() if the designated constraints aren't met.
-type EtcdConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m EtcdConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m EtcdConfigMultiError) AllErrors() []error { return m }
-
-// EtcdConfigValidationError is the validation error returned by
-// EtcdConfig.Validate if the designated constraints aren't met.
-type EtcdConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e EtcdConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e EtcdConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e EtcdConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e EtcdConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e EtcdConfigValidationError) ErrorName() string { return "EtcdConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e EtcdConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sEtcdConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = EtcdConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = EtcdConfigValidationError{}
-
-// Validate checks the field values on NacosConfig with the rules defined in
-// the proto definition for this message. If any rules are violated, the first
-// error encountered is returned, or nil if there are no violations.
-func (m *NacosConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on NacosConfig with the rules defined in
-// the proto definition for this message. If any rules are violated, the
-// result is a list of violation errors wrapped in NacosConfigMultiError, or
-// nil if none found.
-func (m *NacosConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *NacosConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Addr
-
-	// no validation rules for Port
-
-	// no validation rules for Namespace
-
-	// no validation rules for Group
-
-	// no validation rules for Username
-
-	// no validation rules for Password
-
-	if all {
-		switch v := interface{}(m.GetTimeout()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, NacosConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		case interface{ Validate() error }:
-			if err := v.Validate(); err != nil {
-				errors = append(errors, NacosConfigValidationError{
-					field:  "Timeout",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
-			}
-		}
-	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return NacosConfigValidationError{
-				field:  "Timeout",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
-	}
-
-	// no validation rules for DataId
-
-	if len(errors) > 0 {
-		return NacosConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// NacosConfigMultiError is an error wrapping multiple validation errors
-// returned by NacosConfig.ValidateAll() if the designated constraints aren't met.
-type NacosConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m NacosConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m NacosConfigMultiError) AllErrors() []error { return m }
-
-// NacosConfigValidationError is the validation error returned by
-// NacosConfig.Validate if the designated constraints aren't met.
-type NacosConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e NacosConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e NacosConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e NacosConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e NacosConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e NacosConfigValidationError) ErrorName() string { return "NacosConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e NacosConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sNacosConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = NacosConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = NacosConfigValidationError{}
-
-// Validate checks the field values on KubernetesConfig with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *KubernetesConfig) Validate() error {
-	return m.validate(false)
-}
-
-// ValidateAll checks the field values on KubernetesConfig with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// KubernetesConfigMultiError, or nil if none found.
-func (m *KubernetesConfig) ValidateAll() error {
-	return m.validate(true)
-}
-
-func (m *KubernetesConfig) validate(all bool) error {
-	if m == nil {
-		return nil
-	}
-
-	var errors []error
-
-	// no validation rules for Enable
-
-	if len(errors) > 0 {
-		return KubernetesConfigMultiError(errors)
-	}
-
-	return nil
-}
-
-// KubernetesConfigMultiError is an error wrapping multiple validation errors
-// returned by KubernetesConfig.ValidateAll() if the designated constraints
-// aren't met.
-type KubernetesConfigMultiError []error
-
-// Error returns a concatenation of all the error messages it wraps.
-func (m KubernetesConfigMultiError) Error() string {
-	msgs := make([]string, 0, len(m))
-	for _, err := range m {
-		msgs = append(msgs, err.Error())
-	}
-	return strings.Join(msgs, "; ")
-}
-
-// AllErrors returns a list of validation violation errors.
-func (m KubernetesConfigMultiError) AllErrors() []error { return m }
-
-// KubernetesConfigValidationError is the validation error returned by
-// KubernetesConfig.Validate if the designated constraints aren't met.
-type KubernetesConfigValidationError struct {
-	field  string
-	reason string
-	cause  error
-	key    bool
-}
-
-// Field function returns field value.
-func (e KubernetesConfigValidationError) Field() string { return e.field }
-
-// Reason function returns reason value.
-func (e KubernetesConfigValidationError) Reason() string { return e.reason }
-
-// Cause function returns cause value.
-func (e KubernetesConfigValidationError) Cause() error { return e.cause }
-
-// Key function returns key value.
-func (e KubernetesConfigValidationError) Key() bool { return e.key }
-
-// ErrorName returns error name.
-func (e KubernetesConfigValidationError) ErrorName() string { return "KubernetesConfigValidationError" }
-
-// Error satisfies the builtin error interface
-func (e KubernetesConfigValidationError) Error() string {
-	cause := ""
-	if e.cause != nil {
-		cause = fmt.Sprintf(" | caused by: %v", e.cause)
-	}
-
-	key := ""
-	if e.key {
-		key = "key for "
-	}
-
-	return fmt.Sprintf(
-		"invalid %sKubernetesConfig.%s: %s%s",
-		key,
-		e.field,
-		e.reason,
-		cause)
-}
-
-var _ error = KubernetesConfigValidationError{}
-
-var _ interface {
-	Field() string
-	Reason() string
-	Key() bool
-	Cause() error
-	ErrorName() string
-} = KubernetesConfigValidationError{}
-
 // Validate checks the field values on Server with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -2533,6 +2015,524 @@ var _ interface {
 	ErrorName() string
 } = ConfigValidationError{}
 
+// Validate checks the field values on ConsulConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *ConsulConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ConsulConfig with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ConsulConfigMultiError, or
+// nil if none found.
+func (m *ConsulConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ConsulConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Addr
+
+	// no validation rules for Scheme
+
+	// no validation rules for Token
+
+	// no validation rules for Datacenter
+
+	if all {
+		switch v := interface{}(m.GetTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ConsulConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ConsulConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ConsulConfigValidationError{
+				field:  "Timeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Key
+
+	if len(errors) > 0 {
+		return ConsulConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// ConsulConfigMultiError is an error wrapping multiple validation errors
+// returned by ConsulConfig.ValidateAll() if the designated constraints aren't met.
+type ConsulConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ConsulConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ConsulConfigMultiError) AllErrors() []error { return m }
+
+// ConsulConfigValidationError is the validation error returned by
+// ConsulConfig.Validate if the designated constraints aren't met.
+type ConsulConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ConsulConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ConsulConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ConsulConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ConsulConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ConsulConfigValidationError) ErrorName() string { return "ConsulConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ConsulConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sConsulConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ConsulConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ConsulConfigValidationError{}
+
+// Validate checks the field values on EtcdConfig with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *EtcdConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on EtcdConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in EtcdConfigMultiError, or
+// nil if none found.
+func (m *EtcdConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *EtcdConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Username
+
+	// no validation rules for Password
+
+	if all {
+		switch v := interface{}(m.GetTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, EtcdConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, EtcdConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return EtcdConfigValidationError{
+				field:  "Timeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for Key
+
+	// no validation rules for Namespace
+
+	if len(errors) > 0 {
+		return EtcdConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// EtcdConfigMultiError is an error wrapping multiple validation errors
+// returned by EtcdConfig.ValidateAll() if the designated constraints aren't met.
+type EtcdConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m EtcdConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m EtcdConfigMultiError) AllErrors() []error { return m }
+
+// EtcdConfigValidationError is the validation error returned by
+// EtcdConfig.Validate if the designated constraints aren't met.
+type EtcdConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e EtcdConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e EtcdConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e EtcdConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e EtcdConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e EtcdConfigValidationError) ErrorName() string { return "EtcdConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e EtcdConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sEtcdConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = EtcdConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = EtcdConfigValidationError{}
+
+// Validate checks the field values on NacosConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *NacosConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on NacosConfig with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in NacosConfigMultiError, or
+// nil if none found.
+func (m *NacosConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *NacosConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Addr
+
+	// no validation rules for Port
+
+	// no validation rules for Namespace
+
+	// no validation rules for Group
+
+	// no validation rules for Username
+
+	// no validation rules for Password
+
+	if all {
+		switch v := interface{}(m.GetTimeout()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, NacosConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, NacosConfigValidationError{
+					field:  "Timeout",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetTimeout()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return NacosConfigValidationError{
+				field:  "Timeout",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	// no validation rules for DataId
+
+	if len(errors) > 0 {
+		return NacosConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// NacosConfigMultiError is an error wrapping multiple validation errors
+// returned by NacosConfig.ValidateAll() if the designated constraints aren't met.
+type NacosConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m NacosConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m NacosConfigMultiError) AllErrors() []error { return m }
+
+// NacosConfigValidationError is the validation error returned by
+// NacosConfig.Validate if the designated constraints aren't met.
+type NacosConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e NacosConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e NacosConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e NacosConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e NacosConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e NacosConfigValidationError) ErrorName() string { return "NacosConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e NacosConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sNacosConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = NacosConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = NacosConfigValidationError{}
+
+// Validate checks the field values on KubernetesConfig with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *KubernetesConfig) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on KubernetesConfig with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// KubernetesConfigMultiError, or nil if none found.
+func (m *KubernetesConfig) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *KubernetesConfig) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Enable
+
+	if len(errors) > 0 {
+		return KubernetesConfigMultiError(errors)
+	}
+
+	return nil
+}
+
+// KubernetesConfigMultiError is an error wrapping multiple validation errors
+// returned by KubernetesConfig.ValidateAll() if the designated constraints
+// aren't met.
+type KubernetesConfigMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m KubernetesConfigMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m KubernetesConfigMultiError) AllErrors() []error { return m }
+
+// KubernetesConfigValidationError is the validation error returned by
+// KubernetesConfig.Validate if the designated constraints aren't met.
+type KubernetesConfigValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e KubernetesConfigValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e KubernetesConfigValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e KubernetesConfigValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e KubernetesConfigValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e KubernetesConfigValidationError) ErrorName() string { return "KubernetesConfigValidationError" }
+
+// Error satisfies the builtin error interface
+func (e KubernetesConfigValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sKubernetesConfig.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = KubernetesConfigValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = KubernetesConfigValidationError{}
+
 // Validate checks the field values on Trace with the rules defined in the
 // proto definition for this message. If any rules are violated, the first
 // error encountered is returned, or nil if there are no violations.
@@ -2555,6 +2555,12 @@ func (m *Trace) validate(all bool) error {
 	var errors []error
 
 	// no validation rules for Endpoint
+
+	// no validation rules for Insecure
+
+	// no validation rules for SamplingRatio
+
+	// no validation rules for CaPath
 
 	if len(errors) > 0 {
 		return TraceMultiError(errors)
