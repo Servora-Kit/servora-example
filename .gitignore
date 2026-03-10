@@ -51,6 +51,7 @@ tmp/
 .opencode/
 
 # Environment files
+.env
 .env.local
 
 # Frontend
