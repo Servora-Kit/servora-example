@@ -25,14 +25,13 @@ services:
       - servora-network
 
   jaeger:
-    image: jaegertracing/all-in-one:latest
+    image: jaegertracing/jaeger:latest
     container_name: servora_jaeger
     restart: unless-stopped
     environment:
-      COLLECTOR_OTLP_ENABLED: "true"
+      JAEGER_LISTEN_HOST: 0.0.0.0
     ports:
       - "16686:16686"
-      - "14269:14269"
     networks:
       - servora-network
 
