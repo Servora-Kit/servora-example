@@ -10,7 +10,7 @@
 #### Scenario: 单个服务生成
 
 - **WHEN** 用户执行 `svr gen gorm servora`
-- **THEN** 系统读取 `app/servora/service/configs/config.yaml` 配置
+- **THEN** 系统读取 `app/servora/service/configs/local/` 目录下的配置文件
 - **THEN** 系统连接配置中指定的数据库
 - **THEN** 系统生成 DAO 代码到 `app/servora/service/internal/data/gorm/dao`
 - **THEN** 系统生成 PO 代码到 `app/servora/service/internal/data/gorm/po`
@@ -43,14 +43,14 @@
 
 #### Scenario: 配置文件不存在
 
-- **WHEN** 用户执行 `svr gen gorm servora` 但配置文件不存在
-- **THEN** 系统返回错误 "config file not found at app/servora/service/configs/config.yaml"
-- **THEN** 系统提示用户确保服务有有效的 config.yaml 文件
+- **WHEN** 用户执行 `svr gen gorm servora` 但配置目录不存在
+- **THEN** 系统返回错误 "config directory not found at app/servora/service/configs/local/"
+- **THEN** 系统提示用户确保服务有有效的 configs/local/ 目录
 
 #### Scenario: 数据库配置缺失
 
 - **WHEN** 用户执行 `svr gen gorm servora` 但配置中没有 data.database 配置
-- **THEN** 系统返回错误 "no database config found in app/servora/service/configs/config.yaml"
+- **THEN** 系统返回错误 "no database config found in app/servora/service/configs/local/"
 - **THEN** 系统提供示例配置说明如何添加数据库配置
 
 #### Scenario: 数据库连接失败
