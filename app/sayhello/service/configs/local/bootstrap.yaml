@@ -1,6 +1,6 @@
 server:
   grpc:
-    addr: "0.0.0.0:9001"
+    addr: "0.0.0.0:8002"
     timeout: 10s
 
 app:
@@ -11,6 +11,12 @@ app:
     max_size: 20
     max_age: 30
     max_backups: 10
+
+trace:
+  endpoint: "localhost:4317"
+
+metrics:
+  enable: true
 
 registry:
   consul:
@@ -23,9 +29,3 @@ discovery:
     addr: "${DISCOVERY_CONSUL_ADDR:localhost:8500}"
     scheme: "${DISCOVERY_CONSUL_SCHEME:http}"
     datacenter: "${DISCOVERY_CONSUL_DC:dc1}"
-
-trace:
-  endpoint: "${TRACE_ENDPOINT:localhost:4317}"
-
-metrics:
-  enable: ${METRICS_ENABLE:true}

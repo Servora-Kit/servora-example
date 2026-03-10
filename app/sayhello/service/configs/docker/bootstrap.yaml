@@ -1,0 +1,31 @@
+server:
+  grpc:
+    addr: "0.0.0.0:8002"
+    timeout: 10s
+
+app:
+  env: "dev"
+  log:
+    level: 0
+    filename: "./logs/sayhello.service.log"
+    max_size: 20
+    max_age: 30
+    max_backups: 10
+
+trace:
+  endpoint: "otel-collector:4317"
+
+metrics:
+  enable: true
+
+registry:
+  consul:
+    addr: "consul:8500"
+    scheme: "http"
+    datacenter: "dc1"
+
+discovery:
+  consul:
+    addr: "consul:8500"
+    scheme: "http"
+    datacenter: "dc1"
