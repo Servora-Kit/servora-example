@@ -20,32 +20,18 @@ ifeq "$(GOPATH)" ""
   $(error Please set the environment variable GOPATH before running `make`)
 endif
 
-FAIL_ON_STDOUT := awk '{ print } END { if (NR > 0) { exit 1 } }'
-
-GO_CMD     := GO111MODULE=on go
-GIT_CMD    := git
-DOCKER_CMD := docker
-
-ARCH   := "`uname -s`"
-LINUX  := "Linux"
-MAC    := "Darwin"
-
 DEFAULT_VERSION ?= $(SERVICE_APP_VERSION)
+REPO_GIT_DIR := $(MKFILE_DIR).git
+
+CYAN := \033[0;36m
+GREEN := \033[0;32m
+RESET := \033[0m
 
 ifeq ($(OS),Windows_NT)
     IS_WINDOWS := TRUE
 endif
 
-ifneq (git,)
-	GIT_EXIST := TRUE
-endif
-
-ifneq ("$(wildcard .git)", "")
-	HAS_DOTGIT := TRUE
-endif
-
-ifeq ($(GIT_EXIST),TRUE)
-ifeq ($(HAS_DOTGIT),TRUE)
+ifneq (,$(wildcard $(REPO_GIT_DIR)))
 	# CUR_TAG is the last git tag plus the delta from the current commit to the tag
 	# e.g. v1.5.5-<nr of commits since>-g<current git sha>
 	CUR_TAG ?= $(shell git describe --tags --first-parent 2>/dev/null || echo "dev")
@@ -54,10 +40,9 @@ ifeq ($(HAS_DOTGIT),TRUE)
     # e.g. v1.5.5
     LAST_TAG ?= $(shell git describe --match "v*" --abbrev=0 --tags --first-parent 2>/dev/null || echo "v0.0.1")
 
-    # VERSION is the last git tag without the 'v'
-    # e.g. 1.5.5
-    VERSION ?= $(shell git describe --match "v*" --abbrev=0 --tags --first-parent 2>/dev/null | cut -c 2- || echo "0.0.1")
-endif
+	# VERSION is the last git tag without the 'v'
+	# e.g. 1.5.5
+	VERSION ?= $(shell git describe --match "v*" --abbrev=0 --tags --first-parent 2>/dev/null | cut -c 2- || echo "0.0.1")
 endif
 
 CUR_TAG  ?= $(DEFAULT_VERSION)
@@ -65,8 +50,9 @@ LAST_TAG ?= v$(DEFAULT_VERSION)
 VERSION  ?= $(DEFAULT_VERSION)
 
 # GOFLAGS is the flags for the go compiler.
-LDFLAGS ?= -X main.version=$(VERSION)
+LDFLAGS ?= -X main.Version=$(VERSION) -X main.Name=$(SERVICE_NAME).service
 GOFLAGS ?=
+BUILD_CMD = @go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o ./bin/ ./...
 
 APP_RELATIVE_PATH := $(shell a=`basename $$PWD` && cd .. && b=`basename $$PWD` && echo $$b/$$a)
 SERVICE_NAME      := $(shell a=`basename $$PWD` && cd .. && b=`basename $$PWD` && echo $$b)
@@ -75,10 +61,10 @@ APP_NAME          := $(shell echo $(APP_RELATIVE_PATH) | sed -En "s/\//-/p")
 # Detect service-specific OpenAPI config file
 # Format: buf.{service_name}.openapi.gen.yaml
 OPENAPI_CONFIG := buf.$(SERVICE_NAME).openapi.gen.yaml
-CONF ?= ./configs/config.yaml
+CONF ?= ./configs/local/
 RUN_DEPS ?= api openapi
 
-.PHONY: build clean gen wire api openapi run app help env gen.gorm gen.ent
+.PHONY: build _build clean gen wire api openapi run app help env gen.gorm gen.ent
 
 # show environment variables
 env:
@@ -97,17 +83,11 @@ env:
 	@echo "OPENAPI_CONFIG: $(OPENAPI_CONFIG)"
 
 # build golang application
-build: api openapi
-ifneq ("$(wildcard ./cmd)","")
-	@go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o ./bin/ ./...
-else
-	@echo "No cmd directory found, skipping build for $(SERVICE_NAME)"
-endif
+build: gen _build
 
-# build golang application only
-build_only:
+_build:
 ifneq ("$(wildcard ./cmd)","")
-	@go build $(GOFLAGS) -ldflags "$(LDFLAGS)" -o ./bin/ ./...
+	$(BUILD_CMD)
 else
 	@echo "No cmd directory found, skipping build for $(SERVICE_NAME)"
 endif
@@ -117,7 +97,7 @@ run: $(RUN_DEPS)
 	-@go run $(GOFLAGS) -ldflags "$(LDFLAGS)" ./cmd/server -conf $(CONF)
 
 # build service app
-app: api openapi wire build
+app: build
 
 # clean build files
 clean:
@@ -169,12 +149,12 @@ help:
 	@echo " make [target]"
 	@echo ""
 	@echo "Targets:"
-	@awk '/^[a-zA-Z\-_0-9]+:/ { \
+	@awk '/^[a-zA-Z\-_0-9\.]+:/ { \
 	helpMessage = match(lastLine, /^# (.*)/); \
 		if (helpMessage) { \
 			helpCommand = substr($$1, 0, index($$1, ":")-1); \
 			helpMessage = substr(lastLine, RSTART + 2, RLENGTH); \
-			printf "\033[36m%-22s\033[0m %s\n", helpCommand,helpMessage; \
+			printf "$(GREEN)%-20s$(RESET) %s\n", helpCommand,helpMessage; \
 		} \
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)

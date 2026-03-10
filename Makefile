@@ -30,6 +30,7 @@ BUF_TS_GEN_TEMPLATE := buf.typescript.gen.yaml
 
 # Find all service Makefiles in app directory
 SRCS_MK := $(foreach dir, app, $(wildcard $(dir)/*/*/Makefile))
+SERVICE_DIRS := $(dir $(realpath $(SRCS_MK)))
 
 # Go environment
 GOPATH := $(shell go env GOPATH)
@@ -55,17 +56,26 @@ RESET := \033[0m
 COMPOSE := docker compose
 COMPOSE_FILES := -f docker-compose.yaml
 COMPOSE_DEV_FILES := -f docker-compose.yaml -f docker-compose.dev.yaml
+DOCKER_BAKE_FILE := docker-bake.hcl
+BAKE_TARGETS ?= default
 MICROSERVICES := servora sayhello
 INFRA_SERVICES := consul db redis otel-collector jaeger loki prometheus grafana
+COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
+COMPOSE_STACK_DOWN := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans
+COMPOSE_STACK_RESET := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes
+
+define run-in-service-dirs
+	@$(foreach dir,$(SERVICE_DIRS),cd $(dir) && $(MAKE) $(1);)
+endef
 
 # ============================================================================
 # MAIN TARGETS
 # ============================================================================
 
-.PHONY: help env init plugin cli dep vendor test cover vet lint.go lint.proto
-.PHONY: wire ent gen api api-go api-ts openapi build build_only all clean
-.PHONY: compose.build compose.up compose.rebuild compose.down compose.ps compose.logs
-.PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.down compose.dev.logs
+.PHONY: help env init plugin cli dep vendor test cover vet lint.go lint.proto buf-update
+.PHONY: wire ent gen api api-go api-ts openapi build all clean
+.PHONY: compose.build compose.up compose.rebuild compose.stop compose.down compose.reset compose.ps compose.logs
+.PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
 
 # show environment variables
 env:
@@ -129,17 +139,13 @@ lint.go:
 # generate wire code for all services
 wire:
 	@echo "$(CYAN)Generating wire code for all services...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make wire;\
-    )
+	$(call run-in-service-dirs,wire)
 	@echo "$(GREEN)✓ Wire code generated$(RESET)"
 
 # generate ent code for services that define data/generate.go
 ent:
 	@echo "$(CYAN)Generating ent code for all services...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make gen.ent;\
-    )
+	$(call run-in-service-dirs,gen.ent)
 	@echo "$(GREEN)✓ Ent code generated$(RESET)"
 
 # generate all code
@@ -163,9 +169,7 @@ api-ts:
 # generate protobuf api OpenAPI v3 docs for all services
 openapi:
 	@echo "$(CYAN)Generating OpenAPI documentation for all services...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make openapi;\
-    )
+	$(call run-in-service-dirs,openapi)
 	@echo "$(GREEN)✓ OpenAPI documentation generated$(RESET)"
 
 # lint protobuf files
@@ -181,78 +185,73 @@ buf-update:
 	@echo "$(GREEN)✓ Buf dependencies updated$(RESET)"
 
 # build all service applications
-build: api openapi ent
+build: gen
 	@echo "$(CYAN)Building all services...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make build;\
-    )
-	@echo "$(GREEN)✓ All services built$(RESET)"
-
-# only build all service applications without generating api and openapi
-build_only:
-	@echo "$(CYAN)Building all services (without code generation)...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make build_only;\
-    )
+	$(call run-in-service-dirs,_build)
 	@echo "$(GREEN)✓ All services built$(RESET)"
 
 # generate & build all service applications
 all:
 	@echo "$(CYAN)Generating and building all services...$(RESET)"
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make app;\
-    )
+	$(call run-in-service-dirs,app)
 	@echo "$(GREEN)✓ All services generated and built$(RESET)"
 
 # build production images for microservices
 compose.build:
-	@echo "$(CYAN)Build production images: $(MICROSERVICES)$(RESET)"
-	@docker build -f app/servora/service/Dockerfile -t servora-micro/servora-service:latest .
-	@docker build -f app/sayhello/service/Dockerfile -t servora-micro/sayhello-service:latest .
+	@echo "$(CYAN)Build production images via Bake: $(BAKE_TARGETS) (version: $(VERSION))$(RESET)"
+	@VERSION=$(VERSION) docker buildx bake --file $(DOCKER_BAKE_FILE) $(BAKE_TARGETS)
 	@echo "$(GREEN)✓ Production images built$(RESET)"
 
-# start production compose stack (infra + microservices)
+# start infrastructure compose stack
 compose.up:
-	@echo "$(CYAN)Compose up (prod): $(INFRA_SERVICES) $(MICROSERVICES)$(RESET)"
-	@$(COMPOSE) $(COMPOSE_FILES) up -d $(INFRA_SERVICES) $(MICROSERVICES)
-	@echo "$(GREEN)✓ Production compose services started$(RESET)"
+	@echo "$(CYAN)Compose infra up: $(INFRA_SERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_FILES) up -d $(INFRA_SERVICES)
+	@echo "$(GREEN)✓ Infrastructure services started$(RESET)"
 
-# rebuild production images and restart production compose stack
+# rebuild production images and ensure infrastructure is running
 compose.rebuild:
 	@$(MAKE) compose.build
 	@$(MAKE) compose.up
-	@echo "$(GREEN)✓ Production compose services rebuilt and started$(RESET)"
+	@echo "$(GREEN)✓ Production images rebuilt and infrastructure started$(RESET)"
 
-# stop production compose stack
+# stop infrastructure compose stack
+compose.stop:
+	@$(COMPOSE) $(COMPOSE_FILES) stop $(INFRA_SERVICES)
+
+# remove local compose stack containers/networks
 compose.down:
-	@$(COMPOSE) $(COMPOSE_FILES) stop $(INFRA_SERVICES) $(MICROSERVICES)
+	@$(COMPOSE_STACK_DOWN)
 
-# show production compose stack status
+# remove local compose stack containers/networks/volumes
+compose.reset:
+	@$(COMPOSE_STACK_RESET)
+
+# show infrastructure compose stack status
 compose.ps:
-	@$(COMPOSE) $(COMPOSE_FILES) ps $(INFRA_SERVICES) $(MICROSERVICES)
+	@$(COMPOSE) $(COMPOSE_FILES) ps $(INFRA_SERVICES)
 
-# tail logs for production compose stack
+# tail logs for infrastructure compose stack
 compose.logs:
-	@$(COMPOSE) $(COMPOSE_FILES) logs -f $(INFRA_SERVICES) $(MICROSERVICES)
+	@$(COMPOSE) $(COMPOSE_FILES) logs -f $(INFRA_SERVICES)
 
 # build Air-based development images for microservices
 compose.dev.build:
-		@echo "$(CYAN)Compose dev build: $(MICROSERVICES)$(RESET)"
-		@$(COMPOSE) $(COMPOSE_DEV_FILES) build $(MICROSERVICES)
-		@echo "$(GREEN)✓ Compose dev images built$(RESET)"
+	@echo "$(CYAN)Compose dev build: $(MICROSERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) build $(MICROSERVICES)
+	@echo "$(GREEN)✓ Compose dev images built$(RESET)"
 
 # start full development compose stack (infra + Air microservices) and tail logs
 compose.dev:
-	@echo "$(CYAN)Compose dev start: $(INFRA_SERVICES) $(MICROSERVICES)$(RESET)"
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(INFRA_SERVICES) $(MICROSERVICES)
+	@echo "$(CYAN)Compose dev start: $(COMPOSE_STACK_SERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(COMPOSE_STACK_SERVICES)
 	@echo "$(GREEN)✓ Compose dev full stack started, tailing logs...$(RESET)"
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(INFRA_SERVICES) $(MICROSERVICES)
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(COMPOSE_STACK_SERVICES)
 
-# start Air-based development containers in background
+# start Air-based development stack in background
 compose.dev.up:
-	@echo "$(CYAN)Compose dev up (Air): $(MICROSERVICES)$(RESET)"
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(MICROSERVICES)
-	@echo "$(GREEN)✓ Compose dev services started$(RESET)"
+	@echo "$(CYAN)Compose dev up: $(COMPOSE_STACK_SERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(COMPOSE_STACK_SERVICES)
+	@echo "$(GREEN)✓ Compose dev stack started$(RESET)"
 
 # restart Air-based development containers to force fresh startup build
 compose.dev.restart:
@@ -260,25 +259,31 @@ compose.dev.restart:
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) restart $(MICROSERVICES)
 	@echo "$(GREEN)✓ Compose dev services restarted$(RESET)"
 
-# tail logs for Air-based development containers
+# tail logs for Air-based development stack
 compose.dev.logs:
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(MICROSERVICES)
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(COMPOSE_STACK_SERVICES)
 
-# show Air-based development containers status
+# show Air-based development stack status
 compose.dev.ps:
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) ps $(MICROSERVICES)
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) ps $(COMPOSE_STACK_SERVICES)
 
-# stop Air-based development containers
+# stop Air-based development stack without removing containers
+compose.dev.stop:
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) stop $(COMPOSE_STACK_SERVICES)
+
+# remove Air-based development stack containers/networks
 compose.dev.down:
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) stop $(MICROSERVICES)
+	@$(COMPOSE_STACK_DOWN)
+
+# remove Air-based development stack containers/networks/volumes
+compose.dev.reset:
+	@$(COMPOSE_STACK_RESET)
 
 # clean build artifacts
 clean:
 	@echo "$(CYAN)Cleaning build artifacts...$(RESET)"
 	@rm -rf api/gen/go
-	@$(foreach dir, $(dir $(realpath $(SRCS_MK))),\
-      cd $(dir) && make clean;\
-    )
+	$(call run-in-service-dirs,clean)
 	@echo "$(GREEN)✓ Clean complete$(RESET)"
 
 # show help
@@ -296,7 +301,7 @@ help:
 		if (helpMessage) { \
 			helpCommand = substr($$1, 0, index($$1, ":")-1); \
 			helpMessage = substr(lastLine, RSTART + 2, RLENGTH); \
-			printf "  $(GREEN)%-15s$(RESET) %s\n", helpCommand,helpMessage; \
+			printf "  $(GREEN)%-20s$(RESET) %s\n", helpCommand,helpMessage; \
 		} \
 	} \
 	{ lastLine = $$0 }' $(MAKEFILE_LIST)
