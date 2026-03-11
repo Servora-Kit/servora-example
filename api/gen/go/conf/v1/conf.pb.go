@@ -1825,16 +1825,21 @@ func (x *Data_Client_GRPC) GetTimeout() *durationpb.Duration {
 	return nil
 }
 
+// JWT 配置（RS256 非对称签名）
+//
+// IAM 签发端需配置 private_key_path 或 private_key_pem（二选一，path 优先）。
+// 消费端只需配置 issuer_url，通过 OIDC Discovery 自动获取 JWKS。
 type App_Jwt struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AccessSecret  string                 `protobuf:"bytes,1,opt,name=access_secret,json=accessSecret,proto3" json:"access_secret,omitempty"`     // Access Token密钥
-	RefreshSecret string                 `protobuf:"bytes,2,opt,name=refresh_secret,json=refreshSecret,proto3" json:"refresh_secret,omitempty"`  // Refresh Token密钥
-	AccessExpire  int32                  `protobuf:"varint,3,opt,name=access_expire,json=accessExpire,proto3" json:"access_expire,omitempty"`    // Access Token过期时间，单位秒
-	RefreshExpire int32                  `protobuf:"varint,4,opt,name=refresh_expire,json=refreshExpire,proto3" json:"refresh_expire,omitempty"` // Refresh Token过期时间，单位秒
-	Issuer        string                 `protobuf:"bytes,5,opt,name=issuer,proto3" json:"issuer,omitempty"`                                     // JWT签发者
-	Audience      string                 `protobuf:"bytes,6,opt,name=audience,proto3" json:"audience,omitempty"`                                 // JWT受众
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	PrivateKeyPath string                 `protobuf:"bytes,1,opt,name=private_key_path,json=privateKeyPath,proto3" json:"private_key_path,omitempty"` // RSA 私钥文件路径（PEM 格式）
+	PrivateKeyPem  string                 `protobuf:"bytes,2,opt,name=private_key_pem,json=privateKeyPem,proto3" json:"private_key_pem,omitempty"`    // RSA 私钥内联 PEM（用于 K8s Secret 等场景）
+	AccessExpire   int32                  `protobuf:"varint,3,opt,name=access_expire,json=accessExpire,proto3" json:"access_expire,omitempty"`        // Access Token 过期时间（秒）
+	RefreshExpire  int32                  `protobuf:"varint,4,opt,name=refresh_expire,json=refreshExpire,proto3" json:"refresh_expire,omitempty"`     // Refresh Token 过期时间（秒）
+	Issuer         string                 `protobuf:"bytes,5,opt,name=issuer,proto3" json:"issuer,omitempty"`                                         // JWT 签发者（iss claim）
+	Audience       string                 `protobuf:"bytes,6,opt,name=audience,proto3" json:"audience,omitempty"`                                     // JWT 受众（aud claim）
+	IssuerUrl      string                 `protobuf:"bytes,7,opt,name=issuer_url,json=issuerUrl,proto3" json:"issuer_url,omitempty"`                  // OIDC Discovery 基础 URL（消费端配置）
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *App_Jwt) Reset() {
@@ -1867,16 +1872,16 @@ func (*App_Jwt) Descriptor() ([]byte, []int) {
 	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6, 0}
 }
 
-func (x *App_Jwt) GetAccessSecret() string {
+func (x *App_Jwt) GetPrivateKeyPath() string {
 	if x != nil {
-		return x.AccessSecret
+		return x.PrivateKeyPath
 	}
 	return ""
 }
 
-func (x *App_Jwt) GetRefreshSecret() string {
+func (x *App_Jwt) GetPrivateKeyPem() string {
 	if x != nil {
-		return x.RefreshSecret
+		return x.PrivateKeyPem
 	}
 	return ""
 }
@@ -1905,6 +1910,13 @@ func (x *App_Jwt) GetIssuer() string {
 func (x *App_Jwt) GetAudience() string {
 	if x != nil {
 		return x.Audience
+	}
+	return ""
+}
+
+func (x *App_Jwt) GetIssuerUrl() string {
+	if x != nil {
+		return x.IssuerUrl
 	}
 	return ""
 }
@@ -2068,21 +2080,23 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x1a\n" +
 	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\x81\x05\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xa6\x05\n" +
 	"\x03App\x12\x10\n" +
 	"\x03env\x18\x01 \x01(\tR\x03env\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
 	"\aversion\x18\x03 \x01(\tR\aversion\x12\"\n" +
 	"\x03jwt\x18\x04 \x01(\v2\x10.conf.v1.App.JwtR\x03jwt\x12\"\n" +
 	"\x03log\x18\x05 \x01(\v2\x10.conf.v1.App.LogR\x03log\x126\n" +
-	"\bmetadata\x18\x06 \x03(\v2\x1a.conf.v1.App.MetadataEntryR\bmetadata\x1a\xd1\x01\n" +
-	"\x03Jwt\x12#\n" +
-	"\raccess_secret\x18\x01 \x01(\tR\faccessSecret\x12%\n" +
-	"\x0erefresh_secret\x18\x02 \x01(\tR\rrefreshSecret\x12#\n" +
+	"\bmetadata\x18\x06 \x03(\v2\x1a.conf.v1.App.MetadataEntryR\bmetadata\x1a\xf6\x01\n" +
+	"\x03Jwt\x12(\n" +
+	"\x10private_key_path\x18\x01 \x01(\tR\x0eprivateKeyPath\x12&\n" +
+	"\x0fprivate_key_pem\x18\x02 \x01(\tR\rprivateKeyPem\x12#\n" +
 	"\raccess_expire\x18\x03 \x01(\x05R\faccessExpire\x12%\n" +
 	"\x0erefresh_expire\x18\x04 \x01(\x05R\rrefreshExpire\x12\x16\n" +
 	"\x06issuer\x18\x05 \x01(\tR\x06issuer\x12\x1a\n" +
-	"\baudience\x18\x06 \x01(\tR\baudience\x1a\xa8\x01\n" +
+	"\baudience\x18\x06 \x01(\tR\baudience\x12\x1d\n" +
+	"\n" +
+	"issuer_url\x18\a \x01(\tR\tissuerUrl\x1a\xa8\x01\n" +
 	"\x03Log\x12\x14\n" +
 	"\x05level\x18\x01 \x01(\x05R\x05level\x12\x1a\n" +
 	"\bfilename\x18\x02 \x01(\tR\bfilename\x12\x19\n" +

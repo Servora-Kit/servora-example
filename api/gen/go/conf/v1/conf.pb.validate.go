@@ -3976,9 +3976,9 @@ func (m *App_Jwt) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for AccessSecret
+	// no validation rules for PrivateKeyPath
 
-	// no validation rules for RefreshSecret
+	// no validation rules for PrivateKeyPem
 
 	// no validation rules for AccessExpire
 
@@ -3987,6 +3987,8 @@ func (m *App_Jwt) validate(all bool) error {
 	// no validation rules for Issuer
 
 	// no validation rules for Audience
+
+	// no validation rules for IssuerUrl
 
 	if len(errors) > 0 {
 		return App_JwtMultiError(errors)

@@ -122,13 +122,18 @@ message Data {
 
 // 应用配置
 message App {
+  // JWT 配置（RS256 非对称签名）
+  //
+  // IAM 签发端需配置 private_key_path 或 private_key_pem（二选一，path 优先）。
+  // 消费端只需配置 issuer_url，通过 OIDC Discovery 自动获取 JWKS。
   message Jwt {
-    string access_secret = 1; // Access Token密钥
-    string refresh_secret = 2; // Refresh Token密钥
-    int32 access_expire = 3; // Access Token过期时间，单位秒
-    int32 refresh_expire = 4; // Refresh Token过期时间，单位秒
-    string issuer = 5; // JWT签发者
-    string audience = 6; // JWT受众
+    string private_key_path = 1; // RSA 私钥文件路径（PEM 格式）
+    string private_key_pem = 2;  // RSA 私钥内联 PEM（用于 K8s Secret 等场景）
+    int32 access_expire = 3;     // Access Token 过期时间（秒）
+    int32 refresh_expire = 4;    // Refresh Token 过期时间（秒）
+    string issuer = 5;           // JWT 签发者（iss claim）
+    string audience = 6;         // JWT 受众（aud claim）
+    string issuer_url = 7;       // OIDC Discovery 基础 URL（消费端配置）
   }
   message Log {
     int32 level = 1; // 0:debug, 1:info, 2:warn, 3:error, 4:fatal
