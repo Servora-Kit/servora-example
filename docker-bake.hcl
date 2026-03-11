@@ -11,14 +11,14 @@ target "_common" {
   }
 }
 
-target "servora" {
+target "iam" {
   inherits = ["_common"]
   args = {
-    SERVICE_NAME = "servora"
+    SERVICE_NAME = "iam"
   }
   tags = [
-    "servora/servora-service:${VERSION}",
-    "servora/servora-service:latest",
+    "servora/iam-service:${VERSION}",
+    "servora/iam-service:latest",
   ]
 }
 
@@ -34,5 +34,5 @@ target "sayhello" {
 }
 
 group "default" {
-  targets = ["servora", "sayhello"]
+  targets = ["iam", "sayhello"]
 }

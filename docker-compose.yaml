@@ -49,7 +49,7 @@ services:
       start_period: 10s
     volumes:
       - ./manifests/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
-      - servora-logs:/var/log/servora:ro
+      - iam-logs:/var/log/iam:ro
       - sayhello-logs:/var/log/sayhello:ro
     ports:
       - "4317:4317"
@@ -128,7 +128,7 @@ services:
       - "5432:5432"
     volumes:
       - servora-db-data:/var/lib/postgresql/data
-      - ./app/servora/service/manifests/SQL/model_pgsql.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - ./app/iam/service/manifests/SQL/model_pgsql.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - servora-network
 
@@ -156,7 +156,7 @@ volumes:
   servora-loki-data:
   servora-prometheus-data:
   servora-grafana-data:
-  servora-logs:
+  iam-logs:
   sayhello-logs:
 
 networks:

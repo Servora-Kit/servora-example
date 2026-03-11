@@ -5,15 +5,15 @@ receivers:
         endpoint: 0.0.0.0:4317
       http:
         endpoint: 0.0.0.0:4318
-  filelog/servora:
+  filelog/iam:
     include:
-      - /var/log/servora/servora.service.log
+      - /var/log/iam/iam.service.log
     start_at: end
     include_file_path: true
     operators:
       - type: json_parser
     resource:
-      service.name: servora.service
+      service.name: iam.service
   filelog/sayhello:
     include:
       - /var/log/sayhello/sayhello.service.log
@@ -61,6 +61,6 @@ service:
       processors: [batch]
       exporters: [otlp_grpc/jaeger]
     logs:
-      receivers: [filelog/servora, filelog/sayhello]
+      receivers: [filelog/iam, filelog/sayhello]
       processors: [attributes/log_hints, batch]
       exporters: [otlp_http/loki]

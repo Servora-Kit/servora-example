@@ -2,7 +2,7 @@ FROM --platform=$BUILDPLATFORM golang:1.26.0-alpine AS builder
 
 ARG TARGETOS=linux
 ARG TARGETARCH
-ARG SERVICE_NAME=servora
+ARG SERVICE_NAME=iam
 ARG VERSION=dev
 
 RUN apk add --no-cache git
@@ -12,7 +12,7 @@ WORKDIR /src
 COPY go.work go.work.sum ./
 COPY go.mod go.sum ./
 COPY api/gen/go.mod api/gen/go.sum ./api/gen/
-COPY app/servora/service/go.mod app/servora/service/go.sum ./app/servora/service/
+COPY app/iam/service/go.mod app/iam/service/go.sum ./app/iam/service/
 COPY app/sayhello/service/go.mod app/sayhello/service/go.sum ./app/sayhello/service/
 
 RUN go mod download
@@ -25,7 +25,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
 
 FROM alpine:3.19
 
-ARG SERVICE_NAME=servora
+ARG SERVICE_NAME=iam
 
 RUN apk add --no-cache ca-certificates tzdata
 

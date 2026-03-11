@@ -4,5 +4,5 @@ use (
 	.
 	./api/gen
 	./app/sayhello/service
-	./app/servora/service
+	./app/iam/service
 )

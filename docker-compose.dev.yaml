@@ -1,11 +1,11 @@
 services:
-  servora:
-    container_name: servora
+  iam:
+    container_name: iam
     pull_policy: never
     build:
       context: .
       dockerfile: Dockerfile.air
-    working_dir: /workspace/app/servora/service
+    working_dir: /workspace/app/iam/service
     command: ["air", "-c", ".air.toml"]
     environment:
       TZ: Asia/Shanghai
@@ -15,8 +15,8 @@ services:
       - ./:/workspace
       - servora_go_mod_cache:/go/pkg/mod
       - servora_go_build_cache:/go/cache
-      - ./app/servora/service/configs/docker/:/app/configs/:ro
-      - servora-logs:/app/logs
+      - ./app/iam/service/configs/docker/:/app/configs/:ro
+      - iam-logs:/app/logs
     ports:
       - "8000:8000"
       - "8001:8001"
