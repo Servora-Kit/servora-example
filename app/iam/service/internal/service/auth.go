@@ -2,11 +2,13 @@ package service
 
 import (
 	"context"
-	"fmt"
+
+	"github.com/go-kratos/kratos/v2/errors"
 
 	authpb "github.com/Servora-Kit/servora/api/gen/go/auth/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/pkg/actor"
 )
 
 // AuthService is a auth service.
@@ -24,7 +26,7 @@ func NewAuthService(uc *biz.AuthUsecase) *AuthService {
 func (s *AuthService) SignupByEmail(ctx context.Context, req *authpb.SignupByEmailRequest) (*authpb.SignupByEmailResponse, error) {
 	// 参数校验
 	if req.Password != req.PasswordConfirm {
-		return nil, fmt.Errorf("password and confirm password do not match")
+		return nil, errors.BadRequest("INVALID_REQUEST", "password and confirm password do not match")
 	}
 	// 调用 biz 层
 	user, err := s.uc.SignupByEmail(ctx, &entity.User{
@@ -52,7 +54,7 @@ func (s *AuthService) LoginByEmailPassword(ctx context.Context, req *authpb.Logi
 	}
 	tokenPair, err := s.uc.LoginByEmailPassword(ctx, user)
 	if err != nil {
-		return nil, fmt.Errorf("login by email password failed: %w", err)
+		return nil, err
 	}
 	return &authpb.LoginByEmailPasswordResponse{
 		AccessToken:  tokenPair.AccessToken,
@@ -65,7 +67,7 @@ func (s *AuthService) LoginByEmailPassword(ctx context.Context, req *authpb.Logi
 func (s *AuthService) RefreshToken(ctx context.Context, req *authpb.RefreshTokenRequest) (*authpb.RefreshTokenResponse, error) {
 	tokenPair, err := s.uc.RefreshToken(ctx, req.RefreshToken)
 	if err != nil {
-		return nil, fmt.Errorf("refresh token failed: %w", err)
+		return nil, err
 	}
 	return &authpb.RefreshTokenResponse{
 		AccessToken:  tokenPair.AccessToken,
@@ -76,11 +78,38 @@ func (s *AuthService) RefreshToken(ctx context.Context, req *authpb.RefreshToken
 
 // Logout invalidates the refresh token
 func (s *AuthService) Logout(ctx context.Context, req *authpb.LogoutRequest) (*authpb.LogoutResponse, error) {
-	err := s.uc.Logout(ctx, req.RefreshToken)
-	if err != nil {
-		return nil, fmt.Errorf("logout failed: %w", err)
+	if err := s.uc.Logout(ctx, req.RefreshToken); err != nil {
+		return nil, err
 	}
 	return &authpb.LogoutResponse{
 		Success: true,
 	}, nil
+}
+
+func (s *AuthService) ChangePassword(ctx context.Context, req *authpb.ChangePasswordRequest) (*authpb.ChangePasswordResponse, error) {
+	if req.NewPassword != req.NewPasswordConfirm {
+		return nil, errors.BadRequest("INVALID_REQUEST", "new password and confirm password do not match")
+	}
+
+	a, ok := actor.FromContext(ctx)
+	if !ok || a.Type() != actor.TypeUser {
+		return nil, errors.Unauthorized("UNAUTHORIZED", "user not authenticated")
+	}
+
+	if err := s.uc.ChangePassword(ctx, a.ID(), req.CurrentPassword, req.NewPassword); err != nil {
+		return nil, err
+	}
+	return &authpb.ChangePasswordResponse{Success: true}, nil
+}
+
+func (s *AuthService) LogoutAllDevices(ctx context.Context, _ *authpb.LogoutAllDevicesRequest) (*authpb.LogoutAllDevicesResponse, error) {
+	a, ok := actor.FromContext(ctx)
+	if !ok || a.Type() != actor.TypeUser {
+		return nil, errors.Unauthorized("UNAUTHORIZED", "user not authenticated")
+	}
+
+	if err := s.uc.LogoutAllDevices(ctx, a.ID()); err != nil {
+		return nil, err
+	}
+	return &authpb.LogoutAllDevicesResponse{Success: true}, nil
 }

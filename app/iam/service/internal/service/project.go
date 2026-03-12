@@ -6,6 +6,7 @@ import (
 	projectpb "github.com/Servora-Kit/servora/api/gen/go/project/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/pkg/pagination"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -41,7 +42,7 @@ func (s *ProjectService) GetProject(ctx context.Context, req *projectpb.GetProje
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, req *projectpb.ListProjectsRequest) (*projectpb.ListProjectsResponse, error) {
-	page, pageSize := extractPagination(req.Pagination)
+	page, pageSize := pagination.ExtractPage(req.Pagination)
 	projects, total, err := s.uc.List(ctx, req.OrganizationId, page, pageSize)
 	if err != nil {
 		return nil, err
@@ -52,7 +53,7 @@ func (s *ProjectService) ListProjects(ctx context.Context, req *projectpb.ListPr
 	}
 	return &projectpb.ListProjectsResponse{
 		Projects:   items,
-		Pagination: buildPaginationResp(total, page, pageSize),
+		Pagination: pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 
@@ -110,7 +111,7 @@ func (s *ProjectService) RemoveMember(ctx context.Context, req *projectpb.Remove
 }
 
 func (s *ProjectService) ListMembers(ctx context.Context, req *projectpb.ListMembersRequest) (*projectpb.ListMembersResponse, error) {
-	page, pageSize := extractPagination(req.Pagination)
+	page, pageSize := pagination.ExtractPage(req.Pagination)
 	members, total, err := s.uc.ListMembers(ctx, req.ProjectId, page, pageSize)
 	if err != nil {
 		return nil, err
@@ -121,7 +122,7 @@ func (s *ProjectService) ListMembers(ctx context.Context, req *projectpb.ListMem
 	}
 	return &projectpb.ListMembersResponse{
 		Members:    items,
-		Pagination: buildPaginationResp(total, page, pageSize),
+		Pagination: pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 

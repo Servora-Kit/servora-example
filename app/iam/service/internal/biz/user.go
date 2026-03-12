@@ -3,11 +3,13 @@ package biz
 import (
 	"context"
 
+	"github.com/go-kratos/kratos/v2/errors"
+
 	authpb "github.com/Servora-Kit/servora/api/gen/go/auth/service/v1"
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
-	paginationpb "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	dataent "github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/logger"
 	"github.com/Servora-Kit/servora/pkg/openfga"
@@ -18,6 +20,7 @@ type UserRepo interface {
 	GetUserById(context.Context, string) (*entity.User, error)
 	DeleteUser(context.Context, *entity.User) (*entity.User, error)
 	PurgeUser(context.Context, *entity.User) (*entity.User, error)
+	PurgeCascade(ctx context.Context, id string) error
 	RestoreUser(context.Context, string) (*entity.User, error)
 	GetUserByIdIncludingDeleted(context.Context, string) (*entity.User, error)
 	UpdateUser(context.Context, *entity.User) (*entity.User, error)
@@ -71,25 +74,49 @@ func (uc *UserUsecase) CurrentUserInfo(ctx context.Context) (*entity.User, error
 }
 
 func (uc *UserUsecase) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	origUser, err := uc.repo.GetUserById(ctx, user.ID)
-	if err != nil {
-		return nil, userpb.ErrorUserNotFound("user not found: %v", err)
+	a, ok := actor.FromContext(ctx)
+	if !ok || a.Type() != actor.TypeUser {
+		return nil, authpb.ErrorUnauthorized("user not authenticated")
 	}
 
-	if user.Name != origUser.Name {
+	origUser, err := uc.repo.GetUserById(ctx, user.ID)
+	if err != nil {
+		if dataent.IsNotFound(err) {
+			return nil, userpb.ErrorUserNotFound("user not found")
+		}
+		uc.log.Errorf("get user failed: %v", err)
+		return nil, errors.InternalServer("INTERNAL", "internal error")
+	}
+
+	callerUser, err := uc.repo.GetUserById(ctx, a.ID())
+	if err != nil {
+		uc.log.Errorf("get caller user failed: %v", err)
+		return nil, errors.InternalServer("INTERNAL", "internal error")
+	}
+	isAdmin := callerUser.Role == "admin" || callerUser.Role == "operator"
+	if !isAdmin && a.ID() != user.ID {
+		return nil, authpb.ErrorUnauthorized("you can only update your own information")
+	}
+	if !isAdmin && user.Role != "" && user.Role != callerUser.Role {
+		return nil, authpb.ErrorUnauthorized("you do not have permission to change your role")
+	}
+
+	if user.Name != "" && user.Name != origUser.Name {
 		userWithSameName, err := uc.authRepo.GetUserByUserName(ctx, user.Name)
-		if err != nil {
-			return nil, authpb.ErrorUserNotFound("failed to check username: %v", err)
+		if err != nil && !dataent.IsNotFound(err) {
+			uc.log.Errorf("check username failed: %v", err)
+			return nil, errors.InternalServer("INTERNAL", "internal error")
 		}
 		if userWithSameName != nil {
 			return nil, authpb.ErrorUserAlreadyExists("username already exists")
 		}
 	}
 
-	if user.Email != origUser.Email {
+	if user.Email != "" && user.Email != origUser.Email {
 		userWithSameEmail, err := uc.authRepo.GetUserByEmail(ctx, user.Email)
-		if err != nil {
-			return nil, authpb.ErrorUserNotFound("failed to check email: %v", err)
+		if err != nil && !dataent.IsNotFound(err) {
+			uc.log.Errorf("check email failed: %v", err)
+			return nil, errors.InternalServer("INTERNAL", "internal error")
 		}
 		if userWithSameEmail != nil {
 			return nil, authpb.ErrorUserAlreadyExists("email already exists")
@@ -98,7 +125,8 @@ func (uc *UserUsecase) UpdateUser(ctx context.Context, user *entity.User) (*enti
 
 	updatedUser, err := uc.repo.UpdateUser(ctx, user)
 	if err != nil {
-		return nil, userpb.ErrorUpdateUserFailed("failed to update user: %v", err)
+		uc.log.Errorf("update user failed: %v", err)
+		return nil, userpb.ErrorUpdateUserFailed("failed to update user")
 	}
 	return updatedUser, nil
 }
@@ -110,40 +138,19 @@ func (uc *UserUsecase) SaveUser(ctx context.Context, user *entity.User) (*entity
 
 	savedUser, err := uc.repo.SaveUser(ctx, user)
 	if err != nil {
-		return nil, userpb.ErrorSaveUserFailed("failed to save user: %v", err)
+		uc.log.Errorf("save user failed: %v", err)
+		return nil, userpb.ErrorSaveUserFailed("failed to save user")
 	}
 	return savedUser, nil
 }
 
-func (uc *UserUsecase) ListUsers(ctx context.Context, pagination *paginationpb.PaginationRequest) ([]*entity.User, *paginationpb.PaginationResponse, error) {
-	page := int32(1)
-	pageSize := int32(20)
-
-	if pagination != nil {
-		if pageMode := pagination.GetPage(); pageMode != nil {
-			if pageMode.Page > 0 {
-				page = pageMode.Page
-			}
-			if pageMode.PageSize > 0 {
-				pageSize = pageMode.PageSize
-			}
-		}
-	}
-
+func (uc *UserUsecase) ListUsers(ctx context.Context, page, pageSize int32) ([]*entity.User, int64, error) {
 	users, total, err := uc.repo.ListUsers(ctx, page, pageSize)
 	if err != nil {
-		return nil, nil, userpb.ErrorUserNotFound("failed to list users: %v", err)
+		uc.log.Errorf("list users failed: %v", err)
+		return nil, 0, errors.InternalServer("INTERNAL", "internal error")
 	}
-
-	return users, &paginationpb.PaginationResponse{
-		Mode: &paginationpb.PaginationResponse_Page{
-			Page: &paginationpb.PagePaginationResponse{
-				Total:    total,
-				Page:     page,
-				PageSize: pageSize,
-			},
-		},
-	}, nil
+	return users, total, nil
 }
 
 func (uc *UserUsecase) DeleteUser(ctx context.Context, user *entity.User) (bool, error) {
@@ -151,59 +158,58 @@ func (uc *UserUsecase) DeleteUser(ctx context.Context, user *entity.User) (bool,
 		return false, userpb.ErrorUserNotFound("user not found")
 	}
 	if _, err := uc.repo.DeleteUser(ctx, user); err != nil {
-		return false, userpb.ErrorDeleteUserFailed("soft delete: %v", err)
+		uc.log.Errorf("soft delete user failed: %v", err)
+		return false, userpb.ErrorDeleteUserFailed("failed to delete user")
 	}
 	return true, nil
 }
 
 func (uc *UserUsecase) PurgeUser(ctx context.Context, user *entity.User) (bool, error) {
-	orgMemberships, _ := uc.orgRepo.ListMembershipsByUserID(ctx, user.ID)
-	if uc.fga != nil && len(orgMemberships) > 0 {
-		var tuples []openfga.Tuple
-		for _, m := range orgMemberships {
-			tuples = append(tuples,
-				openfga.Tuple{User: "user:" + user.ID, Relation: m.Role, Object: "organization:" + m.OrganizationID},
-				openfga.Tuple{User: "user:" + user.ID, Relation: "member", Object: "organization:" + m.OrganizationID},
-			)
-		}
-		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
-			uc.log.Warnf("delete user org FGA tuples: %v", err)
-		}
-	}
-	if _, err := uc.orgRepo.DeleteMembershipsByUserID(ctx, user.ID); err != nil {
-		uc.log.Warnf("delete user org memberships: %v", err)
-	}
-
-	projMemberships, _ := uc.projRepo.ListMembershipsByUserID(ctx, user.ID)
-	if uc.fga != nil && len(projMemberships) > 0 {
-		var tuples []openfga.Tuple
-		for _, m := range projMemberships {
-			tuples = append(tuples,
-				openfga.Tuple{User: "user:" + user.ID, Relation: m.Role, Object: "project:" + m.ProjectID},
-			)
-		}
-		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
-			uc.log.Warnf("delete user project FGA tuples: %v", err)
-		}
-	}
-	if _, err := uc.projRepo.DeleteMembershipsByUserID(ctx, user.ID); err != nil {
-		uc.log.Warnf("delete user project memberships: %v", err)
-	}
-
-	if uc.fga != nil && uc.platID != "" {
-		_ = uc.fga.DeleteTuples(ctx,
-			openfga.Tuple{User: "user:" + user.ID, Relation: "admin", Object: "platform:" + uc.platID},
-		)
-	}
+	uc.purgeUserFGA(ctx, user.ID)
 
 	if err := uc.authRepo.DeleteUserRefreshTokens(ctx, user.ID); err != nil {
 		uc.log.Warnf("delete user refresh tokens: %v", err)
 	}
 
-	if _, err := uc.repo.PurgeUser(ctx, user); err != nil {
-		return false, userpb.ErrorDeleteUserFailed("failed to delete user: %v", err)
+	if err := uc.repo.PurgeCascade(ctx, user.ID); err != nil {
+		uc.log.Errorf("purge user failed: %v", err)
+		return false, userpb.ErrorDeleteUserFailed("failed to delete user")
 	}
 	return true, nil
+}
+
+func (uc *UserUsecase) purgeUserFGA(ctx context.Context, userID string) {
+	if uc.fga == nil {
+		return
+	}
+	var tuples []openfga.Tuple
+
+	orgMemberships, _ := uc.orgRepo.ListMembershipsByUserID(ctx, userID)
+	for _, m := range orgMemberships {
+		tuples = append(tuples,
+			openfga.Tuple{User: "user:" + userID, Relation: m.Role, Object: "organization:" + m.OrganizationID},
+			openfga.Tuple{User: "user:" + userID, Relation: "member", Object: "organization:" + m.OrganizationID},
+		)
+	}
+
+	projMemberships, _ := uc.projRepo.ListMembershipsByUserID(ctx, userID)
+	for _, m := range projMemberships {
+		tuples = append(tuples,
+			openfga.Tuple{User: "user:" + userID, Relation: m.Role, Object: "project:" + m.ProjectID},
+		)
+	}
+
+	if uc.platID != "" {
+		tuples = append(tuples,
+			openfga.Tuple{User: "user:" + userID, Relation: "admin", Object: "platform:" + uc.platID},
+		)
+	}
+
+	if len(tuples) > 0 {
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("purge user %s FGA tuples: %v", userID, err)
+		}
+	}
 }
 
 func (uc *UserUsecase) RestoreUser(ctx context.Context, id string) (*entity.User, error) {
@@ -214,15 +220,21 @@ func (uc *UserUsecase) RestoreUser(ctx context.Context, id string) (*entity.User
 }
 
 func (uc *UserUsecase) checkUserExists(ctx context.Context, user *entity.User) error {
-	if existingUser, err := uc.authRepo.GetUserByUserName(ctx, user.Name); err != nil {
-		return authpb.ErrorUserNotFound("failed to check username: %v", err)
-	} else if existingUser != nil {
+	existingUser, err := uc.authRepo.GetUserByUserName(ctx, user.Name)
+	if err != nil && !dataent.IsNotFound(err) {
+		uc.log.Errorf("check username failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
+	}
+	if existingUser != nil {
 		return authpb.ErrorUserAlreadyExists("username already exists")
 	}
 
-	if existingEmail, err := uc.authRepo.GetUserByEmail(ctx, user.Email); err != nil {
-		return authpb.ErrorUserNotFound("failed to check email: %v", err)
-	} else if existingEmail != nil {
+	existingEmail, err := uc.authRepo.GetUserByEmail(ctx, user.Email)
+	if err != nil && !dataent.IsNotFound(err) {
+		uc.log.Errorf("check email failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
+	}
+	if existingEmail != nil {
 		return authpb.ErrorUserAlreadyExists("email already exists")
 	}
 	return nil

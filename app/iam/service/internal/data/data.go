@@ -3,18 +3,16 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 
+	entsql "entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
+
 	entdrv "github.com/Servora-Kit/servora/pkg/ent"
 	"github.com/Servora-Kit/servora/pkg/governance/registry"
-	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/openfga"
 	"github.com/Servora-Kit/servora/pkg/redis"
 	"github.com/Servora-Kit/servora/pkg/transport/client"
 
@@ -24,7 +22,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var ProviderSet = wire.NewSet(registry.NewDiscovery, NewDBClient, NewPlatformRootID, NewRedis, NewData, NewAuthRepo, NewUserRepo, NewTestRepo, NewOrganizationRepo, NewProjectRepo)
+var ProviderSet = wire.NewSet(registry.NewDiscovery, NewEntDriver, NewDBClient, NewPlatformRootID, NewRedis, NewData, NewAuthRepo, NewUserRepo, NewTestRepo, NewOrganizationRepo, NewProjectRepo)
 
 type Data struct {
 	entClient *ent.Client
@@ -49,12 +47,47 @@ func NewData(entClient *ent.Client, c *conf.Data, l logger.Logger, client client
 	}, cleanup, nil
 }
 
-func NewDBClient(cfg *conf.Data, app *conf.App, l logger.Logger) (*ent.Client, error) {
-	driver, err := entdrv.NewDriver(cfg)
-	if err != nil {
-		return nil, err
-	}
+type txKey struct{}
 
+// Ent returns the ent client for the current context. If a transaction is
+// active (started by InTx), returns the transactional client; otherwise the
+// default client.
+func (d *Data) Ent(ctx context.Context) *ent.Client {
+	if c, ok := ctx.Value(txKey{}).(*ent.Client); ok {
+		return c
+	}
+	return d.entClient
+}
+
+// InTx executes fn within a database transaction. The transactional client is
+// propagated through the context so that repo methods using Ent(ctx) will
+// automatically participate in the transaction.
+func (d *Data) InTx(ctx context.Context, fn func(ctx context.Context) error) error {
+	tx, err := d.entClient.Tx(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if v := recover(); v != nil {
+			_ = tx.Rollback()
+			panic(v)
+		}
+	}()
+	txCtx := context.WithValue(ctx, txKey{}, tx.Client())
+	if err := fn(txCtx); err != nil {
+		if rerr := tx.Rollback(); rerr != nil {
+			return fmt.Errorf("%w: rolling back transaction: %v", err, rerr)
+		}
+		return err
+	}
+	return tx.Commit()
+}
+
+func NewEntDriver(cfg *conf.Data) (*entsql.Driver, error) {
+	return entdrv.NewDriver(cfg)
+}
+
+func NewDBClient(driver *entsql.Driver, app *conf.App, l logger.Logger) (*ent.Client, error) {
 	opts := []ent.Option{
 		ent.Driver(driver),
 		ent.Log(logger.EntLogFuncFrom(l, "ent/data/iam-service")),
@@ -80,104 +113,6 @@ func NewDBClient(cfg *conf.Data, app *conf.App, l logger.Logger) (*ent.Client, e
 	}
 
 	return ec, nil
-}
-
-func NewPlatformRootID(ec *ent.Client, fga *openfga.Client, app *conf.App, l logger.Logger) (biz.PlatformRootID, error) {
-	ctx := context.Background()
-	p, err := ec.Platform.Query().Where(platform.Slug("root")).Only(ctx)
-	if err != nil {
-		return "", errors.New("platform root not found: " + err.Error())
-	}
-	platID := p.ID.String()
-
-	if fga != nil {
-		seedPlatformAdminFGA(ctx, ec, fga, platID, app.GetSeed(), l)
-	}
-
-	return biz.PlatformRootID(platID), nil
-}
-
-func seedPlatform(ctx context.Context, ec *ent.Client) (string, error) {
-	p, err := ec.Platform.Query().Where(platform.Slug("root")).Only(ctx)
-	if err == nil {
-		return p.ID.String(), nil
-	}
-	if !ent.IsNotFound(err) {
-		return "", err
-	}
-	p, err = ec.Platform.Create().
-		SetSlug("root").
-		SetName("Platform Root").
-		SetType("system").
-		Save(ctx)
-	if err != nil {
-		return "", err
-	}
-	return p.ID.String(), nil
-}
-
-func seedPlatformAdmin(ctx context.Context, ec *ent.Client, seed *conf.App_Seed) error {
-	if seed == nil || seed.AdminEmail == "" {
-		return nil
-	}
-
-	exists, err := ec.User.Query().Where(user.EmailEQ(seed.AdminEmail)).Exist(ctx)
-	if err != nil {
-		return err
-	}
-	if exists {
-		return nil
-	}
-
-	pw, err := helpers.BcryptHash(seed.AdminPassword)
-	if err != nil {
-		return err
-	}
-
-	name := seed.AdminName
-	if name == "" {
-		name = "admin"
-	}
-
-	_, err = ec.User.Create().
-		SetName(name).
-		SetEmail(seed.AdminEmail).
-		SetPassword(pw).
-		SetRole("admin").
-		Save(ctx)
-	return err
-}
-
-func seedPlatformAdminFGA(ctx context.Context, ec *ent.Client, fga *openfga.Client, platID string, seed *conf.App_Seed, l logger.Logger) {
-	seedLog := logger.NewHelper(l, logger.WithModule("seed/data/iam-service"))
-	if seed == nil || seed.AdminEmail == "" {
-		return
-	}
-
-	u, err := ec.User.Query().Where(user.EmailEQ(seed.AdminEmail)).Only(ctx)
-	if err != nil {
-		return
-	}
-
-	userID := u.ID.String()
-	allowed, err := fga.Check(ctx, userID, "admin", "platform", platID)
-	if err != nil {
-		seedLog.Warnf("seed FGA check failed: %v", err)
-		return
-	}
-	if allowed {
-		return
-	}
-
-	if err := fga.WriteTuples(ctx, openfga.Tuple{
-		User:     "user:" + userID,
-		Relation: "admin",
-		Object:   "platform:" + platID,
-	}); err != nil {
-		seedLog.Warnf("seed platform admin FGA tuple: %v", err)
-		return
-	}
-	seedLog.Infof("seeded platform admin FGA tuple for %s", seed.AdminEmail)
 }
 
 func NewRedis(cfg *conf.Data, l logger.Logger) (*redis.Client, func(), error) {

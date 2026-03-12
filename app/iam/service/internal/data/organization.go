@@ -13,6 +13,8 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
@@ -34,7 +36,7 @@ func (r *organizationRepo) Create(ctx context.Context, org *entity.Organization)
 	if err != nil {
 		return nil, fmt.Errorf("invalid platform ID: %w", err)
 	}
-	b := r.data.entClient.Organization.Create().
+	b := r.data.Ent(ctx).Organization.Create().
 		SetPlatformID(platformID).
 		SetName(org.Name).
 		SetSlug(org.Slug)
@@ -53,7 +55,7 @@ func (r *organizationRepo) GetByID(ctx context.Context, id string) (*entity.Orga
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	org, err := r.data.entClient.Organization.Query().
+	org, err := r.data.Ent(ctx).Organization.Query().
 		Where(organization.IDEQ(uid)).
 		Where(organization.DeletedAtIsNil()).
 		Only(ctx)
@@ -64,7 +66,7 @@ func (r *organizationRepo) GetByID(ctx context.Context, id string) (*entity.Orga
 }
 
 func (r *organizationRepo) GetBySlug(ctx context.Context, slug string) (*entity.Organization, error) {
-	org, err := r.data.entClient.Organization.Query().
+	org, err := r.data.Ent(ctx).Organization.Query().
 		Where(organization.SlugEQ(slug)).
 		Where(organization.DeletedAtIsNil()).
 		Only(ctx)
@@ -82,7 +84,7 @@ func (r *organizationRepo) GetByIDs(ctx context.Context, ids []string, page, pag
 		}
 	}
 
-	query := r.data.entClient.Organization.Query().
+	query := r.data.Ent(ctx).Organization.Query().
 		Where(organization.IDIn(uuids...)).
 		Where(organization.DeletedAtIsNil()).
 		Order(organization.ByCreatedAt(sql.OrderDesc()))
@@ -111,7 +113,7 @@ func (r *organizationRepo) ListByUserID(ctx context.Context, userID string, page
 		return nil, 0, fmt.Errorf("invalid user ID: %w", err)
 	}
 
-	memberOrgIDs, err := r.data.entClient.OrganizationMember.Query().
+	memberOrgIDs, err := r.data.Ent(ctx).OrganizationMember.Query().
 		Where(organizationmember.UserIDEQ(uid)).
 		Select(organizationmember.FieldOrganizationID).
 		Strings(ctx)
@@ -126,7 +128,7 @@ func (r *organizationRepo) ListByUserID(ctx context.Context, userID string, page
 		}
 	}
 
-	query := r.data.entClient.Organization.Query().
+	query := r.data.Ent(ctx).Organization.Query().
 		Where(organization.IDIn(orgUUIDs...)).
 		Where(organization.DeletedAtIsNil()).
 		Order(organization.ByCreatedAt(sql.OrderDesc()))
@@ -154,7 +156,7 @@ func (r *organizationRepo) Update(ctx context.Context, org *entity.Organization)
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	b := r.data.entClient.Organization.UpdateOneID(uid)
+	b := r.data.Ent(ctx).Organization.UpdateOneID(uid)
 	if org.Name != "" {
 		b.SetName(org.Name)
 	}
@@ -173,7 +175,7 @@ func (r *organizationRepo) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid organization ID: %w", err)
 	}
-	return r.data.entClient.Organization.UpdateOneID(uid).
+	return r.data.Ent(ctx).Organization.UpdateOneID(uid).
 		SetDeletedAt(time.Now()).
 		Exec(ctx)
 }
@@ -183,7 +185,41 @@ func (r *organizationRepo) Purge(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid organization ID: %w", err)
 	}
-	return r.data.entClient.Organization.DeleteOneID(uid).Exec(ctx)
+	return r.data.Ent(ctx).Organization.DeleteOneID(uid).Exec(ctx)
+}
+
+func (r *organizationRepo) PurgeCascade(ctx context.Context, id string) error {
+	oid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("invalid organization ID: %w", err)
+	}
+	return r.data.InTx(ctx, func(txCtx context.Context) error {
+		c := r.data.Ent(txCtx)
+		projIDs, err := c.Project.Query().
+			Where(project.OrganizationIDEQ(oid)).
+			IDs(txCtx)
+		if err != nil {
+			return err
+		}
+		if len(projIDs) > 0 {
+			if _, err := c.ProjectMember.Delete().
+				Where(projectmember.ProjectIDIn(projIDs...)).
+				Exec(txCtx); err != nil {
+				return err
+			}
+			if _, err := c.Project.Delete().
+				Where(project.IDIn(projIDs...)).
+				Exec(txCtx); err != nil {
+				return err
+			}
+		}
+		if _, err := c.OrganizationMember.Delete().
+			Where(organizationmember.OrganizationIDEQ(oid)).
+			Exec(txCtx); err != nil {
+			return err
+		}
+		return c.Organization.DeleteOneID(oid).Exec(txCtx)
+	})
 }
 
 func (r *organizationRepo) Restore(ctx context.Context, id string) (*entity.Organization, error) {
@@ -191,7 +227,7 @@ func (r *organizationRepo) Restore(ctx context.Context, id string) (*entity.Orga
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	org, err := r.data.entClient.Organization.UpdateOneID(uid).
+	org, err := r.data.Ent(ctx).Organization.UpdateOneID(uid).
 		ClearDeletedAt().
 		Save(ctx)
 	if err != nil {
@@ -205,7 +241,7 @@ func (r *organizationRepo) GetByIDIncludingDeleted(ctx context.Context, id strin
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	org, err := r.data.entClient.Organization.Query().
+	org, err := r.data.Ent(ctx).Organization.Query().
 		Where(organization.IDEQ(uid)).
 		Only(ctx)
 	if err != nil {
@@ -223,7 +259,7 @@ func (r *organizationRepo) AddMember(ctx context.Context, m *entity.Organization
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	created, err := r.data.entClient.OrganizationMember.Create().
+	created, err := r.data.Ent(ctx).OrganizationMember.Create().
 		SetOrganizationID(orgID).
 		SetUserID(userID).
 		SetRole(m.Role).
@@ -243,7 +279,7 @@ func (r *organizationRepo) RemoveMember(ctx context.Context, orgID, userID strin
 	if err != nil {
 		return fmt.Errorf("invalid user ID: %w", err)
 	}
-	_, err = r.data.entClient.OrganizationMember.Delete().
+	_, err = r.data.Ent(ctx).OrganizationMember.Delete().
 		Where(
 			organizationmember.OrganizationIDEQ(oid),
 			organizationmember.UserIDEQ(uid),
@@ -256,7 +292,7 @@ func (r *organizationRepo) ListMembers(ctx context.Context, orgID string, page, 
 	if err != nil {
 		return nil, 0, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	query := r.data.entClient.OrganizationMember.Query().
+	query := r.data.Ent(ctx).OrganizationMember.Query().
 		Where(organizationmember.OrganizationIDEQ(oid)).
 		Order(organizationmember.ByCreatedAt(sql.OrderDesc()))
 
@@ -276,7 +312,7 @@ func (r *organizationRepo) ListMembers(ctx context.Context, orgID string, page, 
 	for i, m := range members {
 		userIDs[i] = m.UserID
 	}
-	users, _ := r.data.entClient.User.Query().Where(user.IDIn(userIDs...)).All(ctx)
+	users, _ := r.data.Ent(ctx).User.Query().Where(user.IDIn(userIDs...)).All(ctx)
 	userMap := make(map[uuid.UUID]*ent.User, len(users))
 	for _, u := range users {
 		userMap[u.ID] = u
@@ -309,7 +345,7 @@ func (r *organizationRepo) GetMember(ctx context.Context, orgID, userID string) 
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	m, err := r.data.entClient.OrganizationMember.Query().
+	m, err := r.data.Ent(ctx).OrganizationMember.Query().
 		Where(
 			organizationmember.OrganizationIDEQ(oid),
 			organizationmember.UserIDEQ(uid),
@@ -329,7 +365,7 @@ func (r *organizationRepo) UpdateMemberRole(ctx context.Context, orgID, userID, 
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	affected, err := r.data.entClient.OrganizationMember.Update().
+	affected, err := r.data.Ent(ctx).OrganizationMember.Update().
 		Where(
 			organizationmember.OrganizationIDEQ(oid),
 			organizationmember.UserIDEQ(uid),
@@ -350,7 +386,7 @@ func (r *organizationRepo) ListAllMembers(ctx context.Context, orgID string) ([]
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	members, err := r.data.entClient.OrganizationMember.Query().
+	members, err := r.data.Ent(ctx).OrganizationMember.Query().
 		Where(organizationmember.OrganizationIDEQ(oid)).All(ctx)
 	if err != nil {
 		return nil, err
@@ -373,7 +409,7 @@ func (r *organizationRepo) DeleteAllMembers(ctx context.Context, orgID string) (
 	if err != nil {
 		return 0, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	return r.data.entClient.OrganizationMember.Delete().
+	return r.data.Ent(ctx).OrganizationMember.Delete().
 		Where(organizationmember.OrganizationIDEQ(oid)).Exec(ctx)
 }
 
@@ -382,7 +418,7 @@ func (r *organizationRepo) ListMembershipsByUserID(ctx context.Context, userID s
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	members, err := r.data.entClient.OrganizationMember.Query().
+	members, err := r.data.Ent(ctx).OrganizationMember.Query().
 		Where(organizationmember.UserIDEQ(uid)).All(ctx)
 	if err != nil {
 		return nil, err
@@ -405,12 +441,12 @@ func (r *organizationRepo) DeleteMembershipsByUserID(ctx context.Context, userID
 	if err != nil {
 		return 0, fmt.Errorf("invalid user ID: %w", err)
 	}
-	return r.data.entClient.OrganizationMember.Delete().
+	return r.data.Ent(ctx).OrganizationMember.Delete().
 		Where(organizationmember.UserIDEQ(uid)).Exec(ctx)
 }
 
 func (r *organizationRepo) enrichMember(ctx context.Context, m *ent.OrganizationMember) (*entity.OrganizationMember, error) {
-	u, err := r.data.entClient.User.Query().Where(user.IDEQ(m.UserID)).Only(ctx)
+	u, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(m.UserID)).Only(ctx)
 	if err != nil {
 		return &entity.OrganizationMember{
 			ID:             m.ID.String(),

@@ -3,6 +3,8 @@ package biz
 import (
 	"context"
 
+	"github.com/go-kratos/kratos/v2/errors"
+
 	orgpb "github.com/Servora-Kit/servora/api/gen/go/organization/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	dataent "github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
@@ -24,6 +26,7 @@ type OrganizationRepo interface {
 	Update(ctx context.Context, org *entity.Organization) (*entity.Organization, error)
 	Delete(ctx context.Context, id string) error
 	Purge(ctx context.Context, id string) error
+	PurgeCascade(ctx context.Context, id string) error
 	Restore(ctx context.Context, id string) (*entity.Organization, error)
 	GetByIDIncludingDeleted(ctx context.Context, id string) (*entity.Organization, error)
 	AddMember(ctx context.Context, m *entity.OrganizationMember) (*entity.OrganizationMember, error)
@@ -67,13 +70,15 @@ func (uc *OrganizationUsecase) Create(ctx context.Context, org *entity.Organizat
 	if _, err := uc.repo.GetBySlug(ctx, org.Slug); err == nil {
 		return nil, orgpb.ErrorOrganizationAlreadyExists("slug '%s' already taken", org.Slug)
 	} else if !dataent.IsNotFound(err) {
-		return nil, orgpb.ErrorOrganizationCreateFailed("check slug: %v", err)
+		uc.log.Errorf("check slug failed: %v", err)
+		return nil, errors.InternalServer("INTERNAL", "internal error")
 	}
 
 	org.PlatformID = uc.platID
 	created, err := uc.repo.Create(ctx, org)
 	if err != nil {
-		return nil, orgpb.ErrorOrganizationCreateFailed("create: %v", err)
+		uc.log.Errorf("create organization failed: %v", err)
+		return nil, orgpb.ErrorOrganizationCreateFailed("failed to create organization")
 	}
 
 	if uc.fga != nil {
@@ -164,7 +169,8 @@ func (uc *OrganizationUsecase) Update(ctx context.Context, org *entity.Organizat
 		if dataent.IsNotFound(err) {
 			return nil, orgpb.ErrorOrganizationNotFound("organization %s not found", org.ID)
 		}
-		return nil, orgpb.ErrorOrganizationUpdateFailed("update: %v", err)
+		uc.log.Errorf("update organization failed: %v", err)
+		return nil, orgpb.ErrorOrganizationUpdateFailed("failed to update organization")
 	}
 	return updated, nil
 }
@@ -174,10 +180,12 @@ func (uc *OrganizationUsecase) Delete(ctx context.Context, id string) error {
 		if dataent.IsNotFound(err) {
 			return orgpb.ErrorOrganizationNotFound("organization %s not found", id)
 		}
-		return orgpb.ErrorOrganizationDeleteFailed("get: %v", err)
+		uc.log.Errorf("get organization failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
 	}
 	if err := uc.repo.Delete(ctx, id); err != nil {
-		return orgpb.ErrorOrganizationDeleteFailed("soft delete: %v", err)
+		uc.log.Errorf("soft delete organization failed: %v", err)
+		return orgpb.ErrorOrganizationDeleteFailed("failed to delete organization")
 	}
 	return nil
 }
@@ -187,39 +195,15 @@ func (uc *OrganizationUsecase) Purge(ctx context.Context, id string) error {
 		if dataent.IsNotFound(err) {
 			return orgpb.ErrorOrganizationNotFound("organization %s not found", id)
 		}
-		return orgpb.ErrorOrganizationDeleteFailed("get: %v", err)
+		uc.log.Errorf("get organization failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
 	}
 
-	projects, err := uc.projRepo.ListAllByOrgID(ctx, id)
-	if err == nil {
-		for _, p := range projects {
-			uc.deleteProjectCascade(ctx, p)
-		}
-	}
+	uc.purgeOrgFGA(ctx, id)
 
-	members, _ := uc.repo.ListAllMembers(ctx, id)
-	if uc.fga != nil && len(members) > 0 {
-		var tuples []openfga.Tuple
-		for _, m := range members {
-			tuples = append(tuples,
-				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "organization:" + id},
-				openfga.Tuple{User: "user:" + m.UserID, Relation: "member", Object: "organization:" + id},
-			)
-		}
-		tuples = append(tuples,
-			openfga.Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + id},
-		)
-		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
-			uc.log.Warnf("delete org FGA tuples: %v", err)
-		}
-	}
-
-	if _, err := uc.repo.DeleteAllMembers(ctx, id); err != nil {
-		uc.log.Warnf("delete org members: %v", err)
-	}
-
-	if err := uc.repo.Purge(ctx, id); err != nil {
-		return orgpb.ErrorOrganizationDeleteFailed("delete: %v", err)
+	if err := uc.repo.PurgeCascade(ctx, id); err != nil {
+		uc.log.Errorf("purge organization failed: %v", err)
+		return orgpb.ErrorOrganizationDeleteFailed("failed to delete organization")
 	}
 	return nil
 }
@@ -234,28 +218,38 @@ func (uc *OrganizationUsecase) Restore(ctx context.Context, id string) (*entity.
 	return uc.repo.Restore(ctx, id)
 }
 
-// deleteProjectCascade handles FGA + member cleanup for a single project during org cascade delete.
-func (uc *OrganizationUsecase) deleteProjectCascade(ctx context.Context, proj *entity.Project) {
-	projMembers, _ := uc.projRepo.ListAllMembers(ctx, proj.ID)
-	if uc.fga != nil {
-		var tuples []openfga.Tuple
+func (uc *OrganizationUsecase) purgeOrgFGA(ctx context.Context, orgID string) {
+	if uc.fga == nil {
+		return
+	}
+	var tuples []openfga.Tuple
+
+	projects, _ := uc.projRepo.ListAllByOrgID(ctx, orgID)
+	for _, p := range projects {
+		projMembers, _ := uc.projRepo.ListAllMembers(ctx, p.ID)
 		for _, m := range projMembers {
 			tuples = append(tuples,
-				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + proj.ID},
+				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + p.ID},
 			)
 		}
 		tuples = append(tuples,
-			openfga.Tuple{User: "organization:" + proj.OrganizationID, Relation: "organization", Object: "project:" + proj.ID},
+			openfga.Tuple{User: "organization:" + p.OrganizationID, Relation: "organization", Object: "project:" + p.ID},
 		)
-		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
-			uc.log.Warnf("cascade delete project %s FGA tuples: %v", proj.ID, err)
-		}
 	}
-	if _, err := uc.projRepo.DeleteAllMembers(ctx, proj.ID); err != nil {
-		uc.log.Warnf("cascade delete project %s members: %v", proj.ID, err)
+
+	members, _ := uc.repo.ListAllMembers(ctx, orgID)
+	for _, m := range members {
+		tuples = append(tuples,
+			openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "organization:" + orgID},
+			openfga.Tuple{User: "user:" + m.UserID, Relation: "member", Object: "organization:" + orgID},
+		)
 	}
-	if err := uc.projRepo.Purge(ctx, proj.ID); err != nil {
-		uc.log.Warnf("cascade delete project %s: %v", proj.ID, err)
+	tuples = append(tuples,
+		openfga.Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + orgID},
+	)
+
+	if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+		uc.log.Warnf("purge org %s FGA tuples: %v", orgID, err)
 	}
 }
 

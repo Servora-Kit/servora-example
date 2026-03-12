@@ -4,9 +4,9 @@ import (
 	"context"
 
 	orgpb "github.com/Servora-Kit/servora/api/gen/go/organization/service/v1"
-	paginationpb "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/pkg/pagination"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -41,7 +41,7 @@ func (s *OrganizationService) GetOrganization(ctx context.Context, req *orgpb.Ge
 }
 
 func (s *OrganizationService) ListOrganizations(ctx context.Context, req *orgpb.ListOrganizationsRequest) (*orgpb.ListOrganizationsResponse, error) {
-	page, pageSize := extractPagination(req.Pagination)
+	page, pageSize := pagination.ExtractPage(req.Pagination)
 	orgs, total, err := s.uc.List(ctx, page, pageSize)
 	if err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ func (s *OrganizationService) ListOrganizations(ctx context.Context, req *orgpb.
 	}
 	return &orgpb.ListOrganizationsResponse{
 		Organizations: items,
-		Pagination:    buildPaginationResp(total, page, pageSize),
+		Pagination:    pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 
@@ -111,7 +111,7 @@ func (s *OrganizationService) RemoveMember(ctx context.Context, req *orgpb.Remov
 }
 
 func (s *OrganizationService) ListMembers(ctx context.Context, req *orgpb.ListMembersRequest) (*orgpb.ListMembersResponse, error) {
-	page, pageSize := extractPagination(req.Pagination)
+	page, pageSize := pagination.ExtractPage(req.Pagination)
 	members, total, err := s.uc.ListMembers(ctx, req.OrganizationId, page, pageSize)
 	if err != nil {
 		return nil, err
@@ -122,7 +122,7 @@ func (s *OrganizationService) ListMembers(ctx context.Context, req *orgpb.ListMe
 	}
 	return &orgpb.ListMembersResponse{
 		Members:    items,
-		Pagination: buildPaginationResp(total, page, pageSize),
+		Pagination: pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 
@@ -154,33 +154,5 @@ func orgMemberToProto(m *entity.OrganizationMember) *orgpb.OrganizationMemberInf
 		UserEmail:      m.UserEmail,
 		Role:           m.Role,
 		CreatedAt:      timestamppb.New(m.CreatedAt),
-	}
-}
-
-func extractPagination(p *paginationpb.PaginationRequest) (int32, int32) {
-	page := int32(1)
-	pageSize := int32(20)
-	if p != nil {
-		if pm := p.GetPage(); pm != nil {
-			if pm.Page > 0 {
-				page = pm.Page
-			}
-			if pm.PageSize > 0 {
-				pageSize = pm.PageSize
-			}
-		}
-	}
-	return page, pageSize
-}
-
-func buildPaginationResp(total int64, page, pageSize int32) *paginationpb.PaginationResponse {
-	return &paginationpb.PaginationResponse{
-		Mode: &paginationpb.PaginationResponse_Page{
-			Page: &paginationpb.PagePaginationResponse{
-				Total:    total,
-				Page:     page,
-				PageSize: pageSize,
-			},
-		},
 	}
 }

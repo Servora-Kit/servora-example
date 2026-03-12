@@ -3,12 +3,11 @@ package service
 import (
 	"context"
 
-	authpb "github.com/Servora-Kit/servora/api/gen/go/auth/service/v1"
-	paginationpb "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/pkg/pagination"
 )
 
 type UserService struct {
@@ -27,14 +26,16 @@ func (s *UserService) CurrentUserInfo(ctx context.Context, req *userpb.CurrentUs
 		return nil, err
 	}
 	return &userpb.CurrentUserInfoResponse{
-		Id:   user.ID,
-		Name: user.Name,
-		Role: user.Role,
+		Id:    user.ID,
+		Name:  user.Name,
+		Email: user.Email,
+		Role:  user.Role,
 	}, nil
 }
 
 func (s *UserService) ListUsers(ctx context.Context, req *userpb.ListUsersRequest) (*userpb.ListUsersResponse, error) {
-	users, pagination, err := s.uc.ListUsers(ctx, req.GetPagination())
+	page, pageSize := pagination.ExtractPage(req.GetPagination())
+	users, total, err := s.uc.ListUsers(ctx, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
@@ -49,55 +50,30 @@ func (s *UserService) ListUsers(ctx context.Context, req *userpb.ListUsersReques
 		})
 	}
 
-	if pagination == nil {
-		pagination = &paginationpb.PaginationResponse{
-			Mode: &paginationpb.PaginationResponse_Page{
-				Page: &paginationpb.PagePaginationResponse{},
-			},
-		}
-	}
-
 	return &userpb.ListUsersResponse{
 		Users:      respUsers,
-		Pagination: pagination,
+		Pagination: pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 
 func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
-	currentUser, err := s.uc.CurrentUserInfo(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	switch currentUser.Role {
-	case "user":
-		if currentUser.ID != req.Id {
-			return nil, authpb.ErrorUnauthorized("you only can update your own information")
-		}
-		if req.Role != "" && req.Role != "user" {
-			return nil, authpb.ErrorUnauthorized("you do not have permission to change your role")
-		}
-	case "admin":
-		// admin can update any user
-	case "operator":
-		// operator can update any user
-	default:
-		return nil, authpb.ErrorUnauthorized("insufficient permissions")
-	}
-
-	user := &entity.User{
+	updated, err := s.uc.UpdateUser(ctx, &entity.User{
 		ID:       req.Id,
 		Name:     req.Name,
 		Email:    req.Email,
 		Password: req.Password,
 		Role:     req.Role,
-	}
-	_, err = s.uc.UpdateUser(ctx, user)
+	})
 	if err != nil {
 		return nil, err
 	}
 	return &userpb.UpdateUserResponse{
-		Success: "true",
+		User: &userpb.UserInfo{
+			Id:    updated.ID,
+			Name:  updated.Name,
+			Email: updated.Email,
+			Role:  updated.Role,
+		},
 	}, nil
 }
 
@@ -122,7 +98,7 @@ func (s *UserService) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequ
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.DeleteUserResponse{Success: success}, err
+	return &userpb.DeleteUserResponse{Success: success}, nil
 }
 
 func (s *UserService) PurgeUser(ctx context.Context, req *userpb.PurgeUserRequest) (*userpb.PurgeUserResponse, error) {

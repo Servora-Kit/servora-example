@@ -10,6 +10,9 @@ import (
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
@@ -35,7 +38,7 @@ func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 		}
 		u.Password = bcryptPassword
 	}
-	b := r.data.entClient.User.Create().
+	b := r.data.Ent(ctx).User.Create().
 		SetName(u.Name).
 		SetEmail(u.Email).
 		SetPassword(u.Password).
@@ -62,7 +65,7 @@ func (r *userRepo) GetUserById(ctx context.Context, id string) (*entity.User, er
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	entUser, err := r.data.entClient.User.Query().Where(user.IDEQ(uid)).Where(user.DeletedAtIsNil()).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Where(user.DeletedAtIsNil()).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +77,7 @@ func (r *userRepo) DeleteUser(ctx context.Context, u *entity.User) (*entity.User
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	err = r.data.entClient.User.UpdateOneID(uid).
+	err = r.data.Ent(ctx).User.UpdateOneID(uid).
 		SetDeletedAt(time.Now()).
 		Exec(ctx)
 	if err != nil {
@@ -88,11 +91,32 @@ func (r *userRepo) PurgeUser(ctx context.Context, u *entity.User) (*entity.User,
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	err = r.data.entClient.User.DeleteOneID(uid).Exec(ctx)
+	err = r.data.Ent(ctx).User.DeleteOneID(uid).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return u, nil
+}
+
+func (r *userRepo) PurgeCascade(ctx context.Context, id string) error {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("invalid user ID: %w", err)
+	}
+	return r.data.InTx(ctx, func(txCtx context.Context) error {
+		c := r.data.Ent(txCtx)
+		if _, err := c.OrganizationMember.Delete().
+			Where(organizationmember.UserIDEQ(uid)).
+			Exec(txCtx); err != nil {
+			return err
+		}
+		if _, err := c.ProjectMember.Delete().
+			Where(projectmember.UserIDEQ(uid)).
+			Exec(txCtx); err != nil {
+			return err
+		}
+		return c.User.DeleteOneID(uid).Exec(txCtx)
+	})
 }
 
 func (r *userRepo) RestoreUser(ctx context.Context, id string) (*entity.User, error) {
@@ -100,7 +124,7 @@ func (r *userRepo) RestoreUser(ctx context.Context, id string) (*entity.User, er
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	u, err := r.data.entClient.User.UpdateOneID(uid).
+	u, err := r.data.Ent(ctx).User.UpdateOneID(uid).
 		ClearDeletedAt().
 		Save(ctx)
 	if err != nil {
@@ -114,7 +138,7 @@ func (r *userRepo) GetUserByIdIncludingDeleted(ctx context.Context, id string) (
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	entUser, err := r.data.entClient.User.Query().Where(user.IDEQ(uid)).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -133,7 +157,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, u *entity.User) (*entity.User
 		}
 		u.Password = bcryptPassword
 	}
-	updated, err := r.data.entClient.User.UpdateOneID(uid).
+	updated, err := r.data.Ent(ctx).User.UpdateOneID(uid).
 		SetName(u.Name).
 		SetEmail(u.Email).
 		SetPassword(u.Password).
@@ -149,7 +173,7 @@ func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([
 	offset := int((page - 1) * pageSize)
 	limit := int(pageSize)
 
-	query := r.data.entClient.User.Query().Where(user.DeletedAtIsNil()).Order(user.ByID(sql.OrderDesc()))
+	query := r.data.Ent(ctx).User.Query().Where(user.DeletedAtIsNil()).Order(user.ByID(sql.OrderDesc()))
 	total, err := query.Clone().Count(ctx)
 	if err != nil {
 		return nil, 0, err
@@ -166,4 +190,14 @@ func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([
 	}
 
 	return users, int64(total), nil
+}
+
+func entUserToEntity(u *ent.User) *entity.User {
+	return &entity.User{
+		ID:       u.ID.String(),
+		Name:     u.Name,
+		Email:    u.Email,
+		Password: u.Password,
+		Role:     u.Role,
+	}
 }

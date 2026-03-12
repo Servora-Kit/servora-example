@@ -34,7 +34,7 @@ func (r *projectRepo) Create(ctx context.Context, p *entity.Project) (*entity.Pr
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	b := r.data.entClient.Project.Create().
+	b := r.data.Ent(ctx).Project.Create().
 		SetOrganizationID(orgID).
 		SetName(p.Name).
 		SetSlug(p.Slug)
@@ -53,7 +53,7 @@ func (r *projectRepo) GetByID(ctx context.Context, id string) (*entity.Project, 
 	if err != nil {
 		return nil, fmt.Errorf("invalid project ID: %w", err)
 	}
-	p, err := r.data.entClient.Project.Query().
+	p, err := r.data.Ent(ctx).Project.Query().
 		Where(project.IDEQ(uid)).
 		Where(project.DeletedAtIsNil()).
 		Only(ctx)
@@ -71,7 +71,7 @@ func (r *projectRepo) GetByIDs(ctx context.Context, ids []string, page, pageSize
 		}
 	}
 
-	query := r.data.entClient.Project.Query().
+	query := r.data.Ent(ctx).Project.Query().
 		Where(project.IDIn(uuids...)).
 		Where(project.DeletedAtIsNil()).
 		Order(project.ByCreatedAt(sql.OrderDesc()))
@@ -99,7 +99,7 @@ func (r *projectRepo) ListByOrgID(ctx context.Context, orgID string, page, pageS
 	if err != nil {
 		return nil, 0, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	query := r.data.entClient.Project.Query().
+	query := r.data.Ent(ctx).Project.Query().
 		Where(project.OrganizationIDEQ(oid)).
 		Where(project.DeletedAtIsNil()).
 		Order(project.ByCreatedAt(sql.OrderDesc()))
@@ -127,7 +127,7 @@ func (r *projectRepo) Update(ctx context.Context, p *entity.Project) (*entity.Pr
 	if err != nil {
 		return nil, fmt.Errorf("invalid project ID: %w", err)
 	}
-	b := r.data.entClient.Project.UpdateOneID(uid)
+	b := r.data.Ent(ctx).Project.UpdateOneID(uid)
 	if p.Name != "" {
 		b.SetName(p.Name)
 	}
@@ -146,7 +146,7 @@ func (r *projectRepo) Delete(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid project ID: %w", err)
 	}
-	return r.data.entClient.Project.UpdateOneID(uid).
+	return r.data.Ent(ctx).Project.UpdateOneID(uid).
 		SetDeletedAt(time.Now()).
 		Exec(ctx)
 }
@@ -156,7 +156,23 @@ func (r *projectRepo) Purge(ctx context.Context, id string) error {
 	if err != nil {
 		return fmt.Errorf("invalid project ID: %w", err)
 	}
-	return r.data.entClient.Project.DeleteOneID(uid).Exec(ctx)
+	return r.data.Ent(ctx).Project.DeleteOneID(uid).Exec(ctx)
+}
+
+func (r *projectRepo) PurgeCascade(ctx context.Context, id string) error {
+	pid, err := uuid.Parse(id)
+	if err != nil {
+		return fmt.Errorf("invalid project ID: %w", err)
+	}
+	return r.data.InTx(ctx, func(txCtx context.Context) error {
+		c := r.data.Ent(txCtx)
+		if _, err := c.ProjectMember.Delete().
+			Where(projectmember.ProjectIDEQ(pid)).
+			Exec(txCtx); err != nil {
+			return err
+		}
+		return c.Project.DeleteOneID(pid).Exec(txCtx)
+	})
 }
 
 func (r *projectRepo) Restore(ctx context.Context, id string) (*entity.Project, error) {
@@ -164,7 +180,7 @@ func (r *projectRepo) Restore(ctx context.Context, id string) (*entity.Project, 
 	if err != nil {
 		return nil, fmt.Errorf("invalid project ID: %w", err)
 	}
-	p, err := r.data.entClient.Project.UpdateOneID(uid).
+	p, err := r.data.Ent(ctx).Project.UpdateOneID(uid).
 		ClearDeletedAt().
 		Save(ctx)
 	if err != nil {
@@ -178,7 +194,7 @@ func (r *projectRepo) GetByIDIncludingDeleted(ctx context.Context, id string) (*
 	if err != nil {
 		return nil, fmt.Errorf("invalid project ID: %w", err)
 	}
-	p, err := r.data.entClient.Project.Query().
+	p, err := r.data.Ent(ctx).Project.Query().
 		Where(project.IDEQ(uid)).
 		Only(ctx)
 	if err != nil {
@@ -196,7 +212,7 @@ func (r *projectRepo) AddMember(ctx context.Context, m *entity.ProjectMember) (*
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	created, err := r.data.entClient.ProjectMember.Create().
+	created, err := r.data.Ent(ctx).ProjectMember.Create().
 		SetProjectID(projID).
 		SetUserID(userID).
 		SetRole(m.Role).
@@ -216,7 +232,7 @@ func (r *projectRepo) RemoveMember(ctx context.Context, projID, userID string) e
 	if err != nil {
 		return fmt.Errorf("invalid user ID: %w", err)
 	}
-	_, err = r.data.entClient.ProjectMember.Delete().
+	_, err = r.data.Ent(ctx).ProjectMember.Delete().
 		Where(
 			projectmember.ProjectIDEQ(pid),
 			projectmember.UserIDEQ(uid),
@@ -229,7 +245,7 @@ func (r *projectRepo) ListMembers(ctx context.Context, projID string, page, page
 	if err != nil {
 		return nil, 0, fmt.Errorf("invalid project ID: %w", err)
 	}
-	query := r.data.entClient.ProjectMember.Query().
+	query := r.data.Ent(ctx).ProjectMember.Query().
 		Where(projectmember.ProjectIDEQ(pid)).
 		Order(projectmember.ByCreatedAt(sql.OrderDesc()))
 
@@ -249,7 +265,7 @@ func (r *projectRepo) ListMembers(ctx context.Context, projID string, page, page
 	for i, m := range members {
 		userIDs[i] = m.UserID
 	}
-	users, _ := r.data.entClient.User.Query().Where(user.IDIn(userIDs...)).All(ctx)
+	users, _ := r.data.Ent(ctx).User.Query().Where(user.IDIn(userIDs...)).All(ctx)
 	userMap := make(map[uuid.UUID]*ent.User, len(users))
 	for _, u := range users {
 		userMap[u.ID] = u
@@ -282,7 +298,7 @@ func (r *projectRepo) GetMember(ctx context.Context, projID, userID string) (*en
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	m, err := r.data.entClient.ProjectMember.Query().
+	m, err := r.data.Ent(ctx).ProjectMember.Query().
 		Where(
 			projectmember.ProjectIDEQ(pid),
 			projectmember.UserIDEQ(uid),
@@ -302,7 +318,7 @@ func (r *projectRepo) UpdateMemberRole(ctx context.Context, projID, userID, role
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	affected, err := r.data.entClient.ProjectMember.Update().
+	affected, err := r.data.Ent(ctx).ProjectMember.Update().
 		Where(
 			projectmember.ProjectIDEQ(pid),
 			projectmember.UserIDEQ(uid),
@@ -323,7 +339,7 @@ func (r *projectRepo) ListAllMembers(ctx context.Context, projID string) ([]*ent
 	if err != nil {
 		return nil, fmt.Errorf("invalid project ID: %w", err)
 	}
-	members, err := r.data.entClient.ProjectMember.Query().
+	members, err := r.data.Ent(ctx).ProjectMember.Query().
 		Where(projectmember.ProjectIDEQ(pid)).All(ctx)
 	if err != nil {
 		return nil, err
@@ -346,7 +362,7 @@ func (r *projectRepo) DeleteAllMembers(ctx context.Context, projID string) (int,
 	if err != nil {
 		return 0, fmt.Errorf("invalid project ID: %w", err)
 	}
-	return r.data.entClient.ProjectMember.Delete().
+	return r.data.Ent(ctx).ProjectMember.Delete().
 		Where(projectmember.ProjectIDEQ(pid)).Exec(ctx)
 }
 
@@ -355,7 +371,7 @@ func (r *projectRepo) ListAllByOrgID(ctx context.Context, orgID string) ([]*enti
 	if err != nil {
 		return nil, fmt.Errorf("invalid organization ID: %w", err)
 	}
-	projects, err := r.data.entClient.Project.Query().
+	projects, err := r.data.Ent(ctx).Project.Query().
 		Where(project.OrganizationIDEQ(oid)).
 		Where(project.DeletedAtIsNil()).
 		All(ctx)
@@ -374,7 +390,7 @@ func (r *projectRepo) ListMembershipsByUserID(ctx context.Context, userID string
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	members, err := r.data.entClient.ProjectMember.Query().
+	members, err := r.data.Ent(ctx).ProjectMember.Query().
 		Where(projectmember.UserIDEQ(uid)).All(ctx)
 	if err != nil {
 		return nil, err
@@ -397,12 +413,12 @@ func (r *projectRepo) DeleteMembershipsByUserID(ctx context.Context, userID stri
 	if err != nil {
 		return 0, fmt.Errorf("invalid user ID: %w", err)
 	}
-	return r.data.entClient.ProjectMember.Delete().
+	return r.data.Ent(ctx).ProjectMember.Delete().
 		Where(projectmember.UserIDEQ(uid)).Exec(ctx)
 }
 
 func (r *projectRepo) enrichMember(ctx context.Context, m *ent.ProjectMember) (*entity.ProjectMember, error) {
-	u, err := r.data.entClient.User.Query().Where(user.IDEQ(m.UserID)).Only(ctx)
+	u, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(m.UserID)).Only(ctx)
 	if err != nil {
 		return &entity.ProjectMember{
 			ID:        m.ID.String(),

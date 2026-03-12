@@ -1,6 +1,8 @@
 package server
 
 import (
+	entsql "entgo.io/ent/dialect/sql"
+
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
@@ -79,9 +81,10 @@ func convertAuthzRules(src map[string]iamv1.AuthzRuleEntry) map[string]svrmw.Aut
 	return dst
 }
 
-func NewHealthHandler(redisClient *redis.Client) *health.Handler {
+func NewHealthHandler(redisClient *redis.Client, drv *entsql.Driver) *health.Handler {
 	return health.NewHandlerWithDefaults(health.DefaultDeps{
 		Redis: redisClient,
+		DB:    drv.DB(),
 	})
 }
 

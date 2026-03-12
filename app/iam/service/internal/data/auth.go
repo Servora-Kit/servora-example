@@ -9,7 +9,6 @@ import (
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
@@ -35,7 +34,7 @@ func (r *authRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 		}
 		u.Password = bcryptPassword
 	}
-	created, err := r.data.entClient.User.
+	created, err := r.data.Ent(ctx).User.
 		Create().
 		SetName(u.Name).
 		SetEmail(u.Email).
@@ -50,7 +49,7 @@ func (r *authRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 }
 
 func (r *authRepo) GetUserByUserName(ctx context.Context, name string) (*entity.User, error) {
-	entUser, err := r.data.entClient.User.Query().Where(user.NameEQ(name)).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.NameEQ(name)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +57,7 @@ func (r *authRepo) GetUserByUserName(ctx context.Context, name string) (*entity.
 }
 
 func (r *authRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
-	entUser, err := r.data.entClient.User.Query().Where(user.EmailEQ(email)).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.EmailEQ(email)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,11 +69,20 @@ func (r *authRepo) GetUserByID(ctx context.Context, id string) (*entity.User, er
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
-	entUser, err := r.data.entClient.User.Query().Where(user.IDEQ(uid)).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
 	return entUserToEntity(entUser), nil
+}
+
+func (r *authRepo) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return fmt.Errorf("invalid user ID: %w", err)
+	}
+	_, err = r.data.Ent(ctx).User.UpdateOneID(uid).SetPassword(hashedPassword).Save(ctx)
+	return err
 }
 
 func (r *authRepo) SaveRefreshToken(ctx context.Context, userID string, token string, expiration time.Duration) error {
@@ -168,14 +176,4 @@ func (r *authRepo) DeleteUserRefreshTokens(ctx context.Context, userID string) e
 	}
 
 	return nil
-}
-
-func entUserToEntity(u *ent.User) *entity.User {
-	return &entity.User{
-		ID:       u.ID.String(),
-		Name:     u.Name,
-		Email:    u.Email,
-		Password: u.Password,
-		Role:     u.Role,
-	}
 }

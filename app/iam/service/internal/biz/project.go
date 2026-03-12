@@ -3,6 +3,8 @@ package biz
 import (
 	"context"
 
+	"github.com/go-kratos/kratos/v2/errors"
+
 	projectpb "github.com/Servora-Kit/servora/api/gen/go/project/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	dataent "github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
@@ -20,6 +22,7 @@ type ProjectRepo interface {
 	Update(ctx context.Context, p *entity.Project) (*entity.Project, error)
 	Delete(ctx context.Context, id string) error
 	Purge(ctx context.Context, id string) error
+	PurgeCascade(ctx context.Context, id string) error
 	Restore(ctx context.Context, id string) (*entity.Project, error)
 	GetByIDIncludingDeleted(ctx context.Context, id string) (*entity.Project, error)
 	AddMember(ctx context.Context, m *entity.ProjectMember) (*entity.ProjectMember, error)
@@ -61,7 +64,8 @@ func (uc *ProjectUsecase) Create(ctx context.Context, p *entity.Project) (*entit
 
 	created, err := uc.repo.Create(ctx, p)
 	if err != nil {
-		return nil, projectpb.ErrorProjectCreateFailed("create: %v", err)
+		uc.log.Errorf("create project failed: %v", err)
+		return nil, projectpb.ErrorProjectCreateFailed("failed to create project")
 	}
 
 	if uc.fga != nil {
@@ -150,7 +154,8 @@ func (uc *ProjectUsecase) Update(ctx context.Context, p *entity.Project) (*entit
 		if dataent.IsNotFound(err) {
 			return nil, projectpb.ErrorProjectNotFound("project %s not found", p.ID)
 		}
-		return nil, projectpb.ErrorProjectUpdateFailed("update: %v", err)
+		uc.log.Errorf("update project failed: %v", err)
+		return nil, projectpb.ErrorProjectUpdateFailed("failed to update project")
 	}
 	return updated, nil
 }
@@ -160,10 +165,12 @@ func (uc *ProjectUsecase) Delete(ctx context.Context, id string) error {
 		if dataent.IsNotFound(err) {
 			return projectpb.ErrorProjectNotFound("project %s not found", id)
 		}
-		return projectpb.ErrorProjectDeleteFailed("get: %v", err)
+		uc.log.Errorf("get project failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
 	}
 	if err := uc.repo.Delete(ctx, id); err != nil {
-		return projectpb.ErrorProjectDeleteFailed("soft delete: %v", err)
+		uc.log.Errorf("soft delete project failed: %v", err)
+		return projectpb.ErrorProjectDeleteFailed("failed to delete project")
 	}
 	return nil
 }
@@ -174,33 +181,36 @@ func (uc *ProjectUsecase) Purge(ctx context.Context, id string) error {
 		if dataent.IsNotFound(err) {
 			return projectpb.ErrorProjectNotFound("project %s not found", id)
 		}
-		return projectpb.ErrorProjectDeleteFailed("get: %v", err)
+		uc.log.Errorf("get project failed: %v", err)
+		return errors.InternalServer("INTERNAL", "internal error")
 	}
 
-	members, _ := uc.repo.ListAllMembers(ctx, id)
-	if uc.fga != nil {
-		var tuples []openfga.Tuple
-		for _, m := range members {
-			tuples = append(tuples,
-				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + id},
-			)
-		}
-		tuples = append(tuples,
-			openfga.Tuple{User: "organization:" + proj.OrganizationID, Relation: "organization", Object: "project:" + id},
-		)
-		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
-			uc.log.Warnf("delete project FGA tuples: %v", err)
-		}
-	}
+	uc.purgeProjectFGA(ctx, id, proj.OrganizationID)
 
-	if _, err := uc.repo.DeleteAllMembers(ctx, id); err != nil {
-		uc.log.Warnf("delete project members: %v", err)
-	}
-
-	if err := uc.repo.Purge(ctx, id); err != nil {
-		return projectpb.ErrorProjectDeleteFailed("delete: %v", err)
+	if err := uc.repo.PurgeCascade(ctx, id); err != nil {
+		uc.log.Errorf("purge project failed: %v", err)
+		return projectpb.ErrorProjectDeleteFailed("failed to delete project")
 	}
 	return nil
+}
+
+func (uc *ProjectUsecase) purgeProjectFGA(ctx context.Context, projID, orgID string) {
+	if uc.fga == nil {
+		return
+	}
+	var tuples []openfga.Tuple
+	members, _ := uc.repo.ListAllMembers(ctx, projID)
+	for _, m := range members {
+		tuples = append(tuples,
+			openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + projID},
+		)
+	}
+	tuples = append(tuples,
+		openfga.Tuple{User: "organization:" + orgID, Relation: "organization", Object: "project:" + projID},
+	)
+	if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+		uc.log.Warnf("purge project %s FGA tuples: %v", projID, err)
+	}
 }
 
 func (uc *ProjectUsecase) Restore(ctx context.Context, id string) (*entity.Project, error) {
