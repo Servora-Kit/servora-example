@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -14,6 +15,7 @@ import (
 	authzpb "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/openfga"
+	"github.com/Servora-Kit/servora/pkg/redis"
 )
 
 // AuthzRuleEntry mirrors the generated type so the middleware can consume rules
@@ -30,6 +32,8 @@ type AuthzOption func(*authzConfig)
 
 type authzConfig struct {
 	fga        *openfga.Client
+	redis      *redis.Client
+	cacheTTL   time.Duration
 	rules      map[string]AuthzRuleEntry
 	platRootID string
 }
@@ -47,6 +51,14 @@ func WithAuthzRules(rules map[string]AuthzRuleEntry) AuthzOption {
 // WithPlatformRootID sets the platform:root object ID for platform-level checks.
 func WithPlatformRootID(id string) AuthzOption {
 	return func(cfg *authzConfig) { cfg.platRootID = id }
+}
+
+// WithAuthzCache enables Redis-backed caching for Check results.
+func WithAuthzCache(rdb *redis.Client, ttl time.Duration) AuthzOption {
+	return func(cfg *authzConfig) {
+		cfg.redis = rdb
+		cfg.cacheTTL = ttl
+	}
 }
 
 // Authz creates a Kratos middleware that performs authorization checks
@@ -100,7 +112,12 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 			}
 
 			relation := relationToFGA(rule.Relation)
-			allowed, err := cfg.fga.Check(ctx, userID, relation, objectType, objectID)
+			ttl := cfg.cacheTTL
+			if ttl == 0 {
+				ttl = openfga.DefaultCheckCacheTTL
+			}
+			allowed, err := cfg.fga.CachedCheck(ctx, cfg.redis, ttl,
+				userID, relation, objectType, objectID)
 			if err != nil {
 				return nil, errors.ServiceUnavailable("AUTHZ_CHECK_FAILED",
 					fmt.Sprintf("authorization check failed: %v", err))
