@@ -198,14 +198,31 @@ func (r *organizationRepo) ListMembers(ctx context.Context, orgID string, page, 
 		return nil, 0, err
 	}
 
+	// Batch user lookup (avoids N+1)
+	userIDs := make([]uuid.UUID, len(members))
+	for i, m := range members {
+		userIDs[i] = m.UserID
+	}
+	users, _ := r.data.entClient.User.Query().Where(user.IDIn(userIDs...)).All(ctx)
+	userMap := make(map[uuid.UUID]*ent.User, len(users))
+	for _, u := range users {
+		userMap[u.ID] = u
+	}
+
 	result := make([]*entity.OrganizationMember, 0, len(members))
 	for _, m := range members {
-		enriched, err := r.enrichMember(ctx, m)
-		if err != nil {
-			r.log.Warnf("enrich member %s failed: %v", m.ID, err)
-			continue
+		em := &entity.OrganizationMember{
+			ID:             m.ID.String(),
+			OrganizationID: m.OrganizationID.String(),
+			UserID:         m.UserID.String(),
+			Role:           m.Role,
+			CreatedAt:      m.CreatedAt,
 		}
-		result = append(result, enriched)
+		if u, ok := userMap[m.UserID]; ok {
+			em.UserName = u.Name
+			em.UserEmail = u.Email
+		}
+		result = append(result, em)
 	}
 	return result, int64(total), nil
 }
@@ -253,6 +270,70 @@ func (r *organizationRepo) UpdateMemberRole(ctx context.Context, orgID, userID, 
 		return nil, fmt.Errorf("member not found")
 	}
 	return r.GetMember(ctx, orgID, userID)
+}
+
+func (r *organizationRepo) ListAllMembers(ctx context.Context, orgID string) ([]*entity.OrganizationMember, error) {
+	oid, err := uuid.Parse(orgID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid organization ID: %w", err)
+	}
+	members, err := r.data.entClient.OrganizationMember.Query().
+		Where(organizationmember.OrganizationIDEQ(oid)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.OrganizationMember, len(members))
+	for i, m := range members {
+		result[i] = &entity.OrganizationMember{
+			ID:             m.ID.String(),
+			OrganizationID: m.OrganizationID.String(),
+			UserID:         m.UserID.String(),
+			Role:           m.Role,
+			CreatedAt:      m.CreatedAt,
+		}
+	}
+	return result, nil
+}
+
+func (r *organizationRepo) DeleteAllMembers(ctx context.Context, orgID string) (int, error) {
+	oid, err := uuid.Parse(orgID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid organization ID: %w", err)
+	}
+	return r.data.entClient.OrganizationMember.Delete().
+		Where(organizationmember.OrganizationIDEQ(oid)).Exec(ctx)
+}
+
+func (r *organizationRepo) ListMembershipsByUserID(ctx context.Context, userID string) ([]*entity.OrganizationMember, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	members, err := r.data.entClient.OrganizationMember.Query().
+		Where(organizationmember.UserIDEQ(uid)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.OrganizationMember, len(members))
+	for i, m := range members {
+		result[i] = &entity.OrganizationMember{
+			ID:             m.ID.String(),
+			OrganizationID: m.OrganizationID.String(),
+			UserID:         m.UserID.String(),
+			Role:           m.Role,
+			CreatedAt:      m.CreatedAt,
+		}
+	}
+	return result, nil
+}
+
+func (r *organizationRepo) DeleteMembershipsByUserID(ctx context.Context, userID string) (int, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid user ID: %w", err)
+	}
+	return r.data.entClient.OrganizationMember.Delete().
+		Where(organizationmember.UserIDEQ(uid)).Exec(ctx)
 }
 
 func (r *organizationRepo) enrichMember(ctx context.Context, m *ent.OrganizationMember) (*entity.OrganizationMember, error) {

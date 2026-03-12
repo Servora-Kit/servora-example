@@ -34,30 +34,17 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		return nil, nil, err
 	}
 	grpcMiddleware := server.NewGRPCMiddleware(trace, telemetryMetrics, logger)
-	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger)
-	keyManager, err := server.NewKeyManager(app)
-	if err != nil {
-		return nil, nil, err
-	}
-	openfgaClient := server.NewOpenFGAClient(app, logger)
 	entClient, err := data.NewDBClient(confData, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	platformRootID, err := data.NewPlatformRootID(entClient, openfgaClient, app, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, platformRootID)
-	redisClient, cleanup, err := data.NewRedis(confData, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	handler := server.NewHealthHandler(redisClient)
 	registryDiscovery := registry.NewDiscovery(discovery)
 	clientClient, err := client.NewClient(confData, trace, registryDiscovery, logger)
 	if err != nil {
-		cleanup()
+		return nil, nil, err
+	}
+	redisClient, cleanup, err := data.NewRedis(confData, logger)
+	if err != nil {
 		return nil, nil, err
 	}
 	dataData, cleanup2, err := data.NewData(entClient, confData, logger, clientClient, redisClient)
@@ -66,20 +53,36 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		return nil, nil, err
 	}
 	authRepo := data.NewAuthRepo(dataData, logger)
+	keyManager, err := server.NewKeyManager(app)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
 	organizationRepo := data.NewOrganizationRepo(dataData, logger)
-	organizationUsecase := biz.NewOrganizationUsecase(organizationRepo, openfgaClient, logger, platformRootID)
 	projectRepo := data.NewProjectRepo(dataData, logger)
-	projectUsecase := biz.NewProjectUsecase(projectRepo, openfgaClient, logger)
+	openfgaClient := server.NewOpenFGAClient(app, logger)
+	platformRootID, err := data.NewPlatformRootID(entClient, openfgaClient, app, logger)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	organizationUsecase := biz.NewOrganizationUsecase(organizationRepo, projectRepo, openfgaClient, logger, platformRootID)
+	projectUsecase := biz.NewProjectUsecase(projectRepo, organizationRepo, openfgaClient, logger)
 	authUsecase := biz.NewAuthUsecase(authRepo, logger, app, keyManager, organizationUsecase, projectUsecase)
 	authService := service.NewAuthService(authUsecase)
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUsecase := biz.NewUserUsecase(userRepo, logger, app, authRepo)
+	userUsecase := biz.NewUserUsecase(userRepo, logger, app, authRepo, organizationRepo, projectRepo, openfgaClient, platformRootID)
 	userService := service.NewUserService(userUsecase)
 	testRepo := data.NewTestRepo(dataData, logger)
 	testUsecase := biz.NewTestUsecase(testRepo, logger)
 	testService := service.NewTestService(testUsecase)
 	organizationService := service.NewOrganizationService(organizationUsecase)
 	projectService := service.NewProjectService(projectUsecase)
+	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger, authService, userService, testService, organizationService, projectService)
+	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, platformRootID)
+	handler := server.NewHealthHandler(redisClient)
 	httpServer := server.NewHTTPServer(confServer, app, httpMiddleware, telemetryMetrics, logger, handler, keyManager, authService, userService, testService, organizationService, projectService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer)
 	return kratosApp, func() {

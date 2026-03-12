@@ -22,19 +22,26 @@ type ProjectRepo interface {
 	ListMembers(ctx context.Context, projID string, page, pageSize int32) ([]*entity.ProjectMember, int64, error)
 	GetMember(ctx context.Context, projID, userID string) (*entity.ProjectMember, error)
 	UpdateMemberRole(ctx context.Context, projID, userID, role string) (*entity.ProjectMember, error)
+	ListAllMembers(ctx context.Context, projID string) ([]*entity.ProjectMember, error)
+	DeleteAllMembers(ctx context.Context, projID string) (int, error)
+	ListAllByOrgID(ctx context.Context, orgID string) ([]*entity.Project, error)
+	ListMembershipsByUserID(ctx context.Context, userID string) ([]*entity.ProjectMember, error)
+	DeleteMembershipsByUserID(ctx context.Context, userID string) (int, error)
 }
 
 type ProjectUsecase struct {
-	repo ProjectRepo
-	fga  *openfga.Client
-	log  *logger.Helper
+	repo    ProjectRepo
+	orgRepo OrganizationRepo
+	fga     *openfga.Client
+	log     *logger.Helper
 }
 
-func NewProjectUsecase(repo ProjectRepo, fga *openfga.Client, l logger.Logger) *ProjectUsecase {
+func NewProjectUsecase(repo ProjectRepo, orgRepo OrganizationRepo, fga *openfga.Client, l logger.Logger) *ProjectUsecase {
 	return &ProjectUsecase{
-		repo: repo,
-		fga:  fga,
-		log:  logger.NewHelper(l, logger.WithModule("project/biz/iam-service")),
+		repo:    repo,
+		orgRepo: orgRepo,
+		fga:     fga,
+		log:     logger.NewHelper(l, logger.WithModule("project/biz/iam-service")),
 	}
 }
 
@@ -129,16 +136,54 @@ func (uc *ProjectUsecase) Update(ctx context.Context, p *entity.Project) (*entit
 }
 
 func (uc *ProjectUsecase) Delete(ctx context.Context, id string) error {
-	if err := uc.repo.Delete(ctx, id); err != nil {
+	proj, err := uc.repo.GetByID(ctx, id)
+	if err != nil {
 		if dataent.IsNotFound(err) {
 			return projectpb.ErrorProjectNotFound("project %s not found", id)
 		}
+		return projectpb.ErrorProjectDeleteFailed("get: %v", err)
+	}
+
+	members, _ := uc.repo.ListAllMembers(ctx, id)
+	if uc.fga != nil {
+		var tuples []openfga.Tuple
+		for _, m := range members {
+			tuples = append(tuples,
+				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + id},
+			)
+		}
+		tuples = append(tuples,
+			openfga.Tuple{User: "organization:" + proj.OrganizationID, Relation: "organization", Object: "project:" + id},
+		)
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("delete project FGA tuples: %v", err)
+		}
+	}
+
+	if _, err := uc.repo.DeleteAllMembers(ctx, id); err != nil {
+		uc.log.Warnf("delete project members: %v", err)
+	}
+
+	if err := uc.repo.Delete(ctx, id); err != nil {
 		return projectpb.ErrorProjectDeleteFailed("delete: %v", err)
 	}
 	return nil
 }
 
 func (uc *ProjectUsecase) AddMember(ctx context.Context, m *entity.ProjectMember) (*entity.ProjectMember, error) {
+	if err := ValidateProjectRole(m.Role); err != nil {
+		return nil, projectpb.ErrorProjectCreateFailed("%v", err)
+	}
+
+	// Verify user is a member of the parent organization
+	proj, err := uc.repo.GetByID(ctx, m.ProjectID)
+	if err != nil {
+		return nil, projectpb.ErrorProjectNotFound("project not found")
+	}
+	if _, err := uc.orgRepo.GetMember(ctx, proj.OrganizationID, m.UserID); err != nil {
+		return nil, projectpb.ErrorProjectCreateFailed("user must be a member of the parent organization")
+	}
+
 	if _, err := uc.repo.GetMember(ctx, m.ProjectID, m.UserID); err == nil {
 		return nil, projectpb.ErrorProjectMemberAlreadyExists("user is already a member")
 	}
@@ -179,6 +224,10 @@ func (uc *ProjectUsecase) ListMembers(ctx context.Context, projID string, page, 
 }
 
 func (uc *ProjectUsecase) UpdateMemberRole(ctx context.Context, projID, userID, newRole string) (*entity.ProjectMember, error) {
+	if err := ValidateProjectRole(newRole); err != nil {
+		return nil, projectpb.ErrorProjectCreateFailed("%v", err)
+	}
+
 	oldMember, err := uc.repo.GetMember(ctx, projID, userID)
 	if err != nil {
 		return nil, projectpb.ErrorProjectMemberNotFound("member not found")

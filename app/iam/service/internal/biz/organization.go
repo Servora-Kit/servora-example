@@ -26,21 +26,27 @@ type OrganizationRepo interface {
 	ListMembers(ctx context.Context, orgID string, page, pageSize int32) ([]*entity.OrganizationMember, int64, error)
 	GetMember(ctx context.Context, orgID, userID string) (*entity.OrganizationMember, error)
 	UpdateMemberRole(ctx context.Context, orgID, userID, role string) (*entity.OrganizationMember, error)
+	ListAllMembers(ctx context.Context, orgID string) ([]*entity.OrganizationMember, error)
+	DeleteAllMembers(ctx context.Context, orgID string) (int, error)
+	ListMembershipsByUserID(ctx context.Context, userID string) ([]*entity.OrganizationMember, error)
+	DeleteMembershipsByUserID(ctx context.Context, userID string) (int, error)
 }
 
 type OrganizationUsecase struct {
-	repo   OrganizationRepo
-	fga    *openfga.Client
-	log    *logger.Helper
-	platID string
+	repo     OrganizationRepo
+	projRepo ProjectRepo
+	fga      *openfga.Client
+	log      *logger.Helper
+	platID   string
 }
 
-func NewOrganizationUsecase(repo OrganizationRepo, fga *openfga.Client, l logger.Logger, platID PlatformRootID) *OrganizationUsecase {
+func NewOrganizationUsecase(repo OrganizationRepo, projRepo ProjectRepo, fga *openfga.Client, l logger.Logger, platID PlatformRootID) *OrganizationUsecase {
 	return &OrganizationUsecase{
-		repo:   repo,
-		fga:    fga,
-		log:    logger.NewHelper(l, logger.WithModule("organization/biz/iam-service")),
-		platID: string(platID),
+		repo:     repo,
+		projRepo: projRepo,
+		fga:      fga,
+		log:      logger.NewHelper(l, logger.WithModule("organization/biz/iam-service")),
+		platID:   string(platID),
 	}
 }
 
@@ -144,16 +150,79 @@ func (uc *OrganizationUsecase) Update(ctx context.Context, org *entity.Organizat
 }
 
 func (uc *OrganizationUsecase) Delete(ctx context.Context, id string) error {
-	if err := uc.repo.Delete(ctx, id); err != nil {
+	if _, err := uc.repo.GetByID(ctx, id); err != nil {
 		if dataent.IsNotFound(err) {
 			return orgpb.ErrorOrganizationNotFound("organization %s not found", id)
 		}
+		return orgpb.ErrorOrganizationDeleteFailed("get: %v", err)
+	}
+
+	// Cascade: delete child projects (each handles its own FGA cleanup)
+	projects, err := uc.projRepo.ListAllByOrgID(ctx, id)
+	if err == nil {
+		for _, p := range projects {
+			uc.deleteProjectCascade(ctx, p)
+		}
+	}
+
+	// Clean up organization member FGA tuples
+	members, _ := uc.repo.ListAllMembers(ctx, id)
+	if uc.fga != nil && len(members) > 0 {
+		var tuples []openfga.Tuple
+		for _, m := range members {
+			tuples = append(tuples,
+				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "organization:" + id},
+				openfga.Tuple{User: "user:" + m.UserID, Relation: "member", Object: "organization:" + id},
+			)
+		}
+		tuples = append(tuples,
+			openfga.Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + id},
+		)
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("delete org FGA tuples: %v", err)
+		}
+	}
+
+	if _, err := uc.repo.DeleteAllMembers(ctx, id); err != nil {
+		uc.log.Warnf("delete org members: %v", err)
+	}
+
+	if err := uc.repo.Delete(ctx, id); err != nil {
 		return orgpb.ErrorOrganizationDeleteFailed("delete: %v", err)
 	}
 	return nil
 }
 
+// deleteProjectCascade handles FGA + member cleanup for a single project during org cascade delete.
+func (uc *OrganizationUsecase) deleteProjectCascade(ctx context.Context, proj *entity.Project) {
+	projMembers, _ := uc.projRepo.ListAllMembers(ctx, proj.ID)
+	if uc.fga != nil {
+		var tuples []openfga.Tuple
+		for _, m := range projMembers {
+			tuples = append(tuples,
+				openfga.Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + proj.ID},
+			)
+		}
+		tuples = append(tuples,
+			openfga.Tuple{User: "organization:" + proj.OrganizationID, Relation: "organization", Object: "project:" + proj.ID},
+		)
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("cascade delete project %s FGA tuples: %v", proj.ID, err)
+		}
+	}
+	if _, err := uc.projRepo.DeleteAllMembers(ctx, proj.ID); err != nil {
+		uc.log.Warnf("cascade delete project %s members: %v", proj.ID, err)
+	}
+	if err := uc.projRepo.Delete(ctx, proj.ID); err != nil {
+		uc.log.Warnf("cascade delete project %s: %v", proj.ID, err)
+	}
+}
+
 func (uc *OrganizationUsecase) AddMember(ctx context.Context, m *entity.OrganizationMember) (*entity.OrganizationMember, error) {
+	if err := ValidateOrganizationRole(m.Role); err != nil {
+		return nil, orgpb.ErrorOrganizationCreateFailed("%v", err)
+	}
+
 	if _, err := uc.repo.GetMember(ctx, m.OrganizationID, m.UserID); err == nil {
 		return nil, orgpb.ErrorOrganizationMemberAlreadyExists("user is already a member")
 	}
@@ -196,6 +265,10 @@ func (uc *OrganizationUsecase) ListMembers(ctx context.Context, orgID string, pa
 }
 
 func (uc *OrganizationUsecase) UpdateMemberRole(ctx context.Context, orgID, userID, newRole string) (*entity.OrganizationMember, error) {
+	if err := ValidateOrganizationRole(newRole); err != nil {
+		return nil, orgpb.ErrorOrganizationCreateFailed("%v", err)
+	}
+
 	oldMember, err := uc.repo.GetMember(ctx, orgID, userID)
 	if err != nil {
 		return nil, orgpb.ErrorOrganizationMemberNotFound("member not found")

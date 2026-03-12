@@ -10,6 +10,7 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/logger"
+	"github.com/Servora-Kit/servora/pkg/openfga"
 )
 
 type UserRepo interface {
@@ -24,17 +25,33 @@ type UserUsecase struct {
 	repo     UserRepo
 	log      *logger.Helper
 	cfg      *conf.App
-	authRepo AuthRepo // 改为依赖 AuthRepo
+	authRepo AuthRepo
+	orgRepo  OrganizationRepo
+	projRepo ProjectRepo
+	fga      *openfga.Client
+	platID   string
 }
 
-func NewUserUsecase(repo UserRepo, l logger.Logger, cfg *conf.App, authRepo AuthRepo) *UserUsecase {
-	uc := &UserUsecase{
+func NewUserUsecase(
+	repo UserRepo,
+	l logger.Logger,
+	cfg *conf.App,
+	authRepo AuthRepo,
+	orgRepo OrganizationRepo,
+	projRepo ProjectRepo,
+	fga *openfga.Client,
+	platID PlatformRootID,
+) *UserUsecase {
+	return &UserUsecase{
 		repo:     repo,
 		log:      logger.NewHelper(l, logger.WithModule("user/biz/iam-service")),
 		cfg:      cfg,
 		authRepo: authRepo,
+		orgRepo:  orgRepo,
+		projRepo: projRepo,
+		fga:      fga,
+		platID:   string(platID),
 	}
-	return uc
 }
 
 func (uc *UserUsecase) CurrentUserInfo(ctx context.Context) (*entity.User, error) {
@@ -43,27 +60,19 @@ func (uc *UserUsecase) CurrentUserInfo(ctx context.Context) (*entity.User, error
 		return nil, authpb.ErrorUnauthorized("user not authenticated")
 	}
 
-	ua, ok := a.(*actor.UserActor)
-	if !ok {
-		return nil, authpb.ErrorUnauthorized("user not authenticated")
+	u, err := uc.repo.GetUserById(ctx, a.ID())
+	if err != nil {
+		return nil, userpb.ErrorUserNotFound("user not found")
 	}
-
-	return &entity.User{
-		ID:   ua.ID(),
-		Name: ua.DisplayName(),
-		Email: ua.Email(),
-		Role: ua.Meta("role"),
-	}, nil
+	return u, nil
 }
 
 func (uc *UserUsecase) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	// 获取原始用户信息
 	origUser, err := uc.repo.GetUserById(ctx, user.ID)
 	if err != nil {
 		return nil, userpb.ErrorUserNotFound("user not found: %v", err)
 	}
 
-	// 只有当用户名发生变化时才检查重复
 	if user.Name != origUser.Name {
 		userWithSameName, err := uc.authRepo.GetUserByUserName(ctx, user.Name)
 		if err != nil {
@@ -74,7 +83,6 @@ func (uc *UserUsecase) UpdateUser(ctx context.Context, user *entity.User) (*enti
 		}
 	}
 
-	// 只有当邮箱发生变化时才检查重复
 	if user.Email != origUser.Email {
 		userWithSameEmail, err := uc.authRepo.GetUserByEmail(ctx, user.Email)
 		if err != nil {
@@ -136,8 +144,54 @@ func (uc *UserUsecase) ListUsers(ctx context.Context, pagination *paginationpb.P
 }
 
 func (uc *UserUsecase) DeleteUser(ctx context.Context, user *entity.User) (success bool, err error) {
-	_, err = uc.repo.DeleteUser(ctx, user)
-	if err != nil {
+	// Clean up organization memberships + FGA tuples
+	orgMemberships, _ := uc.orgRepo.ListMembershipsByUserID(ctx, user.ID)
+	if uc.fga != nil && len(orgMemberships) > 0 {
+		var tuples []openfga.Tuple
+		for _, m := range orgMemberships {
+			tuples = append(tuples,
+				openfga.Tuple{User: "user:" + user.ID, Relation: m.Role, Object: "organization:" + m.OrganizationID},
+				openfga.Tuple{User: "user:" + user.ID, Relation: "member", Object: "organization:" + m.OrganizationID},
+			)
+		}
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("delete user org FGA tuples: %v", err)
+		}
+	}
+	if _, err := uc.orgRepo.DeleteMembershipsByUserID(ctx, user.ID); err != nil {
+		uc.log.Warnf("delete user org memberships: %v", err)
+	}
+
+	// Clean up project memberships + FGA tuples
+	projMemberships, _ := uc.projRepo.ListMembershipsByUserID(ctx, user.ID)
+	if uc.fga != nil && len(projMemberships) > 0 {
+		var tuples []openfga.Tuple
+		for _, m := range projMemberships {
+			tuples = append(tuples,
+				openfga.Tuple{User: "user:" + user.ID, Relation: m.Role, Object: "project:" + m.ProjectID},
+			)
+		}
+		if err := uc.fga.DeleteTuples(ctx, tuples...); err != nil {
+			uc.log.Warnf("delete user project FGA tuples: %v", err)
+		}
+	}
+	if _, err := uc.projRepo.DeleteMembershipsByUserID(ctx, user.ID); err != nil {
+		uc.log.Warnf("delete user project memberships: %v", err)
+	}
+
+	// Clean up platform admin FGA tuple (if the user was a platform admin)
+	if uc.fga != nil && uc.platID != "" {
+		_ = uc.fga.DeleteTuples(ctx,
+			openfga.Tuple{User: "user:" + user.ID, Relation: "admin", Object: "platform:" + uc.platID},
+		)
+	}
+
+	// Delete refresh tokens
+	if err := uc.authRepo.DeleteUserRefreshTokens(ctx, user.ID); err != nil {
+		uc.log.Warnf("delete user refresh tokens: %v", err)
+	}
+
+	if _, err := uc.repo.DeleteUser(ctx, user); err != nil {
 		return false, userpb.ErrorDeleteUserFailed("failed to delete user: %v", err)
 	}
 	return true, nil

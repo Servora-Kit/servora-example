@@ -172,14 +172,31 @@ func (r *projectRepo) ListMembers(ctx context.Context, projID string, page, page
 		return nil, 0, err
 	}
 
+	// Batch user lookup (avoids N+1)
+	userIDs := make([]uuid.UUID, len(members))
+	for i, m := range members {
+		userIDs[i] = m.UserID
+	}
+	users, _ := r.data.entClient.User.Query().Where(user.IDIn(userIDs...)).All(ctx)
+	userMap := make(map[uuid.UUID]*ent.User, len(users))
+	for _, u := range users {
+		userMap[u.ID] = u
+	}
+
 	result := make([]*entity.ProjectMember, 0, len(members))
 	for _, m := range members {
-		enriched, err := r.enrichMember(ctx, m)
-		if err != nil {
-			r.log.Warnf("enrich member %s failed: %v", m.ID, err)
-			continue
+		em := &entity.ProjectMember{
+			ID:        m.ID.String(),
+			ProjectID: m.ProjectID.String(),
+			UserID:    m.UserID.String(),
+			Role:      m.Role,
+			CreatedAt: m.CreatedAt,
 		}
-		result = append(result, enriched)
+		if u, ok := userMap[m.UserID]; ok {
+			em.UserName = u.Name
+			em.UserEmail = u.Email
+		}
+		result = append(result, em)
 	}
 	return result, int64(total), nil
 }
@@ -227,6 +244,87 @@ func (r *projectRepo) UpdateMemberRole(ctx context.Context, projID, userID, role
 		return nil, fmt.Errorf("member not found")
 	}
 	return r.GetMember(ctx, projID, userID)
+}
+
+func (r *projectRepo) ListAllMembers(ctx context.Context, projID string) ([]*entity.ProjectMember, error) {
+	pid, err := uuid.Parse(projID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid project ID: %w", err)
+	}
+	members, err := r.data.entClient.ProjectMember.Query().
+		Where(projectmember.ProjectIDEQ(pid)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.ProjectMember, len(members))
+	for i, m := range members {
+		result[i] = &entity.ProjectMember{
+			ID:        m.ID.String(),
+			ProjectID: m.ProjectID.String(),
+			UserID:    m.UserID.String(),
+			Role:      m.Role,
+			CreatedAt: m.CreatedAt,
+		}
+	}
+	return result, nil
+}
+
+func (r *projectRepo) DeleteAllMembers(ctx context.Context, projID string) (int, error) {
+	pid, err := uuid.Parse(projID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid project ID: %w", err)
+	}
+	return r.data.entClient.ProjectMember.Delete().
+		Where(projectmember.ProjectIDEQ(pid)).Exec(ctx)
+}
+
+func (r *projectRepo) ListAllByOrgID(ctx context.Context, orgID string) ([]*entity.Project, error) {
+	oid, err := uuid.Parse(orgID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid organization ID: %w", err)
+	}
+	projects, err := r.data.entClient.Project.Query().
+		Where(project.OrganizationIDEQ(oid)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.Project, len(projects))
+	for i, p := range projects {
+		result[i] = entProjectToEntity(p)
+	}
+	return result, nil
+}
+
+func (r *projectRepo) ListMembershipsByUserID(ctx context.Context, userID string) ([]*entity.ProjectMember, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	members, err := r.data.entClient.ProjectMember.Query().
+		Where(projectmember.UserIDEQ(uid)).All(ctx)
+	if err != nil {
+		return nil, err
+	}
+	result := make([]*entity.ProjectMember, len(members))
+	for i, m := range members {
+		result[i] = &entity.ProjectMember{
+			ID:        m.ID.String(),
+			ProjectID: m.ProjectID.String(),
+			UserID:    m.UserID.String(),
+			Role:      m.Role,
+			CreatedAt: m.CreatedAt,
+		}
+	}
+	return result, nil
+}
+
+func (r *projectRepo) DeleteMembershipsByUserID(ctx context.Context, userID string) (int, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return 0, fmt.Errorf("invalid user ID: %w", err)
+	}
+	return r.data.entClient.ProjectMember.Delete().
+		Where(projectmember.UserIDEQ(uid)).Exec(ctx)
 }
 
 func (r *projectRepo) enrichMember(ctx context.Context, m *ent.ProjectMember) (*entity.ProjectMember, error) {
