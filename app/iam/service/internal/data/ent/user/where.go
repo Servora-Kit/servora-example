@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -423,6 +424,52 @@ func UpdatedAtLT(v time.Time) predicate.User {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.User {
 	return predicate.User(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasOrgMemberships applies the HasEdge predicate on the "org_memberships" edge.
+func HasOrgMemberships() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OrgMembershipsTable, OrgMembershipsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrgMembershipsWith applies the HasEdge predicate on the "org_memberships" edge with a given conditions (other predicates).
+func HasOrgMembershipsWith(preds ...predicate.OrganizationMember) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newOrgMembershipsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjectMemberships applies the HasEdge predicate on the "project_memberships" edge.
+func HasProjectMemberships() predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectMembershipsTable, ProjectMembershipsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectMembershipsWith applies the HasEdge predicate on the "project_memberships" edge with a given conditions (other predicates).
+func HasProjectMembershipsWith(preds ...predicate.ProjectMember) predicate.User {
+	return predicate.User(func(s *sql.Selector) {
+		step := newProjectMembershipsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

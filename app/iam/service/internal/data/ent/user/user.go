@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,8 +27,26 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeOrgMemberships holds the string denoting the org_memberships edge name in mutations.
+	EdgeOrgMemberships = "org_memberships"
+	// EdgeProjectMemberships holds the string denoting the project_memberships edge name in mutations.
+	EdgeProjectMemberships = "project_memberships"
 	// Table holds the table name of the user in the database.
 	Table = "users"
+	// OrgMembershipsTable is the table that holds the org_memberships relation/edge.
+	OrgMembershipsTable = "organization_members"
+	// OrgMembershipsInverseTable is the table name for the OrganizationMember entity.
+	// It exists in this package in order to avoid circular dependency with the "organizationmember" package.
+	OrgMembershipsInverseTable = "organization_members"
+	// OrgMembershipsColumn is the table column denoting the org_memberships relation/edge.
+	OrgMembershipsColumn = "user_id"
+	// ProjectMembershipsTable is the table that holds the project_memberships relation/edge.
+	ProjectMembershipsTable = "project_members"
+	// ProjectMembershipsInverseTable is the table name for the ProjectMember entity.
+	// It exists in this package in order to avoid circular dependency with the "projectmember" package.
+	ProjectMembershipsInverseTable = "project_members"
+	// ProjectMembershipsColumn is the table column denoting the project_memberships relation/edge.
+	ProjectMembershipsColumn = "user_id"
 )
 
 // Columns holds all SQL columns for user fields.
@@ -108,4 +127,46 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByOrgMembershipsCount orders the results by org_memberships count.
+func ByOrgMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOrgMembershipsStep(), opts...)
+	}
+}
+
+// ByOrgMemberships orders the results by org_memberships terms.
+func ByOrgMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOrgMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProjectMembershipsCount orders the results by project_memberships count.
+func ByProjectMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectMembershipsStep(), opts...)
+	}
+}
+
+// ByProjectMemberships orders the results by project_memberships terms.
+func ByProjectMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOrgMembershipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OrgMembershipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OrgMembershipsTable, OrgMembershipsColumn),
+	)
+}
+func newProjectMembershipsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectMembershipsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProjectMembershipsTable, ProjectMembershipsColumn),
+	)
 }

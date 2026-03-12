@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
 	"github.com/google/uuid"
 )
 
@@ -95,6 +97,26 @@ func (_c *ProjectCreate) SetNillableID(v *uuid.UUID) *ProjectCreate {
 	return _c
 }
 
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (_c *ProjectCreate) SetOrganization(v *Organization) *ProjectCreate {
+	return _c.SetOrganizationID(v.ID)
+}
+
+// AddMemberIDs adds the "members" edge to the ProjectMember entity by IDs.
+func (_c *ProjectCreate) AddMemberIDs(ids ...uuid.UUID) *ProjectCreate {
+	_c.mutation.AddMemberIDs(ids...)
+	return _c
+}
+
+// AddMembers adds the "members" edges to the ProjectMember entity.
+func (_c *ProjectCreate) AddMembers(v ...*ProjectMember) *ProjectCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMemberIDs(ids...)
+}
+
 // Mutation returns the ProjectMutation object of the builder.
 func (_c *ProjectCreate) Mutation() *ProjectMutation {
 	return _c.mutation
@@ -176,6 +198,9 @@ func (_c *ProjectCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Project.updated_at"`)}
 	}
+	if len(_c.mutation.OrganizationIDs()) == 0 {
+		return &ValidationError{Name: "organization", err: errors.New(`ent: missing required edge "Project.organization"`)}
+	}
 	return nil
 }
 
@@ -211,10 +236,6 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.OrganizationID(); ok {
-		_spec.SetField(project.FieldOrganizationID, field.TypeUUID, value)
-		_node.OrganizationID = value
-	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(project.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -234,6 +255,39 @@ func (_c *ProjectCreate) createSpec() (*Project, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(project.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := _c.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   project.OrganizationTable,
+			Columns: []string{project.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrganizationID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   project.MembersTable,
+			Columns: []string{project.MembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(projectmember.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

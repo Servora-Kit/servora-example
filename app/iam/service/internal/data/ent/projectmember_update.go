@@ -12,7 +12,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -77,9 +79,31 @@ func (_u *ProjectMemberUpdate) SetUpdatedAt(v time.Time) *ProjectMemberUpdate {
 	return _u
 }
 
+// SetProject sets the "project" edge to the Project entity.
+func (_u *ProjectMemberUpdate) SetProject(v *Project) *ProjectMemberUpdate {
+	return _u.SetProjectID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *ProjectMemberUpdate) SetUser(v *User) *ProjectMemberUpdate {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the ProjectMemberMutation object of the builder.
 func (_u *ProjectMemberUpdate) Mutation() *ProjectMemberMutation {
 	return _u.mutation
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *ProjectMemberUpdate) ClearProject() *ProjectMemberUpdate {
+	_u.mutation.ClearProject()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *ProjectMemberUpdate) ClearUser() *ProjectMemberUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -125,6 +149,12 @@ func (_u *ProjectMemberUpdate) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "ProjectMember.role": %w`, err)}
 		}
 	}
+	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProjectMember.project"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProjectMember.user"`)
+	}
 	return nil
 }
 
@@ -140,17 +170,69 @@ func (_u *ProjectMemberUpdate) sqlSave(ctx context.Context) (_node int, err erro
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProjectID(); ok {
-		_spec.SetField(projectmember.FieldProjectID, field.TypeUUID, value)
-	}
-	if value, ok := _u.mutation.UserID(); ok {
-		_spec.SetField(projectmember.FieldUserID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(projectmember.FieldRole, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(projectmember.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.ProjectTable,
+			Columns: []string{projectmember.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.ProjectTable,
+			Columns: []string{projectmember.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.UserTable,
+			Columns: []string{projectmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.UserTable,
+			Columns: []string{projectmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -220,9 +302,31 @@ func (_u *ProjectMemberUpdateOne) SetUpdatedAt(v time.Time) *ProjectMemberUpdate
 	return _u
 }
 
+// SetProject sets the "project" edge to the Project entity.
+func (_u *ProjectMemberUpdateOne) SetProject(v *Project) *ProjectMemberUpdateOne {
+	return _u.SetProjectID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *ProjectMemberUpdateOne) SetUser(v *User) *ProjectMemberUpdateOne {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the ProjectMemberMutation object of the builder.
 func (_u *ProjectMemberUpdateOne) Mutation() *ProjectMemberMutation {
 	return _u.mutation
+}
+
+// ClearProject clears the "project" edge to the Project entity.
+func (_u *ProjectMemberUpdateOne) ClearProject() *ProjectMemberUpdateOne {
+	_u.mutation.ClearProject()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *ProjectMemberUpdateOne) ClearUser() *ProjectMemberUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the ProjectMemberUpdate builder.
@@ -281,6 +385,12 @@ func (_u *ProjectMemberUpdateOne) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "ProjectMember.role": %w`, err)}
 		}
 	}
+	if _u.mutation.ProjectCleared() && len(_u.mutation.ProjectIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProjectMember.project"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "ProjectMember.user"`)
+	}
 	return nil
 }
 
@@ -313,17 +423,69 @@ func (_u *ProjectMemberUpdateOne) sqlSave(ctx context.Context) (_node *ProjectMe
 			}
 		}
 	}
-	if value, ok := _u.mutation.ProjectID(); ok {
-		_spec.SetField(projectmember.FieldProjectID, field.TypeUUID, value)
-	}
-	if value, ok := _u.mutation.UserID(); ok {
-		_spec.SetField(projectmember.FieldUserID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(projectmember.FieldRole, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(projectmember.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.ProjectCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.ProjectTable,
+			Columns: []string{projectmember.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ProjectIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.ProjectTable,
+			Columns: []string{projectmember.ProjectColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.UserTable,
+			Columns: []string{projectmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   projectmember.UserTable,
+			Columns: []string{projectmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &ProjectMember{config: _u.config}
 	_spec.Assign = _node.assignValues

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -103,26 +104,6 @@ func PlatformIDIn(vs ...uuid.UUID) predicate.Organization {
 // PlatformIDNotIn applies the NotIn predicate on the "platform_id" field.
 func PlatformIDNotIn(vs ...uuid.UUID) predicate.Organization {
 	return predicate.Organization(sql.FieldNotIn(FieldPlatformID, vs...))
-}
-
-// PlatformIDGT applies the GT predicate on the "platform_id" field.
-func PlatformIDGT(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldGT(FieldPlatformID, v))
-}
-
-// PlatformIDGTE applies the GTE predicate on the "platform_id" field.
-func PlatformIDGTE(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldGTE(FieldPlatformID, v))
-}
-
-// PlatformIDLT applies the LT predicate on the "platform_id" field.
-func PlatformIDLT(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldLT(FieldPlatformID, v))
-}
-
-// PlatformIDLTE applies the LTE predicate on the "platform_id" field.
-func PlatformIDLTE(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldLTE(FieldPlatformID, v))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -408,6 +389,75 @@ func UpdatedAtLT(v time.Time) predicate.Organization {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Organization {
 	return predicate.Organization(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasPlatform applies the HasEdge predicate on the "platform" edge.
+func HasPlatform() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, PlatformTable, PlatformColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasPlatformWith applies the HasEdge predicate on the "platform" edge with a given conditions (other predicates).
+func HasPlatformWith(preds ...predicate.Platform) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newPlatformStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasMembers applies the HasEdge predicate on the "members" edge.
+func HasMembers() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, MembersTable, MembersColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasMembersWith applies the HasEdge predicate on the "members" edge with a given conditions (other predicates).
+func HasMembersWith(preds ...predicate.OrganizationMember) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newMembersStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasProjects applies the HasEdge predicate on the "projects" edge.
+func HasProjects() predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectsWith applies the HasEdge predicate on the "projects" edge with a given conditions (other predicates).
+func HasProjectsWith(preds ...predicate.Project) predicate.Organization {
+	return predicate.Organization(func(s *sql.Selector) {
+		step := newProjectsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

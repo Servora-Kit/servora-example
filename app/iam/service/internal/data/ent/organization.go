@@ -10,6 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/google/uuid"
 )
 
@@ -29,8 +30,53 @@ type Organization struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OrganizationQuery when eager-loading is set.
+	Edges        OrganizationEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// OrganizationEdges holds the relations/edges for other nodes in the graph.
+type OrganizationEdges struct {
+	// Platform holds the value of the platform edge.
+	Platform *Platform `json:"platform,omitempty"`
+	// Members holds the value of the members edge.
+	Members []*OrganizationMember `json:"members,omitempty"`
+	// Projects holds the value of the projects edge.
+	Projects []*Project `json:"projects,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [3]bool
+}
+
+// PlatformOrErr returns the Platform value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OrganizationEdges) PlatformOrErr() (*Platform, error) {
+	if e.Platform != nil {
+		return e.Platform, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: platform.Label}
+	}
+	return nil, &NotLoadedError{edge: "platform"}
+}
+
+// MembersOrErr returns the Members value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) MembersOrErr() ([]*OrganizationMember, error) {
+	if e.loadedTypes[1] {
+		return e.Members, nil
+	}
+	return nil, &NotLoadedError{edge: "members"}
+}
+
+// ProjectsOrErr returns the Projects value or an error if the edge
+// was not loaded in eager-loading.
+func (e OrganizationEdges) ProjectsOrErr() ([]*Project, error) {
+	if e.loadedTypes[2] {
+		return e.Projects, nil
+	}
+	return nil, &NotLoadedError{edge: "projects"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -113,6 +159,21 @@ func (_m *Organization) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Organization) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryPlatform queries the "platform" edge of the Organization entity.
+func (_m *Organization) QueryPlatform() *PlatformQuery {
+	return NewOrganizationClient(_m.config).QueryPlatform(_m)
+}
+
+// QueryMembers queries the "members" edge of the Organization entity.
+func (_m *Organization) QueryMembers() *OrganizationMemberQuery {
+	return NewOrganizationClient(_m.config).QueryMembers(_m)
+}
+
+// QueryProjects queries the "projects" edge of the Organization entity.
+func (_m *Organization) QueryProjects() *ProjectQuery {
+	return NewOrganizationClient(_m.config).QueryProjects(_m)
 }
 
 // Update returns a builder for updating this Organization.

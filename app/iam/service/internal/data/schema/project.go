@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
@@ -28,7 +29,15 @@ func (Project) Fields() []ent.Field {
 }
 
 func (Project) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("organization", Organization.Type).
+			Ref("projects").
+			Field("organization_id").
+			Unique().
+			Required().
+			Annotations(entsql.OnDelete(entsql.Cascade)),
+		edge.To("members", ProjectMember.Type),
+	}
 }
 
 func (Project) Indexes() []ent.Index {

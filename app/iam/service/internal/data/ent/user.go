@@ -29,8 +29,40 @@ type User struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the UserQuery when eager-loading is set.
+	Edges        UserEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// UserEdges holds the relations/edges for other nodes in the graph.
+type UserEdges struct {
+	// OrgMemberships holds the value of the org_memberships edge.
+	OrgMemberships []*OrganizationMember `json:"org_memberships,omitempty"`
+	// ProjectMemberships holds the value of the project_memberships edge.
+	ProjectMemberships []*ProjectMember `json:"project_memberships,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// OrgMembershipsOrErr returns the OrgMemberships value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) OrgMembershipsOrErr() ([]*OrganizationMember, error) {
+	if e.loadedTypes[0] {
+		return e.OrgMemberships, nil
+	}
+	return nil, &NotLoadedError{edge: "org_memberships"}
+}
+
+// ProjectMembershipsOrErr returns the ProjectMemberships value or an error if the edge
+// was not loaded in eager-loading.
+func (e UserEdges) ProjectMembershipsOrErr() ([]*ProjectMember, error) {
+	if e.loadedTypes[1] {
+		return e.ProjectMemberships, nil
+	}
+	return nil, &NotLoadedError{edge: "project_memberships"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -112,6 +144,16 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryOrgMemberships queries the "org_memberships" edge of the User entity.
+func (_m *User) QueryOrgMemberships() *OrganizationMemberQuery {
+	return NewUserClient(_m.config).QueryOrgMemberships(_m)
+}
+
+// QueryProjectMemberships queries the "project_memberships" edge of the User entity.
+func (_m *User) QueryProjectMemberships() *ProjectMemberQuery {
+	return NewUserClient(_m.config).QueryProjectMemberships(_m)
 }
 
 // Update returns a builder for updating this User.

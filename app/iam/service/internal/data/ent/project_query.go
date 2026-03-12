@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,18 +12,22 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
 	"github.com/google/uuid"
 )
 
 // ProjectQuery is the builder for querying Project entities.
 type ProjectQuery struct {
 	config
-	ctx        *QueryContext
-	order      []project.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Project
+	ctx              *QueryContext
+	order            []project.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.Project
+	withOrganization *OrganizationQuery
+	withMembers      *ProjectMemberQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +62,50 @@ func (_q *ProjectQuery) Unique(unique bool) *ProjectQuery {
 func (_q *ProjectQuery) Order(o ...project.OrderOption) *ProjectQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryOrganization chains the current query on the "organization" edge.
+func (_q *ProjectQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.OrganizationTable, project.OrganizationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryMembers chains the current query on the "members" edge.
+func (_q *ProjectQuery) QueryMembers() *ProjectMemberQuery {
+	query := (&ProjectMemberClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, selector),
+			sqlgraph.To(projectmember.Table, projectmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.MembersTable, project.MembersColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Project entity from the query.
@@ -246,15 +295,39 @@ func (_q *ProjectQuery) Clone() *ProjectQuery {
 		return nil
 	}
 	return &ProjectQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]project.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Project{}, _q.predicates...),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]project.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.Project{}, _q.predicates...),
+		withOrganization: _q.withOrganization.Clone(),
+		withMembers:      _q.withMembers.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithOrganization(opts ...func(*OrganizationQuery)) *ProjectQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOrganization = query
+	return _q
+}
+
+// WithMembers tells the query-builder to eager-load the nodes that are connected to
+// the "members" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectQuery) WithMembers(opts ...func(*ProjectMemberQuery)) *ProjectQuery {
+	query := (&ProjectMemberClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withMembers = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +406,12 @@ func (_q *ProjectQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Project, error) {
 	var (
-		nodes = []*Project{}
-		_spec = _q.querySpec()
+		nodes       = []*Project{}
+		_spec       = _q.querySpec()
+		loadedTypes = [2]bool{
+			_q.withOrganization != nil,
+			_q.withMembers != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Project).scanValues(nil, columns)
@@ -342,6 +419,7 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Project{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +431,80 @@ func (_q *ProjectQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Proj
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withOrganization; query != nil {
+		if err := _q.loadOrganization(ctx, query, nodes, nil,
+			func(n *Project, e *Organization) { n.Edges.Organization = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withMembers; query != nil {
+		if err := _q.loadMembers(ctx, query, nodes,
+			func(n *Project) { n.Edges.Members = []*ProjectMember{} },
+			func(n *Project, e *ProjectMember) { n.Edges.Members = append(n.Edges.Members, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *ProjectQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*Project, init func(*Project), assign func(*Project, *Organization)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*Project)
+	for i := range nodes {
+		fk := nodes[i].OrganizationID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(organization.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "organization_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *ProjectQuery) loadMembers(ctx context.Context, query *ProjectMemberQuery, nodes []*Project, init func(*Project), assign func(*Project, *ProjectMember)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Project)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(projectmember.FieldProjectID)
+	}
+	query.Where(predicate.ProjectMember(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(project.MembersColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ProjectID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "project_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (_q *ProjectQuery) sqlCount(ctx context.Context) (int, error) {
@@ -380,6 +531,9 @@ func (_q *ProjectQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != project.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withOrganization != nil {
+			_spec.Node.AddColumnOnce(project.FieldOrganizationID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

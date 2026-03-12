@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,8 +27,35 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgePlatform holds the string denoting the platform edge name in mutations.
+	EdgePlatform = "platform"
+	// EdgeMembers holds the string denoting the members edge name in mutations.
+	EdgeMembers = "members"
+	// EdgeProjects holds the string denoting the projects edge name in mutations.
+	EdgeProjects = "projects"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
+	// PlatformTable is the table that holds the platform relation/edge.
+	PlatformTable = "organizations"
+	// PlatformInverseTable is the table name for the Platform entity.
+	// It exists in this package in order to avoid circular dependency with the "platform" package.
+	PlatformInverseTable = "platforms"
+	// PlatformColumn is the table column denoting the platform relation/edge.
+	PlatformColumn = "platform_id"
+	// MembersTable is the table that holds the members relation/edge.
+	MembersTable = "organization_members"
+	// MembersInverseTable is the table name for the OrganizationMember entity.
+	// It exists in this package in order to avoid circular dependency with the "organizationmember" package.
+	MembersInverseTable = "organization_members"
+	// MembersColumn is the table column denoting the members relation/edge.
+	MembersColumn = "organization_id"
+	// ProjectsTable is the table that holds the projects relation/edge.
+	ProjectsTable = "projects"
+	// ProjectsInverseTable is the table name for the Project entity.
+	// It exists in this package in order to avoid circular dependency with the "project" package.
+	ProjectsInverseTable = "projects"
+	// ProjectsColumn is the table column denoting the projects relation/edge.
+	ProjectsColumn = "organization_id"
 )
 
 // Columns holds all SQL columns for organization fields.
@@ -104,4 +132,60 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByPlatformField orders the results by platform field.
+func ByPlatformField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newPlatformStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMembersCount orders the results by members count.
+func ByMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMembersStep(), opts...)
+	}
+}
+
+// ByMembers orders the results by members terms.
+func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+
+// ByProjectsCount orders the results by projects count.
+func ByProjectsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newProjectsStep(), opts...)
+	}
+}
+
+// ByProjects orders the results by projects terms.
+func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newPlatformStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(PlatformInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, PlatformTable, PlatformColumn),
+	)
+}
+func newMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MembersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MembersTable, MembersColumn),
+	)
+}
+func newProjectsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ProjectsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
+	)
 }

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -100,26 +101,6 @@ func ProjectIDNotIn(vs ...uuid.UUID) predicate.ProjectMember {
 	return predicate.ProjectMember(sql.FieldNotIn(FieldProjectID, vs...))
 }
 
-// ProjectIDGT applies the GT predicate on the "project_id" field.
-func ProjectIDGT(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldGT(FieldProjectID, v))
-}
-
-// ProjectIDGTE applies the GTE predicate on the "project_id" field.
-func ProjectIDGTE(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldGTE(FieldProjectID, v))
-}
-
-// ProjectIDLT applies the LT predicate on the "project_id" field.
-func ProjectIDLT(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldLT(FieldProjectID, v))
-}
-
-// ProjectIDLTE applies the LTE predicate on the "project_id" field.
-func ProjectIDLTE(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldLTE(FieldProjectID, v))
-}
-
 // UserIDEQ applies the EQ predicate on the "user_id" field.
 func UserIDEQ(v uuid.UUID) predicate.ProjectMember {
 	return predicate.ProjectMember(sql.FieldEQ(FieldUserID, v))
@@ -138,26 +119,6 @@ func UserIDIn(vs ...uuid.UUID) predicate.ProjectMember {
 // UserIDNotIn applies the NotIn predicate on the "user_id" field.
 func UserIDNotIn(vs ...uuid.UUID) predicate.ProjectMember {
 	return predicate.ProjectMember(sql.FieldNotIn(FieldUserID, vs...))
-}
-
-// UserIDGT applies the GT predicate on the "user_id" field.
-func UserIDGT(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldGT(FieldUserID, v))
-}
-
-// UserIDGTE applies the GTE predicate on the "user_id" field.
-func UserIDGTE(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldGTE(FieldUserID, v))
-}
-
-// UserIDLT applies the LT predicate on the "user_id" field.
-func UserIDLT(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldLT(FieldUserID, v))
-}
-
-// UserIDLTE applies the LTE predicate on the "user_id" field.
-func UserIDLTE(v uuid.UUID) predicate.ProjectMember {
-	return predicate.ProjectMember(sql.FieldLTE(FieldUserID, v))
 }
 
 // RoleEQ applies the EQ predicate on the "role" field.
@@ -303,6 +264,52 @@ func UpdatedAtLT(v time.Time) predicate.ProjectMember {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.ProjectMember {
 	return predicate.ProjectMember(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasProject applies the HasEdge predicate on the "project" edge.
+func HasProject() predicate.ProjectMember {
+	return predicate.ProjectMember(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, ProjectTable, ProjectColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasProjectWith applies the HasEdge predicate on the "project" edge with a given conditions (other predicates).
+func HasProjectWith(preds ...predicate.Project) predicate.ProjectMember {
+	return predicate.ProjectMember(func(s *sql.Selector) {
+		step := newProjectStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
+}
+
+// HasUser applies the HasEdge predicate on the "user" edge.
+func HasUser() predicate.ProjectMember {
+	return predicate.ProjectMember(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, UserTable, UserColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasUserWith applies the HasEdge predicate on the "user" edge with a given conditions (other predicates).
+func HasUserWith(preds ...predicate.User) predicate.ProjectMember {
+	return predicate.ProjectMember(func(s *sql.Selector) {
+		step := newUserStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

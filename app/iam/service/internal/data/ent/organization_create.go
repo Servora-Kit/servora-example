@@ -11,6 +11,9 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/google/uuid"
 )
 
@@ -95,6 +98,41 @@ func (_c *OrganizationCreate) SetNillableID(v *uuid.UUID) *OrganizationCreate {
 	return _c
 }
 
+// SetPlatform sets the "platform" edge to the Platform entity.
+func (_c *OrganizationCreate) SetPlatform(v *Platform) *OrganizationCreate {
+	return _c.SetPlatformID(v.ID)
+}
+
+// AddMemberIDs adds the "members" edge to the OrganizationMember entity by IDs.
+func (_c *OrganizationCreate) AddMemberIDs(ids ...uuid.UUID) *OrganizationCreate {
+	_c.mutation.AddMemberIDs(ids...)
+	return _c
+}
+
+// AddMembers adds the "members" edges to the OrganizationMember entity.
+func (_c *OrganizationCreate) AddMembers(v ...*OrganizationMember) *OrganizationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddMemberIDs(ids...)
+}
+
+// AddProjectIDs adds the "projects" edge to the Project entity by IDs.
+func (_c *OrganizationCreate) AddProjectIDs(ids ...uuid.UUID) *OrganizationCreate {
+	_c.mutation.AddProjectIDs(ids...)
+	return _c
+}
+
+// AddProjects adds the "projects" edges to the Project entity.
+func (_c *OrganizationCreate) AddProjects(v ...*Project) *OrganizationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddProjectIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (_c *OrganizationCreate) Mutation() *OrganizationMutation {
 	return _c.mutation
@@ -176,6 +214,9 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Organization.updated_at"`)}
 	}
+	if len(_c.mutation.PlatformIDs()) == 0 {
+		return &ValidationError{Name: "platform", err: errors.New(`ent: missing required edge "Organization.platform"`)}
+	}
 	return nil
 }
 
@@ -211,10 +252,6 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.PlatformID(); ok {
-		_spec.SetField(organization.FieldPlatformID, field.TypeUUID, value)
-		_node.PlatformID = value
-	}
 	if value, ok := _c.mutation.Name(); ok {
 		_spec.SetField(organization.FieldName, field.TypeString, value)
 		_node.Name = value
@@ -234,6 +271,55 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := _c.mutation.PlatformIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organization.PlatformTable,
+			Columns: []string{organization.PlatformColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.PlatformID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.MembersTable,
+			Columns: []string{organization.MembersColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organizationmember.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ProjectsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ProjectsTable,
+			Columns: []string{organization.ProjectsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

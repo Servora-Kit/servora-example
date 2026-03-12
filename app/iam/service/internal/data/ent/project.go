@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/google/uuid"
 )
@@ -29,8 +30,42 @@ type Project struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ProjectQuery when eager-loading is set.
+	Edges        ProjectEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ProjectEdges holds the relations/edges for other nodes in the graph.
+type ProjectEdges struct {
+	// Organization holds the value of the organization edge.
+	Organization *Organization `json:"organization,omitempty"`
+	// Members holds the value of the members edge.
+	Members []*ProjectMember `json:"members,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// OrganizationOrErr returns the Organization value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ProjectEdges) OrganizationOrErr() (*Organization, error) {
+	if e.Organization != nil {
+		return e.Organization, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: organization.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization"}
+}
+
+// MembersOrErr returns the Members value or an error if the edge
+// was not loaded in eager-loading.
+func (e ProjectEdges) MembersOrErr() ([]*ProjectMember, error) {
+	if e.loadedTypes[1] {
+		return e.Members, nil
+	}
+	return nil, &NotLoadedError{edge: "members"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -113,6 +148,16 @@ func (_m *Project) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Project) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryOrganization queries the "organization" edge of the Project entity.
+func (_m *Project) QueryOrganization() *OrganizationQuery {
+	return NewProjectClient(_m.config).QueryOrganization(_m)
+}
+
+// QueryMembers queries the "members" edge of the Project entity.
+func (_m *Project) QueryMembers() *ProjectMemberQuery {
+	return NewProjectClient(_m.config).QueryMembers(_m)
 }
 
 // Update returns a builder for updating this Project.

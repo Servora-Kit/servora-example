@@ -11,18 +11,22 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
 // OrganizationMemberQuery is the builder for querying OrganizationMember entities.
 type OrganizationMemberQuery struct {
 	config
-	ctx        *QueryContext
-	order      []organizationmember.OrderOption
-	inters     []Interceptor
-	predicates []predicate.OrganizationMember
+	ctx              *QueryContext
+	order            []organizationmember.OrderOption
+	inters           []Interceptor
+	predicates       []predicate.OrganizationMember
+	withOrganization *OrganizationQuery
+	withUser         *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +61,50 @@ func (_q *OrganizationMemberQuery) Unique(unique bool) *OrganizationMemberQuery 
 func (_q *OrganizationMemberQuery) Order(o ...organizationmember.OrderOption) *OrganizationMemberQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryOrganization chains the current query on the "organization" edge.
+func (_q *OrganizationMemberQuery) QueryOrganization() *OrganizationQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organizationmember.Table, organizationmember.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organizationmember.OrganizationTable, organizationmember.OrganizationColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (_q *OrganizationMemberQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organizationmember.Table, organizationmember.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organizationmember.UserTable, organizationmember.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first OrganizationMember entity from the query.
@@ -246,15 +294,39 @@ func (_q *OrganizationMemberQuery) Clone() *OrganizationMemberQuery {
 		return nil
 	}
 	return &OrganizationMemberQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]organizationmember.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.OrganizationMember{}, _q.predicates...),
+		config:           _q.config,
+		ctx:              _q.ctx.Clone(),
+		order:            append([]organizationmember.OrderOption{}, _q.order...),
+		inters:           append([]Interceptor{}, _q.inters...),
+		predicates:       append([]predicate.OrganizationMember{}, _q.predicates...),
+		withOrganization: _q.withOrganization.Clone(),
+		withUser:         _q.withUser.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithOrganization tells the query-builder to eager-load the nodes that are connected to
+// the "organization" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *OrganizationMemberQuery) WithOrganization(opts ...func(*OrganizationQuery)) *OrganizationMemberQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOrganization = query
+	return _q
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *OrganizationMemberQuery) WithUser(opts ...func(*UserQuery)) *OrganizationMemberQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUser = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +405,12 @@ func (_q *OrganizationMemberQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *OrganizationMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*OrganizationMember, error) {
 	var (
-		nodes = []*OrganizationMember{}
-		_spec = _q.querySpec()
+		nodes       = []*OrganizationMember{}
+		_spec       = _q.querySpec()
+		loadedTypes = [2]bool{
+			_q.withOrganization != nil,
+			_q.withUser != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*OrganizationMember).scanValues(nil, columns)
@@ -342,6 +418,7 @@ func (_q *OrganizationMemberQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &OrganizationMember{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +430,78 @@ func (_q *OrganizationMemberQuery) sqlAll(ctx context.Context, hooks ...queryHoo
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withOrganization; query != nil {
+		if err := _q.loadOrganization(ctx, query, nodes, nil,
+			func(n *OrganizationMember, e *Organization) { n.Edges.Organization = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *OrganizationMember, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *OrganizationMemberQuery) loadOrganization(ctx context.Context, query *OrganizationQuery, nodes []*OrganizationMember, init func(*OrganizationMember), assign func(*OrganizationMember, *Organization)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OrganizationMember)
+	for i := range nodes {
+		fk := nodes[i].OrganizationID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(organization.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "organization_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *OrganizationMemberQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*OrganizationMember, init func(*OrganizationMember), assign func(*OrganizationMember, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*OrganizationMember)
+	for i := range nodes {
+		fk := nodes[i].UserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (_q *OrganizationMemberQuery) sqlCount(ctx context.Context) (int, error) {
@@ -380,6 +528,12 @@ func (_q *OrganizationMemberQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != organizationmember.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withOrganization != nil {
+			_spec.Node.AddColumnOnce(organizationmember.FieldOrganizationID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(organizationmember.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

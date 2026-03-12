@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -11,6 +12,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/google/uuid"
@@ -19,10 +21,11 @@ import (
 // PlatformQuery is the builder for querying Platform entities.
 type PlatformQuery struct {
 	config
-	ctx        *QueryContext
-	order      []platform.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Platform
+	ctx               *QueryContext
+	order             []platform.OrderOption
+	inters            []Interceptor
+	predicates        []predicate.Platform
+	withOrganizations *OrganizationQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +60,28 @@ func (_q *PlatformQuery) Unique(unique bool) *PlatformQuery {
 func (_q *PlatformQuery) Order(o ...platform.OrderOption) *PlatformQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryOrganizations chains the current query on the "organizations" edge.
+func (_q *PlatformQuery) QueryOrganizations() *OrganizationQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(platform.Table, platform.FieldID, selector),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, platform.OrganizationsTable, platform.OrganizationsColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Platform entity from the query.
@@ -246,15 +271,27 @@ func (_q *PlatformQuery) Clone() *PlatformQuery {
 		return nil
 	}
 	return &PlatformQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]platform.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.Platform{}, _q.predicates...),
+		config:            _q.config,
+		ctx:               _q.ctx.Clone(),
+		order:             append([]platform.OrderOption{}, _q.order...),
+		inters:            append([]Interceptor{}, _q.inters...),
+		predicates:        append([]predicate.Platform{}, _q.predicates...),
+		withOrganizations: _q.withOrganizations.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithOrganizations tells the query-builder to eager-load the nodes that are connected to
+// the "organizations" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *PlatformQuery) WithOrganizations(opts ...func(*OrganizationQuery)) *PlatformQuery {
+	query := (&OrganizationClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withOrganizations = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +370,11 @@ func (_q *PlatformQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *PlatformQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Platform, error) {
 	var (
-		nodes = []*Platform{}
-		_spec = _q.querySpec()
+		nodes       = []*Platform{}
+		_spec       = _q.querySpec()
+		loadedTypes = [1]bool{
+			_q.withOrganizations != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Platform).scanValues(nil, columns)
@@ -342,6 +382,7 @@ func (_q *PlatformQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Platform{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +394,45 @@ func (_q *PlatformQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Pla
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withOrganizations; query != nil {
+		if err := _q.loadOrganizations(ctx, query, nodes,
+			func(n *Platform) { n.Edges.Organizations = []*Organization{} },
+			func(n *Platform, e *Organization) { n.Edges.Organizations = append(n.Edges.Organizations, e) }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *PlatformQuery) loadOrganizations(ctx context.Context, query *OrganizationQuery, nodes []*Platform, init func(*Platform), assign func(*Platform, *Organization)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Platform)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+		if init != nil {
+			init(nodes[i])
+		}
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(organization.FieldPlatformID)
+	}
+	query.Where(predicate.Organization(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(platform.OrganizationsColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.PlatformID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "platform_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (_q *PlatformQuery) sqlCount(ctx context.Context) (int, error) {

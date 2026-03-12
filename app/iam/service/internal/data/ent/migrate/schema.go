@@ -12,38 +12,60 @@ var (
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "platform_id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Size: 128},
 		{Name: "slug", Type: field.TypeString, Unique: true, Size: 128},
 		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "platform_id", Type: field.TypeUUID},
 	}
 	// OrganizationsTable holds the schema information for the "organizations" table.
 	OrganizationsTable = &schema.Table{
 		Name:       "organizations",
 		Columns:    OrganizationsColumns,
 		PrimaryKey: []*schema.Column{OrganizationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organizations_platforms_organizations",
+				Columns:    []*schema.Column{OrganizationsColumns[6]},
+				RefColumns: []*schema.Column{PlatformsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 	}
 	// OrganizationMembersColumns holds the columns for the "organization_members" table.
 	OrganizationMembersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "organization_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString, Size: 32, Default: "member"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "organization_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// OrganizationMembersTable holds the schema information for the "organization_members" table.
 	OrganizationMembersTable = &schema.Table{
 		Name:       "organization_members",
 		Columns:    OrganizationMembersColumns,
 		PrimaryKey: []*schema.Column{OrganizationMembersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "organization_members_organizations_members",
+				Columns:    []*schema.Column{OrganizationMembersColumns[4]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "organization_members_users_org_memberships",
+				Columns:    []*schema.Column{OrganizationMembersColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "organizationmember_organization_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{OrganizationMembersColumns[1], OrganizationMembersColumns[2]},
+				Columns: []*schema.Column{OrganizationMembersColumns[4], OrganizationMembersColumns[5]},
 			},
 		},
 	}
@@ -64,45 +86,67 @@ var (
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "organization_id", Type: field.TypeUUID},
 		{Name: "name", Type: field.TypeString, Size: 128},
 		{Name: "slug", Type: field.TypeString, Size: 128},
 		{Name: "description", Type: field.TypeString, Nullable: true, Size: 512},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "organization_id", Type: field.TypeUUID},
 	}
 	// ProjectsTable holds the schema information for the "projects" table.
 	ProjectsTable = &schema.Table{
 		Name:       "projects",
 		Columns:    ProjectsColumns,
 		PrimaryKey: []*schema.Column{ProjectsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "projects_organizations_projects",
+				Columns:    []*schema.Column{ProjectsColumns[6]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "project_organization_id_slug",
 				Unique:  true,
-				Columns: []*schema.Column{ProjectsColumns[1], ProjectsColumns[3]},
+				Columns: []*schema.Column{ProjectsColumns[6], ProjectsColumns[2]},
 			},
 		},
 	}
 	// ProjectMembersColumns holds the columns for the "project_members" table.
 	ProjectMembersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "project_id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID},
 		{Name: "role", Type: field.TypeString, Size: 32, Default: "viewer"},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "project_id", Type: field.TypeUUID},
+		{Name: "user_id", Type: field.TypeUUID},
 	}
 	// ProjectMembersTable holds the schema information for the "project_members" table.
 	ProjectMembersTable = &schema.Table{
 		Name:       "project_members",
 		Columns:    ProjectMembersColumns,
 		PrimaryKey: []*schema.Column{ProjectMembersColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "project_members_projects_members",
+				Columns:    []*schema.Column{ProjectMembersColumns[4]},
+				RefColumns: []*schema.Column{ProjectsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+			{
+				Symbol:     "project_members_users_project_memberships",
+				Columns:    []*schema.Column{ProjectMembersColumns[5]},
+				RefColumns: []*schema.Column{UsersColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
 		Indexes: []*schema.Index{
 			{
 				Name:    "projectmember_project_id_user_id",
 				Unique:  true,
-				Columns: []*schema.Column{ProjectMembersColumns[1], ProjectMembersColumns[2]},
+				Columns: []*schema.Column{ProjectMembersColumns[4], ProjectMembersColumns[5]},
 			},
 		},
 	}
@@ -134,18 +178,24 @@ var (
 )
 
 func init() {
+	OrganizationsTable.ForeignKeys[0].RefTable = PlatformsTable
 	OrganizationsTable.Annotation = &entsql.Annotation{
 		Table: "organizations",
 	}
+	OrganizationMembersTable.ForeignKeys[0].RefTable = OrganizationsTable
+	OrganizationMembersTable.ForeignKeys[1].RefTable = UsersTable
 	OrganizationMembersTable.Annotation = &entsql.Annotation{
 		Table: "organization_members",
 	}
 	PlatformsTable.Annotation = &entsql.Annotation{
 		Table: "platforms",
 	}
+	ProjectsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	ProjectsTable.Annotation = &entsql.Annotation{
 		Table: "projects",
 	}
+	ProjectMembersTable.ForeignKeys[0].RefTable = ProjectsTable
+	ProjectMembersTable.ForeignKeys[1].RefTable = UsersTable
 	ProjectMembersTable.Annotation = &entsql.Annotation{
 		Table: "project_members",
 	}

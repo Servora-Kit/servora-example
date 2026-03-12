@@ -15,6 +15,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -355,6 +356,54 @@ func (c *OrganizationClient) GetX(ctx context.Context, id uuid.UUID) *Organizati
 	return obj
 }
 
+// QueryPlatform queries the platform edge of a Organization.
+func (c *OrganizationClient) QueryPlatform(_m *Organization) *PlatformQuery {
+	query := (&PlatformClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(platform.Table, platform.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organization.PlatformTable, organization.PlatformColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMembers queries the members edge of a Organization.
+func (c *OrganizationClient) QueryMembers(_m *Organization) *OrganizationMemberQuery {
+	query := (&OrganizationMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(organizationmember.Table, organizationmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.MembersTable, organization.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjects queries the projects edge of a Organization.
+func (c *OrganizationClient) QueryProjects(_m *Organization) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organization.Table, organization.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, organization.ProjectsTable, organization.ProjectsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *OrganizationClient) Hooks() []Hook {
 	return c.hooks.Organization
@@ -486,6 +535,38 @@ func (c *OrganizationMemberClient) GetX(ctx context.Context, id uuid.UUID) *Orga
 		panic(err)
 	}
 	return obj
+}
+
+// QueryOrganization queries the organization edge of a OrganizationMember.
+func (c *OrganizationMemberClient) QueryOrganization(_m *OrganizationMember) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organizationmember.Table, organizationmember.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organizationmember.OrganizationTable, organizationmember.OrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a OrganizationMember.
+func (c *OrganizationMemberClient) QueryUser(_m *OrganizationMember) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(organizationmember.Table, organizationmember.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organizationmember.UserTable, organizationmember.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -621,6 +702,22 @@ func (c *PlatformClient) GetX(ctx context.Context, id uuid.UUID) *Platform {
 	return obj
 }
 
+// QueryOrganizations queries the organizations edge of a Platform.
+func (c *PlatformClient) QueryOrganizations(_m *Platform) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(platform.Table, platform.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, platform.OrganizationsTable, platform.OrganizationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *PlatformClient) Hooks() []Hook {
 	return c.hooks.Platform
@@ -752,6 +849,38 @@ func (c *ProjectClient) GetX(ctx context.Context, id uuid.UUID) *Project {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryOrganization queries the organization edge of a Project.
+func (c *ProjectClient) QueryOrganization(_m *Project) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, project.OrganizationTable, project.OrganizationColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryMembers queries the members edge of a Project.
+func (c *ProjectClient) QueryMembers(_m *Project) *ProjectMemberQuery {
+	query := (&ProjectMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(project.Table, project.FieldID, id),
+			sqlgraph.To(projectmember.Table, projectmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, project.MembersTable, project.MembersColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.
@@ -887,6 +1016,38 @@ func (c *ProjectMemberClient) GetX(ctx context.Context, id uuid.UUID) *ProjectMe
 	return obj
 }
 
+// QueryProject queries the project edge of a ProjectMember.
+func (c *ProjectMemberClient) QueryProject(_m *ProjectMember) *ProjectQuery {
+	query := (&ProjectClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectmember.Table, projectmember.FieldID, id),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectmember.ProjectTable, projectmember.ProjectColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryUser queries the user edge of a ProjectMember.
+func (c *ProjectMemberClient) QueryUser(_m *ProjectMember) *UserQuery {
+	query := (&UserClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectmember.Table, projectmember.FieldID, id),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectmember.UserTable, projectmember.UserColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ProjectMemberClient) Hooks() []Hook {
 	return c.hooks.ProjectMember
@@ -1018,6 +1179,38 @@ func (c *UserClient) GetX(ctx context.Context, id uuid.UUID) *User {
 		panic(err)
 	}
 	return obj
+}
+
+// QueryOrgMemberships queries the org_memberships edge of a User.
+func (c *UserClient) QueryOrgMemberships(_m *User) *OrganizationMemberQuery {
+	query := (&OrganizationMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(organizationmember.Table, organizationmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.OrgMembershipsTable, user.OrgMembershipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// QueryProjectMemberships queries the project_memberships edge of a User.
+func (c *UserClient) QueryProjectMemberships(_m *User) *ProjectMemberQuery {
+	query := (&ProjectMemberClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(user.Table, user.FieldID, id),
+			sqlgraph.To(projectmember.Table, projectmember.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, user.ProjectMembershipsTable, user.ProjectMembershipsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
 }
 
 // Hooks returns the client hooks.

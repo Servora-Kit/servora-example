@@ -10,8 +10,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // PlatformUpdate is the builder for updating Platform entities.
@@ -69,9 +71,45 @@ func (_u *PlatformUpdate) SetNillableType(v *string) *PlatformUpdate {
 	return _u
 }
 
+// AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
+func (_u *PlatformUpdate) AddOrganizationIDs(ids ...uuid.UUID) *PlatformUpdate {
+	_u.mutation.AddOrganizationIDs(ids...)
+	return _u
+}
+
+// AddOrganizations adds the "organizations" edges to the Organization entity.
+func (_u *PlatformUpdate) AddOrganizations(v ...*Organization) *PlatformUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOrganizationIDs(ids...)
+}
+
 // Mutation returns the PlatformMutation object of the builder.
 func (_u *PlatformUpdate) Mutation() *PlatformMutation {
 	return _u.mutation
+}
+
+// ClearOrganizations clears all "organizations" edges to the Organization entity.
+func (_u *PlatformUpdate) ClearOrganizations() *PlatformUpdate {
+	_u.mutation.ClearOrganizations()
+	return _u
+}
+
+// RemoveOrganizationIDs removes the "organizations" edge to Organization entities by IDs.
+func (_u *PlatformUpdate) RemoveOrganizationIDs(ids ...uuid.UUID) *PlatformUpdate {
+	_u.mutation.RemoveOrganizationIDs(ids...)
+	return _u
+}
+
+// RemoveOrganizations removes "organizations" edges to Organization entities.
+func (_u *PlatformUpdate) RemoveOrganizations(v ...*Organization) *PlatformUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOrganizationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -142,6 +180,51 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(platform.FieldType, field.TypeString, value)
 	}
+	if _u.mutation.OrganizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOrganizationsIDs(); len(nodes) > 0 && !_u.mutation.OrganizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{platform.Label}
@@ -204,9 +287,45 @@ func (_u *PlatformUpdateOne) SetNillableType(v *string) *PlatformUpdateOne {
 	return _u
 }
 
+// AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
+func (_u *PlatformUpdateOne) AddOrganizationIDs(ids ...uuid.UUID) *PlatformUpdateOne {
+	_u.mutation.AddOrganizationIDs(ids...)
+	return _u
+}
+
+// AddOrganizations adds the "organizations" edges to the Organization entity.
+func (_u *PlatformUpdateOne) AddOrganizations(v ...*Organization) *PlatformUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddOrganizationIDs(ids...)
+}
+
 // Mutation returns the PlatformMutation object of the builder.
 func (_u *PlatformUpdateOne) Mutation() *PlatformMutation {
 	return _u.mutation
+}
+
+// ClearOrganizations clears all "organizations" edges to the Organization entity.
+func (_u *PlatformUpdateOne) ClearOrganizations() *PlatformUpdateOne {
+	_u.mutation.ClearOrganizations()
+	return _u
+}
+
+// RemoveOrganizationIDs removes the "organizations" edge to Organization entities by IDs.
+func (_u *PlatformUpdateOne) RemoveOrganizationIDs(ids ...uuid.UUID) *PlatformUpdateOne {
+	_u.mutation.RemoveOrganizationIDs(ids...)
+	return _u
+}
+
+// RemoveOrganizations removes "organizations" edges to Organization entities.
+func (_u *PlatformUpdateOne) RemoveOrganizations(v ...*Organization) *PlatformUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveOrganizationIDs(ids...)
 }
 
 // Where appends a list predicates to the PlatformUpdate builder.
@@ -306,6 +425,51 @@ func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err 
 	}
 	if value, ok := _u.mutation.GetType(); ok {
 		_spec.SetField(platform.FieldType, field.TypeString, value)
+	}
+	if _u.mutation.OrganizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedOrganizationsIDs(); len(nodes) > 0 && !_u.mutation.OrganizationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Platform{config: _u.config}
 	_spec.Assign = _node.assignValues

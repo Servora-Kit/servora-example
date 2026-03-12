@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -27,7 +28,15 @@ func (Organization) Fields() []ent.Field {
 }
 
 func (Organization) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("platform", Platform.Type).
+			Ref("organizations").
+			Field("platform_id").
+			Unique().
+			Required(),
+		edge.To("members", OrganizationMember.Type),
+		edge.To("projects", Project.Type),
+	}
 }
 
 func (Organization) Annotations() []schema.Annotation {

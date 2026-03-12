@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -77,9 +79,31 @@ func (_u *OrganizationMemberUpdate) SetUpdatedAt(v time.Time) *OrganizationMembe
 	return _u
 }
 
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (_u *OrganizationMemberUpdate) SetOrganization(v *Organization) *OrganizationMemberUpdate {
+	return _u.SetOrganizationID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *OrganizationMemberUpdate) SetUser(v *User) *OrganizationMemberUpdate {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the OrganizationMemberMutation object of the builder.
 func (_u *OrganizationMemberUpdate) Mutation() *OrganizationMemberMutation {
 	return _u.mutation
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (_u *OrganizationMemberUpdate) ClearOrganization() *OrganizationMemberUpdate {
+	_u.mutation.ClearOrganization()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OrganizationMemberUpdate) ClearUser() *OrganizationMemberUpdate {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -125,6 +149,12 @@ func (_u *OrganizationMemberUpdate) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OrganizationMember.role": %w`, err)}
 		}
 	}
+	if _u.mutation.OrganizationCleared() && len(_u.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OrganizationMember.organization"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OrganizationMember.user"`)
+	}
 	return nil
 }
 
@@ -140,17 +170,69 @@ func (_u *OrganizationMemberUpdate) sqlSave(ctx context.Context) (_node int, err
 			}
 		}
 	}
-	if value, ok := _u.mutation.OrganizationID(); ok {
-		_spec.SetField(organizationmember.FieldOrganizationID, field.TypeUUID, value)
-	}
-	if value, ok := _u.mutation.UserID(); ok {
-		_spec.SetField(organizationmember.FieldUserID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(organizationmember.FieldRole, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(organizationmember.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.OrganizationTable,
+			Columns: []string{organizationmember.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.OrganizationTable,
+			Columns: []string{organizationmember.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.UserTable,
+			Columns: []string{organizationmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.UserTable,
+			Columns: []string{organizationmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -220,9 +302,31 @@ func (_u *OrganizationMemberUpdateOne) SetUpdatedAt(v time.Time) *OrganizationMe
 	return _u
 }
 
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (_u *OrganizationMemberUpdateOne) SetOrganization(v *Organization) *OrganizationMemberUpdateOne {
+	return _u.SetOrganizationID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_u *OrganizationMemberUpdateOne) SetUser(v *User) *OrganizationMemberUpdateOne {
+	return _u.SetUserID(v.ID)
+}
+
 // Mutation returns the OrganizationMemberMutation object of the builder.
 func (_u *OrganizationMemberUpdateOne) Mutation() *OrganizationMemberMutation {
 	return _u.mutation
+}
+
+// ClearOrganization clears the "organization" edge to the Organization entity.
+func (_u *OrganizationMemberUpdateOne) ClearOrganization() *OrganizationMemberUpdateOne {
+	_u.mutation.ClearOrganization()
+	return _u
+}
+
+// ClearUser clears the "user" edge to the User entity.
+func (_u *OrganizationMemberUpdateOne) ClearUser() *OrganizationMemberUpdateOne {
+	_u.mutation.ClearUser()
+	return _u
 }
 
 // Where appends a list predicates to the OrganizationMemberUpdate builder.
@@ -281,6 +385,12 @@ func (_u *OrganizationMemberUpdateOne) check() error {
 			return &ValidationError{Name: "role", err: fmt.Errorf(`ent: validator failed for field "OrganizationMember.role": %w`, err)}
 		}
 	}
+	if _u.mutation.OrganizationCleared() && len(_u.mutation.OrganizationIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OrganizationMember.organization"`)
+	}
+	if _u.mutation.UserCleared() && len(_u.mutation.UserIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "OrganizationMember.user"`)
+	}
 	return nil
 }
 
@@ -313,17 +423,69 @@ func (_u *OrganizationMemberUpdateOne) sqlSave(ctx context.Context) (_node *Orga
 			}
 		}
 	}
-	if value, ok := _u.mutation.OrganizationID(); ok {
-		_spec.SetField(organizationmember.FieldOrganizationID, field.TypeUUID, value)
-	}
-	if value, ok := _u.mutation.UserID(); ok {
-		_spec.SetField(organizationmember.FieldUserID, field.TypeUUID, value)
-	}
 	if value, ok := _u.mutation.Role(); ok {
 		_spec.SetField(organizationmember.FieldRole, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(organizationmember.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if _u.mutation.OrganizationCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.OrganizationTable,
+			Columns: []string{organizationmember.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.OrganizationTable,
+			Columns: []string{organizationmember.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.UserCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.UserTable,
+			Columns: []string{organizationmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.UserTable,
+			Columns: []string{organizationmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &OrganizationMember{config: _u.config}
 	_spec.Assign = _node.assignValues

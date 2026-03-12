@@ -12,17 +12,21 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
 // ProjectMemberQuery is the builder for querying ProjectMember entities.
 type ProjectMemberQuery struct {
 	config
-	ctx        *QueryContext
-	order      []projectmember.OrderOption
-	inters     []Interceptor
-	predicates []predicate.ProjectMember
+	ctx         *QueryContext
+	order       []projectmember.OrderOption
+	inters      []Interceptor
+	predicates  []predicate.ProjectMember
+	withProject *ProjectQuery
+	withUser    *UserQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -57,6 +61,50 @@ func (_q *ProjectMemberQuery) Unique(unique bool) *ProjectMemberQuery {
 func (_q *ProjectMemberQuery) Order(o ...projectmember.OrderOption) *ProjectMemberQuery {
 	_q.order = append(_q.order, o...)
 	return _q
+}
+
+// QueryProject chains the current query on the "project" edge.
+func (_q *ProjectMemberQuery) QueryProject() *ProjectQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectmember.Table, projectmember.FieldID, selector),
+			sqlgraph.To(project.Table, project.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectmember.ProjectTable, projectmember.ProjectColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
+}
+
+// QueryUser chains the current query on the "user" edge.
+func (_q *ProjectMemberQuery) QueryUser() *UserQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := _q.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := _q.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(projectmember.Table, projectmember.FieldID, selector),
+			sqlgraph.To(user.Table, user.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, projectmember.UserTable, projectmember.UserColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first ProjectMember entity from the query.
@@ -246,15 +294,39 @@ func (_q *ProjectMemberQuery) Clone() *ProjectMemberQuery {
 		return nil
 	}
 	return &ProjectMemberQuery{
-		config:     _q.config,
-		ctx:        _q.ctx.Clone(),
-		order:      append([]projectmember.OrderOption{}, _q.order...),
-		inters:     append([]Interceptor{}, _q.inters...),
-		predicates: append([]predicate.ProjectMember{}, _q.predicates...),
+		config:      _q.config,
+		ctx:         _q.ctx.Clone(),
+		order:       append([]projectmember.OrderOption{}, _q.order...),
+		inters:      append([]Interceptor{}, _q.inters...),
+		predicates:  append([]predicate.ProjectMember{}, _q.predicates...),
+		withProject: _q.withProject.Clone(),
+		withUser:    _q.withUser.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
+}
+
+// WithProject tells the query-builder to eager-load the nodes that are connected to
+// the "project" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectMemberQuery) WithProject(opts ...func(*ProjectQuery)) *ProjectMemberQuery {
+	query := (&ProjectClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withProject = query
+	return _q
+}
+
+// WithUser tells the query-builder to eager-load the nodes that are connected to
+// the "user" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *ProjectMemberQuery) WithUser(opts ...func(*UserQuery)) *ProjectMemberQuery {
+	query := (&UserClient{config: _q.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	_q.withUser = query
+	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -333,8 +405,12 @@ func (_q *ProjectMemberQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *ProjectMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*ProjectMember, error) {
 	var (
-		nodes = []*ProjectMember{}
-		_spec = _q.querySpec()
+		nodes       = []*ProjectMember{}
+		_spec       = _q.querySpec()
+		loadedTypes = [2]bool{
+			_q.withProject != nil,
+			_q.withUser != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*ProjectMember).scanValues(nil, columns)
@@ -342,6 +418,7 @@ func (_q *ProjectMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &ProjectMember{config: _q.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -353,7 +430,78 @@ func (_q *ProjectMemberQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := _q.withProject; query != nil {
+		if err := _q.loadProject(ctx, query, nodes, nil,
+			func(n *ProjectMember, e *Project) { n.Edges.Project = e }); err != nil {
+			return nil, err
+		}
+	}
+	if query := _q.withUser; query != nil {
+		if err := _q.loadUser(ctx, query, nodes, nil,
+			func(n *ProjectMember, e *User) { n.Edges.User = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (_q *ProjectMemberQuery) loadProject(ctx context.Context, query *ProjectQuery, nodes []*ProjectMember, init func(*ProjectMember), assign func(*ProjectMember, *Project)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ProjectMember)
+	for i := range nodes {
+		fk := nodes[i].ProjectID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(project.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "project_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
+}
+func (_q *ProjectMemberQuery) loadUser(ctx context.Context, query *UserQuery, nodes []*ProjectMember, init func(*ProjectMember), assign func(*ProjectMember, *User)) error {
+	ids := make([]uuid.UUID, 0, len(nodes))
+	nodeids := make(map[uuid.UUID][]*ProjectMember)
+	for i := range nodes {
+		fk := nodes[i].UserID
+		if _, ok := nodeids[fk]; !ok {
+			ids = append(ids, fk)
+		}
+		nodeids[fk] = append(nodeids[fk], nodes[i])
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+	query.Where(user.IDIn(ids...))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		nodes, ok := nodeids[n.ID]
+		if !ok {
+			return fmt.Errorf(`unexpected foreign-key "user_id" returned %v`, n.ID)
+		}
+		for i := range nodes {
+			assign(nodes[i], n)
+		}
+	}
+	return nil
 }
 
 func (_q *ProjectMemberQuery) sqlCount(ctx context.Context) (int, error) {
@@ -380,6 +528,12 @@ func (_q *ProjectMemberQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != projectmember.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
+		}
+		if _q.withProject != nil {
+			_spec.Node.AddColumnOnce(projectmember.FieldProjectID)
+		}
+		if _q.withUser != nil {
+			_spec.Node.AddColumnOnce(projectmember.FieldUserID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

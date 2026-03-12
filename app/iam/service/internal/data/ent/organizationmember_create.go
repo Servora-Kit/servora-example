@@ -10,7 +10,9 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -89,6 +91,16 @@ func (_c *OrganizationMemberCreate) SetNillableID(v *uuid.UUID) *OrganizationMem
 	return _c
 }
 
+// SetOrganization sets the "organization" edge to the Organization entity.
+func (_c *OrganizationMemberCreate) SetOrganization(v *Organization) *OrganizationMemberCreate {
+	return _c.SetOrganizationID(v.ID)
+}
+
+// SetUser sets the "user" edge to the User entity.
+func (_c *OrganizationMemberCreate) SetUser(v *User) *OrganizationMemberCreate {
+	return _c.SetUserID(v.ID)
+}
+
 // Mutation returns the OrganizationMemberMutation object of the builder.
 func (_c *OrganizationMemberCreate) Mutation() *OrganizationMemberMutation {
 	return _c.mutation
@@ -164,6 +176,12 @@ func (_c *OrganizationMemberCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "OrganizationMember.updated_at"`)}
 	}
+	if len(_c.mutation.OrganizationIDs()) == 0 {
+		return &ValidationError{Name: "organization", err: errors.New(`ent: missing required edge "OrganizationMember.organization"`)}
+	}
+	if len(_c.mutation.UserIDs()) == 0 {
+		return &ValidationError{Name: "user", err: errors.New(`ent: missing required edge "OrganizationMember.user"`)}
+	}
 	return nil
 }
 
@@ -199,14 +217,6 @@ func (_c *OrganizationMemberCreate) createSpec() (*OrganizationMember, *sqlgraph
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := _c.mutation.OrganizationID(); ok {
-		_spec.SetField(organizationmember.FieldOrganizationID, field.TypeUUID, value)
-		_node.OrganizationID = value
-	}
-	if value, ok := _c.mutation.UserID(); ok {
-		_spec.SetField(organizationmember.FieldUserID, field.TypeUUID, value)
-		_node.UserID = value
-	}
 	if value, ok := _c.mutation.Role(); ok {
 		_spec.SetField(organizationmember.FieldRole, field.TypeString, value)
 		_node.Role = value
@@ -218,6 +228,40 @@ func (_c *OrganizationMemberCreate) createSpec() (*OrganizationMember, *sqlgraph
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(organizationmember.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := _c.mutation.OrganizationIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.OrganizationTable,
+			Columns: []string{organizationmember.OrganizationColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.OrganizationID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.UserIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   organizationmember.UserTable,
+			Columns: []string{organizationmember.UserColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(user.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.UserID = nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

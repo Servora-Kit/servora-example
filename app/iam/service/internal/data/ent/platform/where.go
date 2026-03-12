@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -308,6 +309,29 @@ func CreatedAtLT(v time.Time) predicate.Platform {
 // CreatedAtLTE applies the LTE predicate on the "created_at" field.
 func CreatedAtLTE(v time.Time) predicate.Platform {
 	return predicate.Platform(sql.FieldLTE(FieldCreatedAt, v))
+}
+
+// HasOrganizations applies the HasEdge predicate on the "organizations" edge.
+func HasOrganizations() predicate.Platform {
+	return predicate.Platform(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, OrganizationsTable, OrganizationsColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasOrganizationsWith applies the HasEdge predicate on the "organizations" edge with a given conditions (other predicates).
+func HasOrganizationsWith(preds ...predicate.Organization) predicate.Platform {
+	return predicate.Platform(func(s *sql.Selector) {
+		step := newOrganizationsStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

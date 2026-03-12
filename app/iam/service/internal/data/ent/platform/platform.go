@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -22,8 +23,17 @@ const (
 	FieldType = "type"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
+	// EdgeOrganizations holds the string denoting the organizations edge name in mutations.
+	EdgeOrganizations = "organizations"
 	// Table holds the table name of the platform in the database.
 	Table = "platforms"
+	// OrganizationsTable is the table that holds the organizations relation/edge.
+	OrganizationsTable = "organizations"
+	// OrganizationsInverseTable is the table name for the Organization entity.
+	// It exists in this package in order to avoid circular dependency with the "organization" package.
+	OrganizationsInverseTable = "organizations"
+	// OrganizationsColumn is the table column denoting the organizations relation/edge.
+	OrganizationsColumn = "platform_id"
 )
 
 // Columns holds all SQL columns for platform fields.
@@ -86,4 +96,25 @@ func ByType(opts ...sql.OrderTermOption) OrderOption {
 // ByCreatedAt orders the results by the created_at field.
 func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldCreatedAt, opts...).ToFunc()
+}
+
+// ByOrganizationsCount orders the results by organizations count.
+func ByOrganizationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newOrganizationsStep(), opts...)
+	}
+}
+
+// ByOrganizations orders the results by organizations terms.
+func ByOrganizations(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOrganizationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOrganizationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OrganizationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, OrganizationsTable, OrganizationsColumn),
+	)
 }

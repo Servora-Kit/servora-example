@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/google/uuid"
 )
@@ -73,6 +74,21 @@ func (_c *PlatformCreate) SetNillableID(v *uuid.UUID) *PlatformCreate {
 		_c.SetID(*v)
 	}
 	return _c
+}
+
+// AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
+func (_c *PlatformCreate) AddOrganizationIDs(ids ...uuid.UUID) *PlatformCreate {
+	_c.mutation.AddOrganizationIDs(ids...)
+	return _c
+}
+
+// AddOrganizations adds the "organizations" edges to the Organization entity.
+func (_c *PlatformCreate) AddOrganizations(v ...*Organization) *PlatformCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddOrganizationIDs(ids...)
 }
 
 // Mutation returns the PlatformMutation object of the builder.
@@ -203,6 +219,22 @@ func (_c *PlatformCreate) createSpec() (*Platform, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.CreatedAt(); ok {
 		_spec.SetField(platform.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
+	}
+	if nodes := _c.mutation.OrganizationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   platform.OrganizationsTable,
+			Columns: []string{platform.OrganizationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

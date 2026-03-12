@@ -9,7 +9,9 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/google/uuid"
 )
 
@@ -27,8 +29,44 @@ type OrganizationMember struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the OrganizationMemberQuery when eager-loading is set.
+	Edges        OrganizationMemberEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// OrganizationMemberEdges holds the relations/edges for other nodes in the graph.
+type OrganizationMemberEdges struct {
+	// Organization holds the value of the organization edge.
+	Organization *Organization `json:"organization,omitempty"`
+	// User holds the value of the user edge.
+	User *User `json:"user,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [2]bool
+}
+
+// OrganizationOrErr returns the Organization value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OrganizationMemberEdges) OrganizationOrErr() (*Organization, error) {
+	if e.Organization != nil {
+		return e.Organization, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: organization.Label}
+	}
+	return nil, &NotLoadedError{edge: "organization"}
+}
+
+// UserOrErr returns the User value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e OrganizationMemberEdges) UserOrErr() (*User, error) {
+	if e.User != nil {
+		return e.User, nil
+	} else if e.loadedTypes[1] {
+		return nil, &NotFoundError{label: user.Label}
+	}
+	return nil, &NotLoadedError{edge: "user"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -104,6 +142,16 @@ func (_m *OrganizationMember) assignValues(columns []string, values []any) error
 // This includes values selected through modifiers, order, etc.
 func (_m *OrganizationMember) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
+}
+
+// QueryOrganization queries the "organization" edge of the OrganizationMember entity.
+func (_m *OrganizationMember) QueryOrganization() *OrganizationQuery {
+	return NewOrganizationMemberClient(_m.config).QueryOrganization(_m)
+}
+
+// QueryUser queries the "user" edge of the OrganizationMember entity.
+func (_m *OrganizationMember) QueryUser() *UserQuery {
+	return NewOrganizationMemberClient(_m.config).QueryUser(_m)
 }
 
 // Update returns a builder for updating this OrganizationMember.

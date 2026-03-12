@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -26,8 +27,26 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeOrganization holds the string denoting the organization edge name in mutations.
+	EdgeOrganization = "organization"
+	// EdgeMembers holds the string denoting the members edge name in mutations.
+	EdgeMembers = "members"
 	// Table holds the table name of the project in the database.
 	Table = "projects"
+	// OrganizationTable is the table that holds the organization relation/edge.
+	OrganizationTable = "projects"
+	// OrganizationInverseTable is the table name for the Organization entity.
+	// It exists in this package in order to avoid circular dependency with the "organization" package.
+	OrganizationInverseTable = "organizations"
+	// OrganizationColumn is the table column denoting the organization relation/edge.
+	OrganizationColumn = "organization_id"
+	// MembersTable is the table that holds the members relation/edge.
+	MembersTable = "project_members"
+	// MembersInverseTable is the table name for the ProjectMember entity.
+	// It exists in this package in order to avoid circular dependency with the "projectmember" package.
+	MembersInverseTable = "project_members"
+	// MembersColumn is the table column denoting the members relation/edge.
+	MembersColumn = "project_id"
 )
 
 // Columns holds all SQL columns for project fields.
@@ -104,4 +123,39 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByOrganizationField orders the results by organization field.
+func ByOrganizationField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newOrganizationStep(), sql.OrderByField(field, opts...))
+	}
+}
+
+// ByMembersCount orders the results by members count.
+func ByMembersCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newMembersStep(), opts...)
+	}
+}
+
+// ByMembers orders the results by members terms.
+func ByMembers(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newMembersStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
+func newOrganizationStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(OrganizationInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, OrganizationTable, OrganizationColumn),
+	)
+}
+func newMembersStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(MembersInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, MembersTable, MembersColumn),
+	)
 }
