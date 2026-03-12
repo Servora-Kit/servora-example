@@ -24,7 +24,7 @@ inputs:
 plugins:
     # generate openapi v3 yaml doc
     - local: protoc-gen-openapi
-      out: app/iam/service
+      out: app/iam/service/internal/assets
       opt:
           - naming=json # 使用 JSON 风格字段命名
           - depth=2 # 循环消息的递归深度

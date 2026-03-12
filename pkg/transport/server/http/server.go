@@ -10,6 +10,7 @@ import (
 	conf "github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/health"
+	"github.com/Servora-Kit/servora/pkg/swagger"
 	"github.com/Servora-Kit/servora/pkg/transport/server"
 	svrmw "github.com/Servora-Kit/servora/pkg/transport/server/middleware"
 )
@@ -26,6 +27,8 @@ type serverOptions struct {
 	metricsHandler http.Handler
 	registrars     []Registrar
 	healthHandler  *health.Handler
+	swaggerSpec    []byte
+	swaggerOpts    []swagger.Option
 }
 
 func WithConfig(c *conf.Server_HTTP) ServerOption {
@@ -74,6 +77,15 @@ func WithHealthCheck(h *health.Handler) ServerOption {
 	}
 }
 
+// WithSwagger 启用 Swagger UI 文档端点。
+// 注册 GET /docs/ (UI 页面) 和 GET /docs/openapi.yaml (原始 spec) 路由。
+func WithSwagger(specData []byte, opts ...swagger.Option) ServerOption {
+	return func(o *serverOptions) {
+		o.swaggerSpec = specData
+		o.swaggerOpts = opts
+	}
+}
+
 func NewServer(opts ...ServerOption) *khttp.Server {
 	o := &serverOptions{}
 	for _, opt := range opts {
@@ -118,6 +130,10 @@ func NewServer(opts ...ServerOption) *khttp.Server {
 	if o.healthHandler != nil {
 		srv.HandleFunc("/healthz", o.healthHandler.LivenessHandler())
 		srv.HandleFunc("/readyz", o.healthHandler.ReadinessHandler())
+	}
+
+	if len(o.swaggerSpec) > 0 {
+		swagger.Register(srv, o.swaggerSpec, o.swaggerOpts...)
 	}
 
 	for _, reg := range o.registrars {

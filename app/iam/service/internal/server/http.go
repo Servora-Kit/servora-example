@@ -9,6 +9,7 @@ import (
 
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	iamv1 "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/assets"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
@@ -17,6 +18,7 @@ import (
 	"github.com/Servora-Kit/servora/pkg/logger"
 	"github.com/Servora-Kit/servora/pkg/openfga"
 	"github.com/Servora-Kit/servora/pkg/redis"
+	"github.com/Servora-Kit/servora/pkg/swagger"
 	"github.com/Servora-Kit/servora/pkg/transport/server/http"
 	svrmw "github.com/Servora-Kit/servora/pkg/transport/server/middleware"
 )
@@ -121,6 +123,7 @@ func NewHTTPServer(
 		http.WithMiddleware(mw...),
 		http.WithMetrics(mtc),
 		http.WithHealthCheck(h),
+		http.WithSwagger(assets.OpenAPIData, swagger.WithTitle("IAM API")),
 		http.WithServices(
 			func(s *khttp.Server) { iamv1.RegisterAuthServiceHTTPServer(s, auth) },
 			func(s *khttp.Server) { iamv1.RegisterUserServiceHTTPServer(s, user) },

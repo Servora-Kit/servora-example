@@ -13,6 +13,24 @@ info:
         url: https://github.com/Servora-Kit/servora/blob/main/LICENSE
     version: "1.0"
 paths:
+    /v1/auth/change-password:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_ChangePassword
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ChangePasswordRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ChangePasswordResponse'
     /v1/auth/login/email-password:
         post:
             tags:
@@ -49,6 +67,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/LogoutResponse'
+    /v1/auth/logout-all:
+        post:
+            tags:
+                - AuthService
+            operationId: AuthService_LogoutAllDevices
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/LogoutAllDevicesRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/LogoutAllDevicesResponse'
     /v1/auth/refresh-token:
         post:
             tags:
@@ -823,6 +859,22 @@ components:
             properties:
                 member:
                     $ref: '#/components/schemas/OrganizationMemberInfo'
+        ChangePasswordRequest:
+            type: object
+            properties:
+                currentPassword:
+                    type: string
+                newPassword:
+                    type: string
+                newPasswordConfirm:
+                    type: string
+            description: 修改密码请求
+        ChangePasswordResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+            description: 修改密码响应
         CreateOrganizationRequest:
             type: object
             properties:
@@ -977,6 +1029,16 @@ components:
                 expiresIn:
                     type: string
             description: 密码登录响应
+        LogoutAllDevicesRequest:
+            type: object
+            properties: {}
+            description: 全设备退出请求
+        LogoutAllDevicesResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+            description: 全设备退出响应
         LogoutRequest:
             type: object
             properties:
