@@ -3,6 +3,7 @@ module github.com/Servora-Kit/servora
 go 1.26.0
 
 require (
+	github.com/Servora-Kit/servora/api/gen v0.0.0-20260311092442-823611a427e8
 	github.com/charmbracelet/huh v0.8.0
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/glebarez/sqlite v1.11.0

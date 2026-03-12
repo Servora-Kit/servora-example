@@ -83,7 +83,7 @@ func (ErrorReason) EnumDescriptor() ([]byte, []int) {
 
 type UserInfo struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
@@ -121,11 +121,11 @@ func (*UserInfo) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *UserInfo) GetId() int64 {
+func (x *UserInfo) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *UserInfo) GetName() string {
@@ -187,7 +187,7 @@ func (*CurrentUserInfoRequest) Descriptor() ([]byte, []int) {
 
 type CurrentUserInfoResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Role          string                 `protobuf:"bytes,3,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -224,11 +224,11 @@ func (*CurrentUserInfoResponse) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CurrentUserInfoResponse) GetId() int64 {
+func (x *CurrentUserInfoResponse) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *CurrentUserInfoResponse) GetName() string {
@@ -343,7 +343,7 @@ func (x *ListUsersResponse) GetPagination() *v1.PaginationResponse {
 
 type DeleteUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"` // 用户ID必须大于0
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -378,11 +378,11 @@ func (*DeleteUserRequest) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{5}
 }
 
-func (x *DeleteUserRequest) GetId() int64 {
+func (x *DeleteUserRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 type DeleteUserResponse struct {
@@ -431,7 +431,7 @@ func (x *DeleteUserResponse) GetSuccess() bool {
 
 type UpdateUserRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
@@ -470,11 +470,11 @@ func (*UpdateUserRequest) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{7}
 }
 
-func (x *UpdateUserRequest) GetId() int64 {
+func (x *UpdateUserRequest) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *UpdateUserRequest) GetName() string {
@@ -667,13 +667,13 @@ const file_user_service_v1_user_proto_rawDesc = "" +
 	"\n" +
 	"\x1auser/service/v1/user.proto\x12\x0fuser.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1epagination/v1/pagination.proto\"X\n" +
 	"\bUserInfo\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\"\x18\n" +
 	"\x16CurrentUserInfoRequest\"Q\n" +
 	"\x17CurrentUserInfoResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04role\x18\x03 \x01(\tR\x04role\"Q\n" +
 	"\x10ListUsersRequest\x12=\n" +
@@ -684,13 +684,13 @@ const file_user_service_v1_user_proto_rawDesc = "" +
 	"\x05users\x18\x01 \x03(\v2\x19.user.service.v1.UserInfoR\x05users\x12>\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
-	"pagination\",\n" +
-	"\x11DeleteUserRequest\x12\x17\n" +
-	"\x02id\x18\x01 \x01(\x03B\a\xbaH\x04\"\x02 \x00R\x02id\".\n" +
+	"pagination\"-\n" +
+	"\x11DeleteUserRequest\x12\x18\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\".\n" +
 	"\x12DeleteUserResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess\"}\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
 	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\x12\n" +

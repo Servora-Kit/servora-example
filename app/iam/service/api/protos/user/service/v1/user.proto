@@ -35,7 +35,7 @@ service UserService {
 }
 
 message UserInfo {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   string role = 4;
@@ -44,7 +44,7 @@ message UserInfo {
 message CurrentUserInfoRequest {}
 
 message CurrentUserInfoResponse {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string role = 3;
 }
@@ -59,7 +59,7 @@ message ListUsersResponse {
 }
 
 message DeleteUserRequest {
-  int64 id = 1 [(buf.validate.field).int64.gt = 0]; // 用户ID必须大于0
+  string id = 1 [(buf.validate.field).string.uuid = true];
 }
 
 message DeleteUserResponse {
@@ -67,7 +67,7 @@ message DeleteUserResponse {
 }
 
 message UpdateUserRequest {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   string password = 4;

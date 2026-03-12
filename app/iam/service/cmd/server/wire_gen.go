@@ -11,7 +11,6 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/server"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/server/middleware"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/bootstrap"
 	"github.com/Servora-Kit/servora/pkg/governance/registry"
@@ -36,8 +35,11 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	}
 	grpcMiddleware := server.NewGRPCMiddleware(trace, telemetryMetrics, logger)
 	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger)
-	authJWT := middleware.NewAuthMiddleware(app)
-	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, authJWT)
+	keyManager, err := server.NewKeyManager(app)
+	if err != nil {
+		return nil, nil, err
+	}
+	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager)
 	redisClient, cleanup, err := data.NewRedis(confData, logger)
 	if err != nil {
 		return nil, nil, err
@@ -60,7 +62,7 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		return nil, nil, err
 	}
 	authRepo := data.NewAuthRepo(dataData, logger)
-	authUsecase := biz.NewAuthUsecase(authRepo, logger, app)
+	authUsecase := biz.NewAuthUsecase(authRepo, logger, app, keyManager)
 	authService := service.NewAuthService(authUsecase)
 	userRepo := data.NewUserRepo(dataData, logger)
 	userUsecase := biz.NewUserUsecase(userRepo, logger, app, authRepo)
@@ -68,7 +70,7 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	testRepo := data.NewTestRepo(dataData, logger)
 	testUsecase := biz.NewTestUsecase(testRepo, logger)
 	testService := service.NewTestService(testUsecase)
-	httpServer := server.NewHTTPServer(confServer, httpMiddleware, telemetryMetrics, logger, handler, authService, userService, testService)
+	httpServer := server.NewHTTPServer(confServer, app, httpMiddleware, telemetryMetrics, logger, handler, keyManager, authService, userService, testService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer)
 	return kratosApp, func() {
 		cleanup2()

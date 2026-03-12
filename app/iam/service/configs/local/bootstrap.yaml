@@ -18,10 +18,11 @@ data:
 app:
   env: "dev"
   jwt:
-    access_secret: "servora_access_secret_change_me"
-    refresh_secret: "servora_refresh_secret_change_me"
+    private_key_path: "./configs/keys/iam.rsa.pem"
     access_expire: 3600
     refresh_expire: 604800
+    issuer: "iam.service"
+    audience: "servora"
   log:
     level: 0
     filename: "./logs/iam.service.log"

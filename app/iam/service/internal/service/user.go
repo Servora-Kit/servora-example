@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	authpb "github.com/Servora-Kit/servora/api/gen/go/auth/service/v1"
 	paginationpb "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
@@ -10,7 +9,6 @@ import (
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/consts"
 )
 
 type UserService struct {
@@ -65,7 +63,6 @@ func (s *UserService) ListUsers(ctx context.Context, req *userpb.ListUsersReques
 	}, nil
 }
 
-// UpdateUser 更新用户信息
 func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequest) (*userpb.UpdateUserResponse, error) {
 	currentUser, err := s.uc.CurrentUserInfo(ctx)
 	if err != nil {
@@ -73,21 +70,19 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	}
 
 	switch currentUser.Role {
-	case consts.User.String():
+	case "user":
 		if currentUser.ID != req.Id {
 			return nil, authpb.ErrorUnauthorized("you only can update your own information")
 		}
-		if req.Role != "" && req.Role != consts.User.String() {
+		if req.Role != "" && req.Role != "user" {
 			return nil, authpb.ErrorUnauthorized("you do not have permission to change your role")
 		}
-	case consts.Admin.String():
-		if req.Role != "" && req.Role >= consts.Admin.String() {
-			return nil, authpb.ErrorUnauthorized("admin cannot assign role higher than admin")
-		}
-	case consts.Operator.String():
-		if req.Role != "" && req.Role > consts.Operator.String() {
-			return nil, authpb.ErrorUnauthorized("operator cannot assign role higher than operator")
-		}
+	case "admin":
+		// admin can update any user
+	case "operator":
+		// operator can update any user
+	default:
+		return nil, authpb.ErrorUnauthorized("insufficient permissions")
 	}
 
 	user := &entity.User{
@@ -106,7 +101,6 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	}, nil
 }
 
-// SaveUser 保存用户
 func (s *UserService) SaveUser(ctx context.Context, req *userpb.SaveUserRequest) (*userpb.SaveUserResponse, error) {
 	user := &entity.User{
 		Name:     req.Name,
@@ -118,10 +112,9 @@ func (s *UserService) SaveUser(ctx context.Context, req *userpb.SaveUserRequest)
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.SaveUserResponse{Id: fmt.Sprintf("%d", user.ID)}, nil
+	return &userpb.SaveUserResponse{Id: user.ID}, nil
 }
 
-// DeleteUser 删除用户
 func (s *UserService) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
 	success, err := s.uc.DeleteUser(ctx, &entity.User{
 		ID: req.Id,

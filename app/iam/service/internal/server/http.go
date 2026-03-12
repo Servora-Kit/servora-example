@@ -7,25 +7,23 @@ import (
 
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	iamv1 "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/consts"
-	innermw "github.com/Servora-Kit/servora/app/iam/service/internal/server/middleware"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/health"
+	"github.com/Servora-Kit/servora/pkg/jwks"
 	"github.com/Servora-Kit/servora/pkg/logger"
 	"github.com/Servora-Kit/servora/pkg/redis"
 	"github.com/Servora-Kit/servora/pkg/transport/server/http"
 	svrmw "github.com/Servora-Kit/servora/pkg/transport/server/middleware"
 )
 
-// HTTPMiddleware 用于 Wire 注入的中间件切片包装类型
 type HTTPMiddleware []middleware.Middleware
 
 func NewHTTPMiddleware(
 	trace *conf.Trace,
 	m *telemetry.Metrics,
 	l logger.Logger,
-	authJWT innermw.AuthJWT,
+	km *jwks.KeyManager,
 ) HTTPMiddleware {
 	ms := svrmw.NewChainBuilder(logger.With(l, logger.WithModule("http/server/iam-service"))).
 		WithTrace(trace).
@@ -40,22 +38,11 @@ func NewHTTPMiddleware(
 		iamv1.OperationTestServiceHello,
 	)
 
-	userWhitelist := svrmw.NewWhiteList(svrmw.Exact,
-		iamv1.OperationUserServiceCurrentUserInfo,
-		iamv1.OperationUserServiceUpdateUser,
-		iamv1.OperationAuthServiceLogout,
-		iamv1.OperationTestServicePrivateTest,
-	)
-
-	// Admin 权限排除白名单 = 公开接口 ∪ User 级接口
-	adminExcludeWhitelist := publicWhitelist.Merge(userWhitelist)
+	authn := svrmw.Authn(svrmw.WithVerifier(km.Verifier()))
 
 	ms = append(ms,
-		selector.Server(authJWT(consts.User)).
+		selector.Server(authn).
 			Match(publicWhitelist.MatchFunc()).
-			Build(),
-		selector.Server(authJWT(consts.Admin)).
-			Match(adminExcludeWhitelist.MatchFunc()).
 			Build(),
 	)
 
@@ -68,18 +55,31 @@ func NewHealthHandler(redisClient *redis.Client) *health.Handler {
 	})
 }
 
-// NewHTTPServer new an HTTP server.
 func NewHTTPServer(
 	c *conf.Server,
+	appCfg *conf.App,
 	mw HTTPMiddleware,
 	mtc *telemetry.Metrics,
 	l logger.Logger,
 	h *health.Handler,
+	km *jwks.KeyManager,
 	auth *service.AuthService,
 	user *service.UserService,
 	test *service.TestService,
 ) *khttp.Server {
 	hlog := logger.With(l, logger.WithModule("http/server/iam-service"))
+
+	issuerURL := ""
+	if appCfg.Jwt != nil {
+		issuerURL = appCfg.Jwt.IssuerUrl
+	}
+	if issuerURL == "" {
+		addr := "http://localhost:8000"
+		if c != nil && c.Http != nil && c.Http.Addr != "" {
+			addr = "http://" + c.Http.Addr
+		}
+		issuerURL = addr
+	}
 
 	opts := []http.ServerOption{
 		http.WithLogger(hlog),
@@ -90,6 +90,10 @@ func NewHTTPServer(
 			func(s *khttp.Server) { iamv1.RegisterAuthServiceHTTPServer(s, auth) },
 			func(s *khttp.Server) { iamv1.RegisterUserServiceHTTPServer(s, user) },
 			func(s *khttp.Server) { iamv1.RegisterTestServiceHTTPServer(s, test) },
+			func(s *khttp.Server) {
+				s.Handle("/.well-known/jwks.json", jwks.NewJWKSHandler(km))
+				s.Handle("/.well-known/openid-configuration", jwks.NewOIDCDiscoveryHandler(issuerURL))
+			},
 		),
 	}
 	if c != nil && c.Http != nil {

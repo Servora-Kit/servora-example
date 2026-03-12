@@ -179,7 +179,7 @@ func (x *SignupByEmailRequest) GetEmail() string {
 // 邮箱注册响应
 type SignupByEmailResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
@@ -217,11 +217,11 @@ func (*SignupByEmailResponse) Descriptor() ([]byte, []int) {
 	return file_auth_service_v1_auth_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *SignupByEmailResponse) GetId() int64 {
+func (x *SignupByEmailResponse) GetId() string {
 	if x != nil {
 		return x.Id
 	}
-	return 0
+	return ""
 }
 
 func (x *SignupByEmailResponse) GetName() string {
@@ -568,7 +568,7 @@ const file_auth_service_v1_auth_proto_rawDesc = "" +
 	"R\x0fpasswordConfirm\x12\x1d\n" +
 	"\x05email\x18\x04 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\"e\n" +
 	"\x15SignupByEmailResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x12\n" +
 	"\x04role\x18\x04 \x01(\tR\x04role\"Z\n" +

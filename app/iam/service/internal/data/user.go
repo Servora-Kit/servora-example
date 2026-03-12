@@ -2,49 +2,50 @@ package data
 
 import (
 	"context"
+	"fmt"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/mapper"
 )
 
 type userRepo struct {
-	data   *Data
-	log    *logger.Helper
-	mapper *mapper.CopierMapper[entity.User, ent.User]
+	data *Data
+	log  *logger.Helper
 }
 
 func NewUserRepo(data *Data, l logger.Logger) biz.UserRepo {
 	return &userRepo{
-		data:   data,
-		log:    logger.NewHelper(l, logger.WithModule("user/data/iam-service")),
-		mapper: mapper.New[entity.User, ent.User]().RegisterConverters(mapper.AllBuiltinConverters()),
+		data: data,
+		log:  logger.NewHelper(l, logger.WithModule("user/data/iam-service")),
 	}
 }
 
-func (r *userRepo) SaveUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	if !helpers.BcryptIsHashed(user.Password) {
-		bcryptPassword, err := helpers.BcryptHash(user.Password)
+func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, error) {
+	if !helpers.BcryptIsHashed(u.Password) {
+		bcryptPassword, err := helpers.BcryptHash(u.Password)
 		if err != nil {
 			return nil, err
 		}
-		user.Password = bcryptPassword
+		u.Password = bcryptPassword
 	}
-	entUser := r.mapper.ToEntity(user)
 	b := r.data.entClient.User.Create().
-		SetName(entUser.Name).
-		SetEmail(entUser.Email).
-		SetPassword(entUser.Password).
-		SetRole(entUser.Role)
+		SetName(u.Name).
+		SetEmail(u.Email).
+		SetPassword(u.Password).
+		SetRole(u.Role)
 
-	if entUser.ID > 0 {
-		b.SetID(entUser.ID)
+	if u.ID != "" {
+		uid, err := uuid.Parse(u.ID)
+		if err != nil {
+			return nil, fmt.Errorf("invalid user ID: %w", err)
+		}
+		b.SetID(uid)
 	}
 
 	created, err := b.Save(ctx)
@@ -52,44 +53,55 @@ func (r *userRepo) SaveUser(ctx context.Context, user *entity.User) (*entity.Use
 		r.log.Errorf("SaveUser failed: %v", err)
 		return nil, err
 	}
-	return r.mapper.ToDomain(created), nil
+	return entUserToEntity(created), nil
 }
 
-func (r *userRepo) GetUserById(ctx context.Context, id int64) (*entity.User, error) {
-	entUser, err := r.data.entClient.User.Query().Where(user.IDEQ(id)).Only(ctx)
+func (r *userRepo) GetUserById(ctx context.Context, id string) (*entity.User, error) {
+	uid, err := uuid.Parse(id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	entUser, err := r.data.entClient.User.Query().Where(user.IDEQ(uid)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return r.mapper.ToDomain(entUser), nil
+	return entUserToEntity(entUser), nil
 }
 
-func (r *userRepo) DeleteUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	err := r.data.entClient.User.DeleteOneID(user.ID).Exec(ctx)
+func (r *userRepo) DeleteUser(ctx context.Context, u *entity.User) (*entity.User, error) {
+	uid, err := uuid.Parse(u.ID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	err = r.data.entClient.User.DeleteOneID(uid).Exec(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return user, nil
+	return u, nil
 }
 
-func (r *userRepo) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	if !helpers.BcryptIsHashed(user.Password) {
-		bcryptPassword, err := helpers.BcryptHash(user.Password)
+func (r *userRepo) UpdateUser(ctx context.Context, u *entity.User) (*entity.User, error) {
+	uid, err := uuid.Parse(u.ID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %w", err)
+	}
+	if !helpers.BcryptIsHashed(u.Password) {
+		bcryptPassword, err := helpers.BcryptHash(u.Password)
 		if err != nil {
 			return nil, err
 		}
-		user.Password = bcryptPassword
+		u.Password = bcryptPassword
 	}
-	entUser := r.mapper.ToEntity(user)
-	updated, err := r.data.entClient.User.UpdateOneID(user.ID).
-		SetName(entUser.Name).
-		SetEmail(entUser.Email).
-		SetPassword(entUser.Password).
-		SetRole(entUser.Role).
+	updated, err := r.data.entClient.User.UpdateOneID(uid).
+		SetName(u.Name).
+		SetEmail(u.Email).
+		SetPassword(u.Password).
+		SetRole(u.Role).
 		Save(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return r.mapper.ToDomain(updated), nil
+	return entUserToEntity(updated), nil
 }
 
 func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([]*entity.User, int64, error) {
@@ -108,8 +120,8 @@ func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([
 	}
 
 	users := make([]*entity.User, 0, len(entUsers))
-	for _, entUser := range entUsers {
-		users = append(users, r.mapper.ToDomain(entUser))
+	for _, eu := range entUsers {
+		users = append(users, entUserToEntity(eu))
 	}
 
 	return users, int64(total), nil

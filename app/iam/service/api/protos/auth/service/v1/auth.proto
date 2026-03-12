@@ -60,7 +60,7 @@ message SignupByEmailRequest {
 
 // 邮箱注册响应
 message SignupByEmailResponse {
-  int64 id = 1;
+  string id = 1;
   string name = 2;
   string email = 3;
   string role = 4;

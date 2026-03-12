@@ -7,15 +7,21 @@ import (
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 type User struct {
 	ent.Schema
 }
 
+func newUUIDv7() uuid.UUID {
+	id, _ := uuid.NewV7()
+	return id
+}
+
 func (User) Fields() []ent.Field {
 	return []ent.Field{
-		field.Int64("id"),
+		field.UUID("id", uuid.UUID{}).Default(newUUIDv7),
 		field.String("name").MaxLen(64).Unique(),
 		field.String("email").MaxLen(128).Unique(),
 		field.String("password").MaxLen(255),

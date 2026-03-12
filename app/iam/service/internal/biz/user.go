@@ -8,13 +8,13 @@ import (
 	paginationpb "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
-	"github.com/Servora-Kit/servora/pkg/jwt"
+	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
 
 type UserRepo interface {
 	SaveUser(context.Context, *entity.User) (*entity.User, error)
-	GetUserById(context.Context, int64) (*entity.User, error)
+	GetUserById(context.Context, string) (*entity.User, error)
 	DeleteUser(context.Context, *entity.User) (*entity.User, error)
 	UpdateUser(context.Context, *entity.User) (*entity.User, error)
 	ListUsers(context.Context, int32, int32) ([]*entity.User, int64, error)
@@ -38,20 +38,22 @@ func NewUserUsecase(repo UserRepo, l logger.Logger, cfg *conf.App, authRepo Auth
 }
 
 func (uc *UserUsecase) CurrentUserInfo(ctx context.Context) (*entity.User, error) {
-	// 从context中获取当前登录用户信息
-	claims, ok := jwt.FromContext[UserClaims](ctx)
+	a, ok := actor.FromContext(ctx)
+	if !ok || a.Type() != actor.TypeUser {
+		return nil, authpb.ErrorUnauthorized("user not authenticated")
+	}
+
+	ua, ok := a.(*actor.UserActor)
 	if !ok {
 		return nil, authpb.ErrorUnauthorized("user not authenticated")
 	}
 
-	// 直接使用JWT中的信息构建用户模型，避免数据库查询
-	user := &entity.User{
-		ID:   claims.ID,
-		Name: claims.Name,
-		Role: claims.Role,
-	}
-
-	return user, nil
+	return &entity.User{
+		ID:   ua.ID(),
+		Name: ua.DisplayName(),
+		Email: ua.Email(),
+		Role: ua.Meta("role"),
+	}, nil
 }
 
 func (uc *UserUsecase) UpdateUser(ctx context.Context, user *entity.User) (*entity.User, error) {

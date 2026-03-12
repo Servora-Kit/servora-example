@@ -1,11 +1,13 @@
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TABLE IF NOT EXISTS users (
-    "id" BIGSERIAL PRIMARY KEY, -- 用户ID，PostgreSQL 自增主键
-    "name" VARCHAR(64) NOT NULL UNIQUE, -- 用户名
-    "email" VARCHAR(128) NOT NULL UNIQUE, -- 用户邮箱，唯一
-    "password" VARCHAR(255) NOT NULL, -- 用户密码（加密存储）
-    "role" VARCHAR(32) NOT NULL DEFAULT 'user', -- 用户权限角色
-    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP, -- 创建时间（带时区）
-    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP -- 更新时间（带时区）
+    "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    "name" VARCHAR(64) NOT NULL UNIQUE,
+    "email" VARCHAR(128) NOT NULL UNIQUE,
+    "password" VARCHAR(255) NOT NULL,
+    "role" VARCHAR(32) NOT NULL DEFAULT 'user',
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- 创建触发器，在更新用户记录时自动更新 updated_at 字段
