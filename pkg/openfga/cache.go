@@ -3,7 +3,6 @@ package openfga
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/Servora-Kit/servora/pkg/redis"
@@ -99,4 +98,9 @@ func listCacheKey(userID, relation, objectType string) string {
 	return fmt.Sprintf("authz:list:%s:%s:%s", userID, relation, objectType)
 }
 
-func boolStr(v bool) string { return strconv.FormatBool(v) }
+func boolStr(v bool) string {
+	if v {
+		return "1"
+	}
+	return "0"
+}
