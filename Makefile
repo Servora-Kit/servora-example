@@ -59,7 +59,7 @@ COMPOSE_DEV_FILES := -f docker-compose.yaml -f docker-compose.dev.yaml
 DOCKER_BAKE_FILE := docker-bake.hcl
 BAKE_TARGETS ?= default
 MICROSERVICES := iam sayhello
-INFRA_SERVICES := consul db redis otel-collector jaeger loki prometheus grafana
+INFRA_SERVICES := consul db redis openfga otel-collector jaeger loki prometheus grafana
 COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
 COMPOSE_STACK_DOWN := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans
 COMPOSE_STACK_RESET := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes
@@ -73,9 +73,10 @@ endef
 # ============================================================================
 
 .PHONY: help env init plugin cli dep vendor test cover vet lint.go lint.proto buf-update
-.PHONY: wire ent gen api api-go api-ts openapi build all clean
+.PHONY: wire ent gen api api-go api-authz api-ts openapi build all clean
 .PHONY: compose.build compose.up compose.rebuild compose.stop compose.down compose.reset compose.ps compose.logs
 .PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
+.PHONY: openfga.init openfga.model.validate openfga.model.test openfga.model.apply
 
 # show environment variables
 env:
@@ -99,6 +100,7 @@ plugin:
 	@go install github.com/go-kratos/kratos/cmd/protoc-gen-go-errors/v2@latest
 	@go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	@go install github.com/envoyproxy/protoc-gen-validate@latest
+	@go install ./cmd/protoc-gen-servora-authz
 	@echo "$(GREEN)✓ Protoc plugins installed$(RESET)"
 
 # install cli tools
@@ -110,6 +112,7 @@ cli:
 	@go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 	@go install github.com/google/wire/cmd/wire@latest
 	@go install entgo.io/ent/cmd/ent@latest
+	@go install ./cmd/svr
 	@echo "$(GREEN)✓ CLI tools installed$(RESET)"
 
 # download dependencies of module
@@ -153,13 +156,18 @@ gen: api openapi wire ent
 	@echo "$(GREEN)✓ All code generated$(RESET)"
 
 # generate protobuf api code (go + ts)
-api: api-go
+api: api-go api-authz
 	@echo "$(GREEN)✓ Protobuf code generated $(RESET)"
 
 # generate protobuf api go code
 api-go:
 	@echo "$(CYAN)Generating protobuf Go code via $(BUF_GO_GEN_TEMPLATE)...$(RESET)"
 	@buf generate --template $(BUF_GO_GEN_TEMPLATE)
+
+# generate authz rules from proto annotations
+api-authz:
+	@echo "$(CYAN)Generating AuthZ rules via buf.authz.gen.yaml...$(RESET)"
+	@buf generate --template buf.authz.gen.yaml
 
 # generate protobuf api typescript code for web
 api-ts:
@@ -278,6 +286,38 @@ compose.dev.down:
 # remove Air-based development stack containers/networks/volumes
 compose.dev.reset:
 	@$(COMPOSE_STACK_RESET)
+
+# ============================================================================
+# OPENFGA TARGETS
+# ============================================================================
+
+OPENFGA_MODEL := manifests/openfga/model/servora.fga
+OPENFGA_TESTS := manifests/openfga/tests/servora.fga.yaml
+OPENFGA_ENV_PREFIX ?= IAM_
+
+# initialize OpenFGA store and upload model (via svr CLI)
+openfga.init:
+	@svr openfga init --model $(OPENFGA_MODEL) --env-prefix $(OPENFGA_ENV_PREFIX)
+
+# validate OpenFGA model syntax (requires fga CLI)
+openfga.model.validate:
+	@echo "$(CYAN)Validating OpenFGA model...$(RESET)"
+	@fga model validate --file $(OPENFGA_MODEL) --format fga
+	@echo "$(GREEN)✓ OpenFGA model valid$(RESET)"
+
+# run OpenFGA model tests (requires fga CLI)
+openfga.model.test: openfga.model.validate
+	@echo "$(CYAN)Testing OpenFGA model...$(RESET)"
+	@fga model test --tests $(OPENFGA_TESTS)
+	@echo "$(GREEN)✓ OpenFGA model tests passed$(RESET)"
+
+# apply new model version: validate → test → upload (via svr CLI)
+openfga.model.apply: openfga.model.test
+	@svr openfga model apply --model $(OPENFGA_MODEL) --env-prefix $(OPENFGA_ENV_PREFIX)
+
+# ============================================================================
+# CLEANUP TARGETS
+# ============================================================================
 
 # clean build artifacts
 clean:

@@ -128,7 +128,50 @@ services:
       - "5432:5432"
     volumes:
       - servora-db-data:/var/lib/postgresql/data
-      - ./app/iam/service/manifests/SQL/model_pgsql.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    networks:
+      - servora-network
+
+  openfga-migrate:
+    image: openfga/openfga:latest
+    container_name: servora_openfga_migrate
+    restart: "no"
+    depends_on:
+      db:
+        condition: service_healthy
+    command:
+      - migrate
+      - --datastore-engine
+      - postgres
+      - --datastore-uri
+      - postgres://servora:servora@db:5432/servora?sslmode=disable
+    networks:
+      - servora-network
+
+  openfga:
+    image: openfga/openfga:latest
+    container_name: servora_openfga
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      openfga-migrate:
+        condition: service_completed_successfully
+    command:
+      - run
+      - --datastore-engine
+      - postgres
+      - --datastore-uri
+      - postgres://servora:servora@db:5432/servora?sslmode=disable
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8080/healthz | grep -q SERVING"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+      - "3000:3000"
     networks:
       - servora-network
 

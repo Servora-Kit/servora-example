@@ -23,6 +23,14 @@ app:
     refresh_expire: 604800
     issuer: "iam.service"
     audience: "servora"
+  openfga:
+    api_url: "http://localhost:8080"
+    store_id: "${FGA_STORE_ID}"
+    model_id: "${FGA_MODEL_ID}"
+  seed:
+    admin_email: "admin@servora.dev"
+    admin_password: "changeme"
+    admin_name: "admin"
   log:
     level: 0
     filename: "./logs/iam.service.log"

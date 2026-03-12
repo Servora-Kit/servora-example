@@ -36,6 +36,7 @@ cache/
 data.db
 examples/
 /server
+/svr
 tmp/
 
 # Develop tools

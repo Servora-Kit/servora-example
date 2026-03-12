@@ -3,6 +3,6 @@ go 1.26.0
 use (
 	.
 	./api/gen
-	./app/sayhello/service
 	./app/iam/service
+	./app/sayhello/service
 )

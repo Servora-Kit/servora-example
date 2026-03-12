@@ -1,0 +1,148 @@
+name: servora authorization model tests
+model_file: ../model/servora.fga
+
+tuples:
+  # Platform admin
+  - user: user:platform-admin
+    relation: admin
+    object: platform:root
+
+  # Organization setup
+  - user: platform:root
+    relation: platform
+    object: organization:acme
+
+  - user: user:org-owner
+    relation: owner
+    object: organization:acme
+
+  - user: user:org-admin
+    relation: admin
+    object: organization:acme
+
+  - user: user:org-member
+    relation: member
+    object: organization:acme
+
+  # Organization member also on platform
+  - user: user:org-owner
+    relation: member
+    object: platform:root
+
+  # Project setup
+  - user: organization:acme
+    relation: organization
+    object: project:alpha
+
+  - user: user:proj-dev
+    relation: developer
+    object: project:alpha
+
+  - user: user:proj-viewer
+    relation: viewer
+    object: project:alpha
+
+tests:
+  - name: platform admin has member access
+    check:
+      - user: user:platform-admin
+        object: platform:root
+        assertions:
+          admin: true
+          member: true
+
+  - name: organization owner inherits admin and member
+    check:
+      - user: user:org-owner
+        object: organization:acme
+        assertions:
+          owner: true
+          admin: true
+          member: true
+          can_view: true
+          can_manage: true
+          can_manage_members: true
+
+  - name: organization admin inherits member but not owner
+    check:
+      - user: user:org-admin
+        object: organization:acme
+        assertions:
+          owner: false
+          admin: true
+          member: true
+          can_view: true
+          can_manage: true
+          can_manage_members: true
+
+  - name: organization member can view but not manage
+    check:
+      - user: user:org-member
+        object: organization:acme
+        assertions:
+          owner: false
+          admin: false
+          member: true
+          can_view: true
+          can_manage: false
+          can_manage_members: false
+
+  - name: organization owner inherits project admin via relation
+    check:
+      - user: user:org-owner
+        object: project:alpha
+        assertions:
+          admin: true
+          developer: true
+          viewer: true
+          can_view: true
+          can_edit: true
+          can_admin: true
+
+  - name: organization admin inherits project admin via relation
+    check:
+      - user: user:org-admin
+        object: project:alpha
+        assertions:
+          admin: true
+          developer: true
+          viewer: true
+          can_view: true
+          can_edit: true
+          can_admin: true
+
+  - name: project developer can edit but not admin
+    check:
+      - user: user:proj-dev
+        object: project:alpha
+        assertions:
+          admin: false
+          developer: true
+          viewer: true
+          can_view: true
+          can_edit: true
+          can_admin: false
+
+  - name: project viewer can only view
+    check:
+      - user: user:proj-viewer
+        object: project:alpha
+        assertions:
+          admin: false
+          developer: false
+          viewer: true
+          can_view: true
+          can_edit: false
+          can_admin: false
+
+  - name: organization member without direct project role has no project access
+    check:
+      - user: user:org-member
+        object: project:alpha
+        assertions:
+          admin: false
+          developer: false
+          viewer: false
+          can_view: false
+          can_edit: false
+          can_admin: false
