@@ -27,10 +27,6 @@ app:
     api_url: "http://openfga:8080"
     store_id: "${FGA_STORE_ID}"
     model_id: "${FGA_MODEL_ID}"
-  seed:
-    admin_email: "admin@servora.dev"
-    admin_password: "changeme"
-    admin_name: "admin"
   log:
     level: 0
     filename: "/app/logs/iam.service.log"

@@ -8,6 +8,7 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	iamconf "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 
 	entdrv "github.com/Servora-Kit/servora/pkg/ent"
@@ -87,7 +88,7 @@ func NewEntDriver(cfg *conf.Data) (*entsql.Driver, error) {
 	return entdrv.NewDriver(cfg)
 }
 
-func NewDBClient(driver *entsql.Driver, app *conf.App, l logger.Logger) (*ent.Client, error) {
+func NewDBClient(driver *entsql.Driver, app *conf.App, bizConf *iamconf.Biz, l logger.Logger) (*ent.Client, error) {
 	opts := []ent.Option{
 		ent.Driver(driver),
 		ent.Log(logger.EntLogFuncFrom(l, "ent/data/iam-service")),
@@ -107,7 +108,7 @@ func NewDBClient(driver *entsql.Driver, app *conf.App, l logger.Logger) (*ent.Cl
 		return nil, errors.New("seed platform: " + err.Error())
 	}
 
-	if err := seedPlatformAdmin(ctx, ec, app.GetSeed()); err != nil {
+	if err := seedPlatformAdmin(ctx, ec, bizConf.GetSeed()); err != nil {
 		seedLog := logger.NewHelper(l, logger.WithModule("seed/data/iam-service"))
 		seedLog.Warnf("seed platform admin: %v", err)
 	}

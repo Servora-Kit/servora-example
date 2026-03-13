@@ -7,6 +7,7 @@ package main
 
 import (
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	iamconf "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/server"
@@ -20,6 +21,6 @@ import (
 )
 
 // wireApp init kratos application.
-func wireApp(*conf.Server, *conf.Discovery, *conf.Registry, *conf.Data, *conf.App, *conf.Trace, *conf.Metrics, bootstrap.SvcIdentity, log.Logger) (*kratos.App, func(), error) {
+func wireApp(*conf.Server, *conf.Discovery, *conf.Registry, *conf.Data, *conf.App, *conf.Trace, *conf.Metrics, *iamconf.Biz, bootstrap.SvcIdentity, log.Logger) (*kratos.App, func(), error) {
 	panic(wire.Build(server.ProviderSet, data.ProviderSet, biz.ProviderSet, service.ProviderSet, client.ProviderSet, newApp))
 }

@@ -455,7 +455,6 @@ type App struct {
 	Log           *App_Log               `protobuf:"bytes,5,opt,name=log,proto3" json:"log,omitempty"`                                                                                     // 日志配置
 	Metadata      map[string]string      `protobuf:"bytes,6,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // 元数据
 	Openfga       *App_OpenFGA           `protobuf:"bytes,7,opt,name=openfga,proto3" json:"openfga,omitempty"`                                                                             // OpenFGA 配置
-	Seed          *App_Seed              `protobuf:"bytes,8,opt,name=seed,proto3" json:"seed,omitempty"`                                                                                   // 种子数据配置
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -535,13 +534,6 @@ func (x *App) GetMetadata() map[string]string {
 func (x *App) GetOpenfga() *App_OpenFGA {
 	if x != nil {
 		return x.Openfga
-	}
-	return nil
-}
-
-func (x *App) GetSeed() *App_Seed {
-	if x != nil {
-		return x.Seed
 	}
 	return nil
 }
@@ -2089,66 +2081,6 @@ func (x *App_OpenFGA) GetApiToken() string {
 	return ""
 }
 
-type App_Seed struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AdminEmail    string                 `protobuf:"bytes,1,opt,name=admin_email,json=adminEmail,proto3" json:"admin_email,omitempty"`          // 平台管理员邮箱
-	AdminPassword string                 `protobuf:"bytes,2,opt,name=admin_password,json=adminPassword,proto3" json:"admin_password,omitempty"` // 平台管理员密码
-	AdminName     string                 `protobuf:"bytes,3,opt,name=admin_name,json=adminName,proto3" json:"admin_name,omitempty"`             // 平台管理员用户名
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *App_Seed) Reset() {
-	*x = App_Seed{}
-	mi := &file_conf_v1_conf_proto_msgTypes[28]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *App_Seed) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*App_Seed) ProtoMessage() {}
-
-func (x *App_Seed) ProtoReflect() protoreflect.Message {
-	mi := &file_conf_v1_conf_proto_msgTypes[28]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use App_Seed.ProtoReflect.Descriptor instead.
-func (*App_Seed) Descriptor() ([]byte, []int) {
-	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6, 3}
-}
-
-func (x *App_Seed) GetAdminEmail() string {
-	if x != nil {
-		return x.AdminEmail
-	}
-	return ""
-}
-
-func (x *App_Seed) GetAdminPassword() string {
-	if x != nil {
-		return x.AdminPassword
-	}
-	return ""
-}
-
-func (x *App_Seed) GetAdminName() string {
-	if x != nil {
-		return x.AdminName
-	}
-	return ""
-}
-
 var File_conf_v1_conf_proto protoreflect.FileDescriptor
 
 const file_conf_v1_conf_proto_rawDesc = "" +
@@ -2224,7 +2156,7 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x1a\n" +
 	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xe3\a\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xcd\x06\n" +
 	"\x03App\x12\x10\n" +
 	"\x03env\x18\x01 \x01(\tR\x03env\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
@@ -2232,8 +2164,7 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x03jwt\x18\x04 \x01(\v2\x10.conf.v1.App.JwtR\x03jwt\x12\"\n" +
 	"\x03log\x18\x05 \x01(\v2\x10.conf.v1.App.LogR\x03log\x126\n" +
 	"\bmetadata\x18\x06 \x03(\v2\x1a.conf.v1.App.MetadataEntryR\bmetadata\x12.\n" +
-	"\aopenfga\x18\a \x01(\v2\x14.conf.v1.App.OpenFGAR\aopenfga\x12%\n" +
-	"\x04seed\x18\b \x01(\v2\x11.conf.v1.App.SeedR\x04seed\x1a\xf6\x01\n" +
+	"\aopenfga\x18\a \x01(\v2\x14.conf.v1.App.OpenFGAR\aopenfga\x1a\xf6\x01\n" +
 	"\x03Jwt\x12(\n" +
 	"\x10private_key_path\x18\x01 \x01(\tR\x0eprivateKeyPath\x12&\n" +
 	"\x0fprivate_key_pem\x18\x02 \x01(\tR\rprivateKeyPem\x12#\n" +
@@ -2255,13 +2186,7 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\aapi_url\x18\x01 \x01(\tR\x06apiUrl\x12\x19\n" +
 	"\bstore_id\x18\x02 \x01(\tR\astoreId\x12\x19\n" +
 	"\bmodel_id\x18\x03 \x01(\tR\amodelId\x12\x1b\n" +
-	"\tapi_token\x18\x04 \x01(\tR\bapiToken\x1am\n" +
-	"\x04Seed\x12\x1f\n" +
-	"\vadmin_email\x18\x01 \x01(\tR\n" +
-	"adminEmail\x12%\n" +
-	"\x0eadmin_password\x18\x02 \x01(\tR\radminPassword\x12\x1d\n" +
-	"\n" +
-	"admin_name\x18\x03 \x01(\tR\tadminName\x1a;\n" +
+	"\tapi_token\x18\x04 \x01(\tR\bapiToken\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xdd\x01\n" +
@@ -2339,7 +2264,7 @@ func file_conf_v1_conf_proto_rawDescGZIP() []byte {
 	return file_conf_v1_conf_proto_rawDescData
 }
 
-var file_conf_v1_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 30)
+var file_conf_v1_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 29)
 var file_conf_v1_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: conf.v1.Bootstrap
 	(*TLSConfig)(nil),           // 1: conf.v1.TLSConfig
@@ -2369,9 +2294,8 @@ var file_conf_v1_conf_proto_goTypes = []any{
 	(*App_Jwt)(nil),             // 25: conf.v1.App.Jwt
 	(*App_Log)(nil),             // 26: conf.v1.App.Log
 	(*App_OpenFGA)(nil),         // 27: conf.v1.App.OpenFGA
-	(*App_Seed)(nil),            // 28: conf.v1.App.Seed
-	nil,                         // 29: conf.v1.App.MetadataEntry
-	(*durationpb.Duration)(nil), // 30: google.protobuf.Duration
+	nil,                         // 28: conf.v1.App.MetadataEntry
+	(*durationpb.Duration)(nil), // 29: google.protobuf.Duration
 }
 var file_conf_v1_conf_proto_depIdxs = []int32{
 	6,  // 0: conf.v1.Bootstrap.app:type_name -> conf.v1.App
@@ -2382,7 +2306,7 @@ var file_conf_v1_conf_proto_depIdxs = []int32{
 	9,  // 5: conf.v1.Bootstrap.config:type_name -> conf.v1.Config
 	14, // 6: conf.v1.Bootstrap.trace:type_name -> conf.v1.Trace
 	15, // 7: conf.v1.Bootstrap.metrics:type_name -> conf.v1.Metrics
-	30, // 8: conf.v1.CORS.max_age:type_name -> google.protobuf.Duration
+	29, // 8: conf.v1.CORS.max_age:type_name -> google.protobuf.Duration
 	16, // 9: conf.v1.Server.http:type_name -> conf.v1.Server.HTTP
 	17, // 10: conf.v1.Server.grpc:type_name -> conf.v1.Server.GRPC
 	19, // 11: conf.v1.Client.grpc:type_name -> conf.v1.Client.GrpcEntry
@@ -2391,42 +2315,41 @@ var file_conf_v1_conf_proto_depIdxs = []int32{
 	22, // 14: conf.v1.Data.client:type_name -> conf.v1.Data.Client
 	25, // 15: conf.v1.App.jwt:type_name -> conf.v1.App.Jwt
 	26, // 16: conf.v1.App.log:type_name -> conf.v1.App.Log
-	29, // 17: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
+	28, // 17: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
 	27, // 18: conf.v1.App.openfga:type_name -> conf.v1.App.OpenFGA
-	28, // 19: conf.v1.App.seed:type_name -> conf.v1.App.Seed
-	10, // 20: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
-	11, // 21: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 22: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
-	13, // 23: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
-	10, // 24: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
-	11, // 25: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 26: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
-	13, // 27: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
-	10, // 28: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
-	11, // 29: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 30: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
-	30, // 31: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
-	30, // 32: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
-	30, // 33: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
-	30, // 34: conf.v1.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	1,  // 35: conf.v1.Server.HTTP.tls:type_name -> conf.v1.TLSConfig
-	2,  // 36: conf.v1.Server.HTTP.cors:type_name -> conf.v1.CORS
-	30, // 37: conf.v1.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	1,  // 38: conf.v1.Server.GRPC.tls:type_name -> conf.v1.TLSConfig
-	1,  // 39: conf.v1.Client.GRPC.tls:type_name -> conf.v1.TLSConfig
-	18, // 40: conf.v1.Client.GrpcEntry.value:type_name -> conf.v1.Client.GRPC
-	30, // 41: conf.v1.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
-	30, // 42: conf.v1.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	30, // 43: conf.v1.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	24, // 44: conf.v1.Data.Client.grpc:type_name -> conf.v1.Data.Client.GRPC
-	23, // 45: conf.v1.Data.Client.http:type_name -> conf.v1.Data.Client.HTTP
-	30, // 46: conf.v1.Data.Client.HTTP.timeout:type_name -> google.protobuf.Duration
-	30, // 47: conf.v1.Data.Client.GRPC.timeout:type_name -> google.protobuf.Duration
-	48, // [48:48] is the sub-list for method output_type
-	48, // [48:48] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	10, // 19: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
+	11, // 20: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 21: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
+	13, // 22: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 23: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
+	11, // 24: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 25: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
+	13, // 26: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 27: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
+	11, // 28: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 29: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
+	29, // 30: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
+	29, // 31: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
+	29, // 32: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
+	29, // 33: conf.v1.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	1,  // 34: conf.v1.Server.HTTP.tls:type_name -> conf.v1.TLSConfig
+	2,  // 35: conf.v1.Server.HTTP.cors:type_name -> conf.v1.CORS
+	29, // 36: conf.v1.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	1,  // 37: conf.v1.Server.GRPC.tls:type_name -> conf.v1.TLSConfig
+	1,  // 38: conf.v1.Client.GRPC.tls:type_name -> conf.v1.TLSConfig
+	18, // 39: conf.v1.Client.GrpcEntry.value:type_name -> conf.v1.Client.GRPC
+	29, // 40: conf.v1.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
+	29, // 41: conf.v1.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	29, // 42: conf.v1.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	24, // 43: conf.v1.Data.Client.grpc:type_name -> conf.v1.Data.Client.GRPC
+	23, // 44: conf.v1.Data.Client.http:type_name -> conf.v1.Data.Client.HTTP
+	29, // 45: conf.v1.Data.Client.HTTP.timeout:type_name -> google.protobuf.Duration
+	29, // 46: conf.v1.Data.Client.GRPC.timeout:type_name -> google.protobuf.Duration
+	47, // [47:47] is the sub-list for method output_type
+	47, // [47:47] is the sub-list for method input_type
+	47, // [47:47] is the sub-list for extension type_name
+	47, // [47:47] is the sub-list for extension extendee
+	0,  // [0:47] is the sub-list for field type_name
 }
 
 func init() { file_conf_v1_conf_proto_init() }
@@ -2457,7 +2380,7 @@ func file_conf_v1_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_v1_conf_proto_rawDesc), len(file_conf_v1_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   30,
+			NumMessages:   29,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

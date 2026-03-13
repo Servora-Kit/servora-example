@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	iamconf "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -14,7 +14,7 @@ import (
 	"github.com/Servora-Kit/servora/pkg/openfga"
 )
 
-func NewPlatformRootID(ec *ent.Client, fga *openfga.Client, app *conf.App, l logger.Logger) (biz.PlatformRootID, error) {
+func NewPlatformRootID(ec *ent.Client, fga *openfga.Client, bizConf *iamconf.Biz, l logger.Logger) (biz.PlatformRootID, error) {
 	ctx := context.Background()
 	p, err := ec.Platform.Query().Where(platform.Slug("root")).Only(ctx)
 	if err != nil {
@@ -23,7 +23,7 @@ func NewPlatformRootID(ec *ent.Client, fga *openfga.Client, app *conf.App, l log
 	platID := p.ID.String()
 
 	if fga != nil {
-		seedPlatformAdminFGA(ctx, ec, fga, platID, app.GetSeed(), l)
+		seedPlatformAdminFGA(ctx, ec, fga, platID, bizConf.GetSeed(), l)
 	}
 
 	return biz.PlatformRootID(platID), nil
@@ -48,7 +48,7 @@ func seedPlatform(ctx context.Context, ec *ent.Client) (string, error) {
 	return p.ID.String(), nil
 }
 
-func seedPlatformAdmin(ctx context.Context, ec *ent.Client, seed *conf.App_Seed) error {
+func seedPlatformAdmin(ctx context.Context, ec *ent.Client, seed *iamconf.Biz_Seed) error {
 	if seed == nil || seed.AdminEmail == "" {
 		return nil
 	}
@@ -80,7 +80,7 @@ func seedPlatformAdmin(ctx context.Context, ec *ent.Client, seed *conf.App_Seed)
 	return err
 }
 
-func seedPlatformAdminFGA(ctx context.Context, ec *ent.Client, fga *openfga.Client, platID string, seed *conf.App_Seed, l logger.Logger) {
+func seedPlatformAdminFGA(ctx context.Context, ec *ent.Client, fga *openfga.Client, platID string, seed *iamconf.Biz_Seed, l logger.Logger) {
 	seedLog := logger.NewHelper(l, logger.WithModule("seed/data/iam-service"))
 	if seed == nil || seed.AdminEmail == "" {
 		return

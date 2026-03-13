@@ -1,6 +1,4 @@
-# Business-specific configuration for servora service (docker environment).
-# Add service-unique settings here (not covered by shared Bootstrap proto).
-# Example:
-# biz:
-#   some_feature_flag: true
-#   rate_limit: 100
+seed:
+  admin_email: "admin@servora.dev"
+  admin_password: "changeme"
+  admin_name: "admin"

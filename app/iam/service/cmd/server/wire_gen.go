@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	conf2 "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/server"
@@ -29,7 +30,7 @@ import (
 // Injectors from wire.go:
 
 // wireApp init kratos application.
-func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *conf.Registry, confData *conf.Data, app *conf.App, trace *conf.Trace, metrics *conf.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *conf.Registry, confData *conf.Data, app *conf.App, trace *conf.Trace, metrics *conf.Metrics, confBiz *conf2.Biz, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
 	registrar := registry.NewRegistrar(confRegistry)
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
@@ -49,12 +50,12 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		cleanup()
 		return nil, nil, err
 	}
-	entClient, err := data.NewDBClient(driver, app, logger)
+	entClient, err := data.NewDBClient(driver, app, confBiz, logger)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	platformRootID, err := data.NewPlatformRootID(entClient, openfgaClient, app, logger)
+	platformRootID, err := data.NewPlatformRootID(entClient, openfgaClient, confBiz, logger)
 	if err != nil {
 		cleanup()
 		return nil, nil, err

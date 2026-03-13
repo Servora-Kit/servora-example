@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 
+	iamconf "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/pkg/bootstrap"
 
 	"github.com/go-kratos/kratos/v2"
@@ -45,7 +46,11 @@ func main() {
 
 	err := bootstrap.BootstrapAndRun(flagconf, Name, Version, func(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
 		bc := runtime.Bootstrap
-		return wireApp(bc.Server, bc.Discovery, bc.Registry, bc.Data, bc.App, bc.Trace, bc.Metrics, runtime.Identity, runtime.Logger)
+		bizConf, err := bootstrap.ScanBiz[iamconf.Biz](runtime)
+		if err != nil {
+			return nil, nil, err
+		}
+		return wireApp(bc.Server, bc.Discovery, bc.Registry, bc.Data, bc.App, bc.Trace, bc.Metrics, bizConf, runtime.Identity, runtime.Logger)
 	})
 	if err != nil {
 		panic(err)

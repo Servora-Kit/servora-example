@@ -12,6 +12,7 @@ import (
 	"github.com/Servora-Kit/servora/pkg/logger"
 
 	"github.com/go-kratos/kratos/v2"
+	kconfig "github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 )
@@ -27,6 +28,7 @@ type SvcIdentity struct {
 // Runtime 聚合启动阶段产物与资源清理句柄。
 type Runtime struct {
 	Bootstrap *conf.Bootstrap
+	Config    kconfig.Config
 	Identity  SvcIdentity
 	Logger    log.Logger
 
@@ -105,6 +107,7 @@ func newRuntime(configPath, name, version string) (*Runtime, error) {
 
 	return &Runtime{
 		Bootstrap: bc,
+		Config:    c,
 		Identity:  identity,
 		Logger:    appLogger,
 		configCloser: func() {
@@ -126,6 +129,16 @@ func (r *Runtime) Close() {
 	if r.configCloser != nil {
 		r.configCloser()
 	}
+}
+
+// ScanBiz 从 Runtime 的合并配置中扫描服务私有业务配置。
+// 泛型参数 B 通常为各服务 conf 包中的 Biz protobuf message 类型。
+func ScanBiz[B any](rt *Runtime) (*B, error) {
+	biz := new(B)
+	if err := rt.Config.Scan(biz); err != nil {
+		return nil, fmt.Errorf("scan biz config: %w", err)
+	}
+	return biz, nil
 }
 
 // run 执行 kratos 应用。
