@@ -9,6 +9,37 @@ import (
 )
 
 var (
+	// ApplicationsColumns holds the columns for the "applications" table.
+	ApplicationsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "deleted_at", Type: field.TypeTime, Nullable: true},
+		{Name: "client_id", Type: field.TypeString, Unique: true, Size: 128},
+		{Name: "client_secret_hash", Type: field.TypeString, Size: 255},
+		{Name: "name", Type: field.TypeString, Size: 128},
+		{Name: "redirect_uris", Type: field.TypeJSON},
+		{Name: "scopes", Type: field.TypeJSON},
+		{Name: "grant_types", Type: field.TypeJSON},
+		{Name: "application_type", Type: field.TypeString, Size: 32, Default: "web"},
+		{Name: "access_token_type", Type: field.TypeString, Size: 32, Default: "jwt"},
+		{Name: "id_token_lifetime", Type: field.TypeInt, Default: 3600},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "organization_id", Type: field.TypeUUID},
+	}
+	// ApplicationsTable holds the schema information for the "applications" table.
+	ApplicationsTable = &schema.Table{
+		Name:       "applications",
+		Columns:    ApplicationsColumns,
+		PrimaryKey: []*schema.Column{ApplicationsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "applications_organizations_applications",
+				Columns:    []*schema.Column{ApplicationsColumns[13]},
+				RefColumns: []*schema.Column{OrganizationsColumns[0]},
+				OnDelete:   schema.NoAction,
+			},
+		},
+	}
 	// OrganizationsColumns holds the columns for the "organizations" table.
 	OrganizationsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -173,6 +204,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		ApplicationsTable,
 		OrganizationsTable,
 		OrganizationMembersTable,
 		PlatformsTable,
@@ -183,6 +215,10 @@ var (
 )
 
 func init() {
+	ApplicationsTable.ForeignKeys[0].RefTable = OrganizationsTable
+	ApplicationsTable.Annotation = &entsql.Annotation{
+		Table: "applications",
+	}
 	OrganizationsTable.ForeignKeys[0].RefTable = PlatformsTable
 	OrganizationsTable.Annotation = &entsql.Annotation{
 		Table: "organizations",

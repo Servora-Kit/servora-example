@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -145,6 +146,21 @@ func (_c *OrganizationCreate) AddProjects(v ...*Project) *OrganizationCreate {
 		ids[i] = v[i].ID
 	}
 	return _c.AddProjectIDs(ids...)
+}
+
+// AddApplicationIDs adds the "applications" edge to the Application entity by IDs.
+func (_c *OrganizationCreate) AddApplicationIDs(ids ...uuid.UUID) *OrganizationCreate {
+	_c.mutation.AddApplicationIDs(ids...)
+	return _c
+}
+
+// AddApplications adds the "applications" edges to the Application entity.
+func (_c *OrganizationCreate) AddApplications(v ...*Application) *OrganizationCreate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _c.AddApplicationIDs(ids...)
 }
 
 // Mutation returns the OrganizationMutation object of the builder.
@@ -332,6 +348,22 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
+	}
+	if nodes := _c.mutation.ApplicationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

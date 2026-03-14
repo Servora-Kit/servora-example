@@ -52,6 +52,10 @@ func (s *Signer) Sign(claims jwt.Claims) (string, error) {
 	return token.SignedString(s.key)
 }
 
+func (s *Signer) PrivateKey() *rsa.PrivateKey {
+	return s.key
+}
+
 func (s *Signer) PublicKey() *rsa.PublicKey {
 	return &s.key.PublicKey
 }

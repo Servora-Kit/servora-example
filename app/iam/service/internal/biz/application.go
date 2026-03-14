@@ -1,0 +1,107 @@
+package biz
+
+import (
+	"context"
+	"crypto/rand"
+	"encoding/hex"
+	"fmt"
+
+	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	"github.com/Servora-Kit/servora/pkg/helpers"
+	"github.com/Servora-Kit/servora/pkg/logger"
+)
+
+type ApplicationRepo interface {
+	Create(ctx context.Context, app *entity.Application) (*entity.Application, error)
+	GetByID(ctx context.Context, id string) (*entity.Application, error)
+	GetByClientID(ctx context.Context, clientID string) (*entity.Application, error)
+	ListByOrganizationID(ctx context.Context, orgID string, page, pageSize int32) ([]*entity.Application, int64, error)
+	Update(ctx context.Context, app *entity.Application) (*entity.Application, error)
+	Delete(ctx context.Context, id string) error
+	UpdateClientSecretHash(ctx context.Context, id string, hash string) error
+}
+
+type ApplicationUsecase struct {
+	repo ApplicationRepo
+	log  *logger.Helper
+}
+
+func NewApplicationUsecase(repo ApplicationRepo, l logger.Logger) *ApplicationUsecase {
+	return &ApplicationUsecase{
+		repo: repo,
+		log:  logger.NewHelper(l, logger.WithModule("application/biz/iam-service")),
+	}
+}
+
+func (uc *ApplicationUsecase) Create(ctx context.Context, app *entity.Application) (*entity.Application, string, error) {
+	clientID, err := generateRandomHex(16)
+	if err != nil {
+		return nil, "", fmt.Errorf("generate client_id: %w", err)
+	}
+	plainSecret, err := generateRandomHex(32)
+	if err != nil {
+		return nil, "", fmt.Errorf("generate client_secret: %w", err)
+	}
+
+	hash, err := helpers.BcryptHash(plainSecret)
+	if err != nil {
+		return nil, "", fmt.Errorf("hash client_secret: %w", err)
+	}
+
+	app.ClientID = clientID
+	app.ClientSecretHash = hash
+
+	created, err := uc.repo.Create(ctx, app)
+	if err != nil {
+		uc.log.Errorf("create application failed: %v", err)
+		return nil, "", fmt.Errorf("create application: %w", err)
+	}
+	return created, plainSecret, nil
+}
+
+func (uc *ApplicationUsecase) Get(ctx context.Context, id string) (*entity.Application, error) {
+	return uc.repo.GetByID(ctx, id)
+}
+
+func (uc *ApplicationUsecase) GetByClientID(ctx context.Context, clientID string) (*entity.Application, error) {
+	return uc.repo.GetByClientID(ctx, clientID)
+}
+
+func (uc *ApplicationUsecase) List(ctx context.Context, orgID string, page, pageSize int32) ([]*entity.Application, int64, error) {
+	return uc.repo.ListByOrganizationID(ctx, orgID, page, pageSize)
+}
+
+func (uc *ApplicationUsecase) Update(ctx context.Context, app *entity.Application) (*entity.Application, error) {
+	return uc.repo.Update(ctx, app)
+}
+
+func (uc *ApplicationUsecase) Delete(ctx context.Context, id string) error {
+	return uc.repo.Delete(ctx, id)
+}
+
+func (uc *ApplicationUsecase) RegenerateClientSecret(ctx context.Context, id string) (string, error) {
+	plainSecret, err := generateRandomHex(32)
+	if err != nil {
+		return "", fmt.Errorf("generate client_secret: %w", err)
+	}
+
+	hash, err := helpers.BcryptHash(plainSecret)
+	if err != nil {
+		return "", fmt.Errorf("hash client_secret: %w", err)
+	}
+
+	if err := uc.repo.UpdateClientSecretHash(ctx, id, hash); err != nil {
+		uc.log.Errorf("update client secret hash failed: %v", err)
+		return "", fmt.Errorf("update client_secret: %w", err)
+	}
+	return plainSecret, nil
+}
+
+// generateRandomHex returns a hex-encoded string of n random bytes (2*n chars).
+func generateRandomHex(n int) (string, error) {
+	b := make([]byte, n)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(b), nil
+}

@@ -13,6 +13,106 @@ info:
         url: https://github.com/Servora-Kit/servora/blob/main/LICENSE
     version: "1.0"
 paths:
+    /v1/applications:
+        post:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_CreateApplication
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateApplicationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateApplicationResponse'
+    /v1/applications/{id}:
+        get:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_GetApplication
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetApplicationResponse'
+        put:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_UpdateApplication
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateApplicationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateApplicationResponse'
+        delete:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_DeleteApplication
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteApplicationResponse'
+    /v1/applications/{id}/regenerate-secret:
+        post:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_RegenerateClientSecret
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RegenerateClientSecretRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RegenerateClientSecretResponse'
     /v1/auth/change-password:
         post:
             tags:
@@ -342,6 +442,43 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/RestoreOrganizationResponse'
+    /v1/organizations/{organizationId}/applications:
+        get:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_ListApplications
+            parameters:
+                - name: organizationId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: pagination.page.page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.page.pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.cursor.cursor
+                  in: query
+                  schema:
+                    type: string
+                - name: pagination.cursor.limit
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListApplicationsResponse'
     /v1/organizations/{organizationId}/members:
         get:
             tags:
@@ -949,6 +1086,42 @@ components:
             properties:
                 member:
                     $ref: '#/components/schemas/OrganizationMemberInfo'
+        ApplicationInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                clientId:
+                    type: string
+                name:
+                    type: string
+                redirectUris:
+                    type: array
+                    items:
+                        type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                grantTypes:
+                    type: array
+                    items:
+                        type: string
+                applicationType:
+                    type: string
+                accessTokenType:
+                    type: string
+                organizationId:
+                    type: string
+                idTokenLifetime:
+                    type: integer
+                    format: int32
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
         ChangePasswordRequest:
             type: object
             properties:
@@ -963,6 +1136,39 @@ components:
             properties:
                 success:
                     type: boolean
+        CreateApplicationRequest:
+            type: object
+            properties:
+                organizationId:
+                    type: string
+                name:
+                    type: string
+                redirectUris:
+                    type: array
+                    items:
+                        type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                grantTypes:
+                    type: array
+                    items:
+                        type: string
+                applicationType:
+                    type: string
+                accessTokenType:
+                    type: string
+                idTokenLifetime:
+                    type: integer
+                    format: int32
+        CreateApplicationResponse:
+            type: object
+            properties:
+                application:
+                    $ref: '#/components/schemas/ApplicationInfo'
+                clientSecret:
+                    type: string
         CreateOrganizationRequest:
             type: object
             properties:
@@ -1011,6 +1217,11 @@ components:
                     type: string
                 hasMore:
                     type: boolean
+        DeleteApplicationResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
         DeleteOrganizationResponse:
             type: object
             properties:
@@ -1026,6 +1237,11 @@ components:
             properties:
                 success:
                     type: boolean
+        GetApplicationResponse:
+            type: object
+            properties:
+                application:
+                    $ref: '#/components/schemas/ApplicationInfo'
         GetOrganizationResponse:
             type: object
             properties:
@@ -1068,6 +1284,15 @@ components:
                     type: object
                     description: 元数据
             description: Kratos 错误响应
+        ListApplicationsResponse:
+            type: object
+            properties:
+                applications:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ApplicationInfo'
+                pagination:
+                    $ref: '#/components/schemas/PaginationResponse'
         ListMembersResponse:
             type: object
             properties:
@@ -1247,6 +1472,16 @@ components:
                     type: string
                 expiresIn:
                     type: string
+        RegenerateClientSecretRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+        RegenerateClientSecretResponse:
+            type: object
+            properties:
+                clientSecret:
+                    type: string
         RemoveMemberResponse:
             type: object
             properties:
@@ -1362,6 +1597,33 @@ components:
             properties:
                 message:
                     type: string
+        UpdateApplicationRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                redirectUris:
+                    type: array
+                    items:
+                        type: string
+                scopes:
+                    type: array
+                    items:
+                        type: string
+                grantTypes:
+                    type: array
+                    items:
+                        type: string
+                idTokenLifetime:
+                    type: integer
+                    format: int32
+        UpdateApplicationResponse:
+            type: object
+            properties:
+                application:
+                    $ref: '#/components/schemas/ApplicationInfo'
         UpdateMemberRoleRequest:
             type: object
             properties:
@@ -1453,6 +1715,7 @@ components:
                     schema:
                         $ref: '#/components/schemas/KratosError'
 tags:
+    - name: ApplicationService
     - name: AuthnService
     - name: OrganizationService
     - name: ProjectService

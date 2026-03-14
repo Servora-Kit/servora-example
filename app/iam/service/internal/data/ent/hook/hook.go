@@ -9,6 +9,18 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 )
 
+// The ApplicationFunc type is an adapter to allow the use of ordinary
+// function as Application mutator.
+type ApplicationFunc func(context.Context, *ent.ApplicationMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f ApplicationFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.ApplicationMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.ApplicationMutation", m)
+}
+
 // The OrganizationFunc type is an adapter to allow the use of ordinary
 // function as Organization mutator.
 type OrganizationFunc func(context.Context, *ent.OrganizationMutation) (ent.Value, error)

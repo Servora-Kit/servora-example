@@ -11,6 +11,7 @@ import (
 	conf2 "github.com/Servora-Kit/servora/api/gen/go/iam/conf/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/oidc"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/server"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/bootstrap"
@@ -93,7 +94,19 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger, authnService, userService, testService, organizationService, projectService)
 	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, redisClient, platformRootID)
 	handler := server.NewHealthHandler(redisClient, driver)
-	httpServer := server.NewHTTPServer(confServer, app, httpMiddleware, telemetryMetrics, logger, handler, keyManager, authnService, userService, testService, organizationService, projectService)
+	applicationRepo := data.NewApplicationRepo(dataData, logger)
+	applicationUsecase := biz.NewApplicationUsecase(applicationRepo, logger)
+	applicationService := service.NewApplicationService(applicationUsecase)
+	storage := data.NewOIDCStorage(dataData, keyManager, authnRepo, redisClient, app, logger)
+	provider, err := oidc.NewProvider(app, storage)
+	if err != nil {
+		cleanup2()
+		cleanup()
+		return nil, nil, err
+	}
+	loginHandler := oidc.NewLoginHandler(authnRepo, redisClient, logger)
+	loginCompleteHandler := oidc.NewLoginCompleteHandler(loginHandler)
+	httpServer := server.NewHTTPServer(confServer, app, httpMiddleware, telemetryMetrics, logger, handler, authnService, userService, testService, organizationService, projectService, applicationService, provider, loginHandler, loginCompleteHandler)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer)
 	return kratosApp, func() {
 		cleanup2()

@@ -6,11 +6,13 @@ import (
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	"github.com/zitadel/oidc/v3/pkg/op"
 
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	iamv1 "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/assets"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/oidc"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/health"
@@ -97,12 +99,15 @@ func NewHTTPServer(
 	mtc *telemetry.Metrics,
 	l logger.Logger,
 	h *health.Handler,
-	km *jwks.KeyManager,
 	authn *service.AuthnService,
 	user *service.UserService,
 	test *service.TestService,
 	org *service.OrganizationService,
 	proj *service.ProjectService,
+	app *service.ApplicationService,
+	oidcProvider *op.Provider,
+	loginHandler *oidc.LoginHandler,
+	loginCompleteHandler *oidc.LoginCompleteHandler,
 ) *khttp.Server {
 	hlog := logger.With(l, logger.WithModule("http/server/iam-service"))
 
@@ -118,7 +123,8 @@ func NewHTTPServer(
 			func(s *khttp.Server) { iamv1.RegisterTestServiceHTTPServer(s, test) },
 			func(s *khttp.Server) { iamv1.RegisterOrganizationServiceHTTPServer(s, org) },
 			func(s *khttp.Server) { iamv1.RegisterProjectServiceHTTPServer(s, proj) },
-			func(s *khttp.Server) { jwks.NewEndpoints(km, appCfg, l).Register(s) },
+			func(s *khttp.Server) { iamv1.RegisterApplicationServiceHTTPServer(s, app) },
+			func(s *khttp.Server) { oidc.Register(s, oidcProvider, loginHandler, loginCompleteHandler) },
 		),
 	}
 	if c != nil && c.Http != nil {

@@ -464,6 +464,7 @@ type App struct {
 	Metadata      map[string]string      `protobuf:"bytes,6,rep,name=metadata,proto3" json:"metadata,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // 元数据
 	Openfga       *App_OpenFGA           `protobuf:"bytes,7,opt,name=openfga,proto3" json:"openfga,omitempty"`                                                                             // OpenFGA 配置
 	ExternalUrl   string                 `protobuf:"bytes,8,opt,name=external_url,json=externalUrl,proto3" json:"external_url,omitempty"`                                                  // 应用外部访问基地址（如 https://iam.example.com），用于 OIDC Discovery、邮件链接等
+	Oidc          *App_Oidc              `protobuf:"bytes,9,opt,name=oidc,proto3" json:"oidc,omitempty"`                                                                                   // OIDC Provider 配置
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -552,6 +553,13 @@ func (x *App) GetExternalUrl() string {
 		return x.ExternalUrl
 	}
 	return ""
+}
+
+func (x *App) GetOidc() *App_Oidc {
+	if x != nil {
+		return x.Oidc
+	}
+	return nil
 }
 
 // 注册中心配置
@@ -2304,6 +2312,67 @@ func (x *App_OpenFGA) GetApiToken() string {
 	return ""
 }
 
+// OIDC Provider 配置（P1: OAuth2/OIDC）
+type App_Oidc struct {
+	state                    protoimpl.MessageState `protogen:"open.v1"`
+	CryptoKey                string                 `protobuf:"bytes,1,opt,name=crypto_key,json=cryptoKey,proto3" json:"crypto_key,omitempty"`                                                  // 32 字节 hex 编码 AES 密钥，用于 OIDC token 加密
+	GrantTypeRefreshToken    bool                   `protobuf:"varint,2,opt,name=grant_type_refresh_token,json=grantTypeRefreshToken,proto3" json:"grant_type_refresh_token,omitempty"`         // 是否启用 refresh_token grant type
+	DefaultLogoutRedirectUri string                 `protobuf:"bytes,3,opt,name=default_logout_redirect_uri,json=defaultLogoutRedirectUri,proto3" json:"default_logout_redirect_uri,omitempty"` // 默认登出重定向 URI
+	unknownFields            protoimpl.UnknownFields
+	sizeCache                protoimpl.SizeCache
+}
+
+func (x *App_Oidc) Reset() {
+	*x = App_Oidc{}
+	mi := &file_conf_v1_conf_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *App_Oidc) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*App_Oidc) ProtoMessage() {}
+
+func (x *App_Oidc) ProtoReflect() protoreflect.Message {
+	mi := &file_conf_v1_conf_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use App_Oidc.ProtoReflect.Descriptor instead.
+func (*App_Oidc) Descriptor() ([]byte, []int) {
+	return file_conf_v1_conf_proto_rawDescGZIP(), []int{6, 3}
+}
+
+func (x *App_Oidc) GetCryptoKey() string {
+	if x != nil {
+		return x.CryptoKey
+	}
+	return ""
+}
+
+func (x *App_Oidc) GetGrantTypeRefreshToken() bool {
+	if x != nil {
+		return x.GrantTypeRefreshToken
+	}
+	return false
+}
+
+func (x *App_Oidc) GetDefaultLogoutRedirectUri() string {
+	if x != nil {
+		return x.DefaultLogoutRedirectUri
+	}
+	return ""
+}
+
 var File_conf_v1_conf_proto protoreflect.FileDescriptor
 
 const file_conf_v1_conf_proto_rawDesc = "" +
@@ -2380,7 +2449,7 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x04GRPC\x12!\n" +
 	"\fservice_name\x18\x01 \x01(\tR\vserviceName\x12\x1a\n" +
 	"\bendpoint\x18\x02 \x01(\tR\bendpoint\x123\n" +
-	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\xd1\x06\n" +
+	"\atimeout\x18\x03 \x01(\v2\x19.google.protobuf.DurationR\atimeout\"\x98\b\n" +
 	"\x03App\x12\x10\n" +
 	"\x03env\x18\x01 \x01(\tR\x03env\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x18\n" +
@@ -2389,7 +2458,8 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\x03log\x18\x05 \x01(\v2\x10.conf.v1.App.LogR\x03log\x126\n" +
 	"\bmetadata\x18\x06 \x03(\v2\x1a.conf.v1.App.MetadataEntryR\bmetadata\x12.\n" +
 	"\aopenfga\x18\a \x01(\v2\x14.conf.v1.App.OpenFGAR\aopenfga\x12!\n" +
-	"\fexternal_url\x18\b \x01(\tR\vexternalUrl\x1a\xd7\x01\n" +
+	"\fexternal_url\x18\b \x01(\tR\vexternalUrl\x12%\n" +
+	"\x04oidc\x18\t \x01(\v2\x11.conf.v1.App.OidcR\x04oidc\x1a\xd7\x01\n" +
 	"\x03Jwt\x12(\n" +
 	"\x10private_key_path\x18\x01 \x01(\tR\x0eprivateKeyPath\x12&\n" +
 	"\x0fprivate_key_pem\x18\x02 \x01(\tR\rprivateKeyPem\x12#\n" +
@@ -2409,7 +2479,12 @@ const file_conf_v1_conf_proto_rawDesc = "" +
 	"\aapi_url\x18\x01 \x01(\tR\x06apiUrl\x12\x19\n" +
 	"\bstore_id\x18\x02 \x01(\tR\astoreId\x12\x19\n" +
 	"\bmodel_id\x18\x03 \x01(\tR\amodelId\x12\x1b\n" +
-	"\tapi_token\x18\x04 \x01(\tR\bapiToken\x1a;\n" +
+	"\tapi_token\x18\x04 \x01(\tR\bapiToken\x1a\x9d\x01\n" +
+	"\x04Oidc\x12\x1d\n" +
+	"\n" +
+	"crypto_key\x18\x01 \x01(\tR\tcryptoKey\x127\n" +
+	"\x18grant_type_refresh_token\x18\x02 \x01(\bR\x15grantTypeRefreshToken\x12=\n" +
+	"\x1bdefault_logout_redirect_uri\x18\x03 \x01(\tR\x18defaultLogoutRedirectUri\x1a;\n" +
 	"\rMetadataEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xdd\x01\n" +
@@ -2503,7 +2578,7 @@ func file_conf_v1_conf_proto_rawDescGZIP() []byte {
 	return file_conf_v1_conf_proto_rawDescData
 }
 
-var file_conf_v1_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 32)
+var file_conf_v1_conf_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_conf_v1_conf_proto_goTypes = []any{
 	(*Bootstrap)(nil),           // 0: conf.v1.Bootstrap
 	(*TLSConfig)(nil),           // 1: conf.v1.TLSConfig
@@ -2536,8 +2611,9 @@ var file_conf_v1_conf_proto_goTypes = []any{
 	(*App_Jwt)(nil),             // 28: conf.v1.App.Jwt
 	(*App_Log)(nil),             // 29: conf.v1.App.Log
 	(*App_OpenFGA)(nil),         // 30: conf.v1.App.OpenFGA
-	nil,                         // 31: conf.v1.App.MetadataEntry
-	(*durationpb.Duration)(nil), // 32: google.protobuf.Duration
+	(*App_Oidc)(nil),            // 31: conf.v1.App.Oidc
+	nil,                         // 32: conf.v1.App.MetadataEntry
+	(*durationpb.Duration)(nil), // 33: google.protobuf.Duration
 }
 var file_conf_v1_conf_proto_depIdxs = []int32{
 	6,  // 0: conf.v1.Bootstrap.app:type_name -> conf.v1.App
@@ -2549,7 +2625,7 @@ var file_conf_v1_conf_proto_depIdxs = []int32{
 	14, // 6: conf.v1.Bootstrap.trace:type_name -> conf.v1.Trace
 	15, // 7: conf.v1.Bootstrap.metrics:type_name -> conf.v1.Metrics
 	16, // 8: conf.v1.Bootstrap.mail:type_name -> conf.v1.Mail
-	32, // 9: conf.v1.CORS.max_age:type_name -> google.protobuf.Duration
+	33, // 9: conf.v1.CORS.max_age:type_name -> google.protobuf.Duration
 	19, // 10: conf.v1.Server.http:type_name -> conf.v1.Server.HTTP
 	20, // 11: conf.v1.Server.grpc:type_name -> conf.v1.Server.GRPC
 	22, // 12: conf.v1.Client.grpc:type_name -> conf.v1.Client.GrpcEntry
@@ -2558,44 +2634,45 @@ var file_conf_v1_conf_proto_depIdxs = []int32{
 	25, // 15: conf.v1.Data.client:type_name -> conf.v1.Data.Client
 	28, // 16: conf.v1.App.jwt:type_name -> conf.v1.App.Jwt
 	29, // 17: conf.v1.App.log:type_name -> conf.v1.App.Log
-	31, // 18: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
+	32, // 18: conf.v1.App.metadata:type_name -> conf.v1.App.MetadataEntry
 	30, // 19: conf.v1.App.openfga:type_name -> conf.v1.App.OpenFGA
-	10, // 20: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
-	11, // 21: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 22: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
-	13, // 23: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
-	10, // 24: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
-	11, // 25: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 26: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
-	13, // 27: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
-	10, // 28: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
-	11, // 29: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
-	12, // 30: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
-	32, // 31: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
-	32, // 32: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
-	32, // 33: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
-	17, // 34: conf.v1.Mail.smtp:type_name -> conf.v1.Smtp
-	18, // 35: conf.v1.Mail.from:type_name -> conf.v1.MailFrom
-	32, // 36: conf.v1.Smtp.send_timeout:type_name -> google.protobuf.Duration
-	32, // 37: conf.v1.Server.HTTP.timeout:type_name -> google.protobuf.Duration
-	1,  // 38: conf.v1.Server.HTTP.tls:type_name -> conf.v1.TLSConfig
-	2,  // 39: conf.v1.Server.HTTP.cors:type_name -> conf.v1.CORS
-	32, // 40: conf.v1.Server.GRPC.timeout:type_name -> google.protobuf.Duration
-	1,  // 41: conf.v1.Server.GRPC.tls:type_name -> conf.v1.TLSConfig
-	1,  // 42: conf.v1.Client.GRPC.tls:type_name -> conf.v1.TLSConfig
-	21, // 43: conf.v1.Client.GrpcEntry.value:type_name -> conf.v1.Client.GRPC
-	32, // 44: conf.v1.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
-	32, // 45: conf.v1.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
-	32, // 46: conf.v1.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
-	27, // 47: conf.v1.Data.Client.grpc:type_name -> conf.v1.Data.Client.GRPC
-	26, // 48: conf.v1.Data.Client.http:type_name -> conf.v1.Data.Client.HTTP
-	32, // 49: conf.v1.Data.Client.HTTP.timeout:type_name -> google.protobuf.Duration
-	32, // 50: conf.v1.Data.Client.GRPC.timeout:type_name -> google.protobuf.Duration
-	51, // [51:51] is the sub-list for method output_type
-	51, // [51:51] is the sub-list for method input_type
-	51, // [51:51] is the sub-list for extension type_name
-	51, // [51:51] is the sub-list for extension extendee
-	0,  // [0:51] is the sub-list for field type_name
+	31, // 20: conf.v1.App.oidc:type_name -> conf.v1.App.Oidc
+	10, // 21: conf.v1.Registry.consul:type_name -> conf.v1.ConsulConfig
+	11, // 22: conf.v1.Registry.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 23: conf.v1.Registry.nacos:type_name -> conf.v1.NacosConfig
+	13, // 24: conf.v1.Registry.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 25: conf.v1.Discovery.consul:type_name -> conf.v1.ConsulConfig
+	11, // 26: conf.v1.Discovery.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 27: conf.v1.Discovery.nacos:type_name -> conf.v1.NacosConfig
+	13, // 28: conf.v1.Discovery.kubernetes:type_name -> conf.v1.KubernetesConfig
+	10, // 29: conf.v1.Config.consul:type_name -> conf.v1.ConsulConfig
+	11, // 30: conf.v1.Config.etcd:type_name -> conf.v1.EtcdConfig
+	12, // 31: conf.v1.Config.nacos:type_name -> conf.v1.NacosConfig
+	33, // 32: conf.v1.ConsulConfig.timeout:type_name -> google.protobuf.Duration
+	33, // 33: conf.v1.EtcdConfig.timeout:type_name -> google.protobuf.Duration
+	33, // 34: conf.v1.NacosConfig.timeout:type_name -> google.protobuf.Duration
+	17, // 35: conf.v1.Mail.smtp:type_name -> conf.v1.Smtp
+	18, // 36: conf.v1.Mail.from:type_name -> conf.v1.MailFrom
+	33, // 37: conf.v1.Smtp.send_timeout:type_name -> google.protobuf.Duration
+	33, // 38: conf.v1.Server.HTTP.timeout:type_name -> google.protobuf.Duration
+	1,  // 39: conf.v1.Server.HTTP.tls:type_name -> conf.v1.TLSConfig
+	2,  // 40: conf.v1.Server.HTTP.cors:type_name -> conf.v1.CORS
+	33, // 41: conf.v1.Server.GRPC.timeout:type_name -> google.protobuf.Duration
+	1,  // 42: conf.v1.Server.GRPC.tls:type_name -> conf.v1.TLSConfig
+	1,  // 43: conf.v1.Client.GRPC.tls:type_name -> conf.v1.TLSConfig
+	21, // 44: conf.v1.Client.GrpcEntry.value:type_name -> conf.v1.Client.GRPC
+	33, // 45: conf.v1.Data.Redis.dial_timeout:type_name -> google.protobuf.Duration
+	33, // 46: conf.v1.Data.Redis.read_timeout:type_name -> google.protobuf.Duration
+	33, // 47: conf.v1.Data.Redis.write_timeout:type_name -> google.protobuf.Duration
+	27, // 48: conf.v1.Data.Client.grpc:type_name -> conf.v1.Data.Client.GRPC
+	26, // 49: conf.v1.Data.Client.http:type_name -> conf.v1.Data.Client.HTTP
+	33, // 50: conf.v1.Data.Client.HTTP.timeout:type_name -> google.protobuf.Duration
+	33, // 51: conf.v1.Data.Client.GRPC.timeout:type_name -> google.protobuf.Duration
+	52, // [52:52] is the sub-list for method output_type
+	52, // [52:52] is the sub-list for method input_type
+	52, // [52:52] is the sub-list for extension type_name
+	52, // [52:52] is the sub-list for extension extendee
+	0,  // [0:52] is the sub-list for field type_name
 }
 
 func init() { file_conf_v1_conf_proto_init() }
@@ -2626,7 +2703,7 @@ func file_conf_v1_conf_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_conf_v1_conf_proto_rawDesc), len(file_conf_v1_conf_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   32,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

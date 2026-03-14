@@ -5,6 +5,7 @@ package ent
 import (
 	"time"
 
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -19,6 +20,50 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	applicationFields := schema.Application{}.Fields()
+	_ = applicationFields
+	// applicationDescClientID is the schema descriptor for client_id field.
+	applicationDescClientID := applicationFields[1].Descriptor()
+	// application.ClientIDValidator is a validator for the "client_id" field. It is called by the builders before save.
+	application.ClientIDValidator = applicationDescClientID.Validators[0].(func(string) error)
+	// applicationDescClientSecretHash is the schema descriptor for client_secret_hash field.
+	applicationDescClientSecretHash := applicationFields[2].Descriptor()
+	// application.ClientSecretHashValidator is a validator for the "client_secret_hash" field. It is called by the builders before save.
+	application.ClientSecretHashValidator = applicationDescClientSecretHash.Validators[0].(func(string) error)
+	// applicationDescName is the schema descriptor for name field.
+	applicationDescName := applicationFields[3].Descriptor()
+	// application.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	application.NameValidator = applicationDescName.Validators[0].(func(string) error)
+	// applicationDescApplicationType is the schema descriptor for application_type field.
+	applicationDescApplicationType := applicationFields[7].Descriptor()
+	// application.DefaultApplicationType holds the default value on creation for the application_type field.
+	application.DefaultApplicationType = applicationDescApplicationType.Default.(string)
+	// application.ApplicationTypeValidator is a validator for the "application_type" field. It is called by the builders before save.
+	application.ApplicationTypeValidator = applicationDescApplicationType.Validators[0].(func(string) error)
+	// applicationDescAccessTokenType is the schema descriptor for access_token_type field.
+	applicationDescAccessTokenType := applicationFields[8].Descriptor()
+	// application.DefaultAccessTokenType holds the default value on creation for the access_token_type field.
+	application.DefaultAccessTokenType = applicationDescAccessTokenType.Default.(string)
+	// application.AccessTokenTypeValidator is a validator for the "access_token_type" field. It is called by the builders before save.
+	application.AccessTokenTypeValidator = applicationDescAccessTokenType.Validators[0].(func(string) error)
+	// applicationDescIDTokenLifetime is the schema descriptor for id_token_lifetime field.
+	applicationDescIDTokenLifetime := applicationFields[10].Descriptor()
+	// application.DefaultIDTokenLifetime holds the default value on creation for the id_token_lifetime field.
+	application.DefaultIDTokenLifetime = applicationDescIDTokenLifetime.Default.(int)
+	// applicationDescCreatedAt is the schema descriptor for created_at field.
+	applicationDescCreatedAt := applicationFields[11].Descriptor()
+	// application.DefaultCreatedAt holds the default value on creation for the created_at field.
+	application.DefaultCreatedAt = applicationDescCreatedAt.Default.(func() time.Time)
+	// applicationDescUpdatedAt is the schema descriptor for updated_at field.
+	applicationDescUpdatedAt := applicationFields[12].Descriptor()
+	// application.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	application.DefaultUpdatedAt = applicationDescUpdatedAt.Default.(func() time.Time)
+	// application.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	application.UpdateDefaultUpdatedAt = applicationDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// applicationDescID is the schema descriptor for id field.
+	applicationDescID := applicationFields[0].Descriptor()
+	// application.DefaultID holds the default value on creation for the id field.
+	application.DefaultID = applicationDescID.Default.(func() uuid.UUID)
 	organizationFields := schema.Organization{}.Fields()
 	_ = organizationFields
 	// organizationDescName is the schema descriptor for name field.

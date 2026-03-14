@@ -1236,6 +1236,35 @@ func (m *App) validate(all bool) error {
 
 	// no validation rules for ExternalUrl
 
+	if all {
+		switch v := interface{}(m.GetOidc()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, AppValidationError{
+					field:  "Oidc",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, AppValidationError{
+					field:  "Oidc",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetOidc()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return AppValidationError{
+				field:  "Oidc",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
 	if len(errors) > 0 {
 		return AppMultiError(errors)
 	}
@@ -4743,3 +4772,108 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = App_OpenFGAValidationError{}
+
+// Validate checks the field values on App_Oidc with the rules defined in the
+// proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *App_Oidc) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on App_Oidc with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in App_OidcMultiError, or nil
+// if none found.
+func (m *App_Oidc) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *App_Oidc) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for CryptoKey
+
+	// no validation rules for GrantTypeRefreshToken
+
+	// no validation rules for DefaultLogoutRedirectUri
+
+	if len(errors) > 0 {
+		return App_OidcMultiError(errors)
+	}
+
+	return nil
+}
+
+// App_OidcMultiError is an error wrapping multiple validation errors returned
+// by App_Oidc.ValidateAll() if the designated constraints aren't met.
+type App_OidcMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m App_OidcMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m App_OidcMultiError) AllErrors() []error { return m }
+
+// App_OidcValidationError is the validation error returned by
+// App_Oidc.Validate if the designated constraints aren't met.
+type App_OidcValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e App_OidcValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e App_OidcValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e App_OidcValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e App_OidcValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e App_OidcValidationError) ErrorName() string { return "App_OidcValidationError" }
+
+// Error satisfies the builtin error interface
+func (e App_OidcValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sApp_Oidc.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = App_OidcValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = App_OidcValidationError{}

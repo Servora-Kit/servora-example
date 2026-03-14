@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -78,6 +79,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			application.Table:        application.ValidColumn,
 			organization.Table:       organization.ValidColumn,
 			organizationmember.Table: organizationmember.ValidColumn,
 			platform.Table:           platform.ValidColumn,

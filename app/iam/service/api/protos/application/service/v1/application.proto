@@ -1,0 +1,110 @@
+syntax = "proto3";
+
+package application.service.v1;
+
+import "buf/validate/validate.proto";
+import "errors/errors.proto";
+import "google/protobuf/timestamp.proto";
+import "pagination/v1/pagination.proto";
+
+option go_package = "github.com/Servora-Kit/servora/api/gen/go/application/service/v1;apppb";
+option java_multiple_files = true;
+option java_outer_classname = "ApplicationProtoV1";
+option java_package = "dev.servora.api.application.v1";
+
+enum ErrorReason {
+  option (errors.default_code) = 500;
+  APPLICATION_NOT_FOUND = 0 [(errors.code) = 404];
+  APPLICATION_ALREADY_EXISTS = 1 [(errors.code) = 409];
+  APPLICATION_CREATE_FAILED = 2 [(errors.code) = 500];
+  APPLICATION_UPDATE_FAILED = 3 [(errors.code) = 500];
+  APPLICATION_DELETE_FAILED = 4 [(errors.code) = 500];
+  INVALID_CLIENT_SECRET = 5 [(errors.code) = 401];
+}
+
+service ApplicationService {
+  rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse);
+  rpc GetApplication(GetApplicationRequest) returns (GetApplicationResponse);
+  rpc ListApplications(ListApplicationsRequest) returns (ListApplicationsResponse);
+  rpc UpdateApplication(UpdateApplicationRequest) returns (UpdateApplicationResponse);
+  rpc DeleteApplication(DeleteApplicationRequest) returns (DeleteApplicationResponse);
+  rpc RegenerateClientSecret(RegenerateClientSecretRequest) returns (RegenerateClientSecretResponse);
+}
+
+message ApplicationInfo {
+  string id = 1;
+  string client_id = 2;
+  string name = 3;
+  repeated string redirect_uris = 4;
+  repeated string scopes = 5;
+  repeated string grant_types = 6;
+  string application_type = 7;
+  string access_token_type = 8;
+  string organization_id = 9;
+  int32 id_token_lifetime = 10;
+  google.protobuf.Timestamp created_at = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+message CreateApplicationRequest {
+  string organization_id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2 [(buf.validate.field).string = {min_len: 2, max_len: 128}];
+  repeated string redirect_uris = 3;
+  repeated string scopes = 4;
+  repeated string grant_types = 5;
+  optional string application_type = 6;
+  optional string access_token_type = 7;
+  optional int32 id_token_lifetime = 8;
+}
+
+message CreateApplicationResponse {
+  ApplicationInfo application = 1;
+  string client_secret = 2;
+}
+
+message GetApplicationRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message GetApplicationResponse {
+  ApplicationInfo application = 1;
+}
+
+message ListApplicationsRequest {
+  string organization_id = 1 [(buf.validate.field).string.uuid = true];
+  pagination.PaginationRequest pagination = 2;
+}
+
+message ListApplicationsResponse {
+  repeated ApplicationInfo applications = 1;
+  pagination.PaginationResponse pagination = 2;
+}
+
+message UpdateApplicationRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+  string name = 2;
+  repeated string redirect_uris = 3;
+  repeated string scopes = 4;
+  repeated string grant_types = 5;
+  int32 id_token_lifetime = 6;
+}
+
+message UpdateApplicationResponse {
+  ApplicationInfo application = 1;
+}
+
+message DeleteApplicationRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message DeleteApplicationResponse {
+  bool success = 1;
+}
+
+message RegenerateClientSecretRequest {
+  string id = 1 [(buf.validate.field).string.uuid = true];
+}
+
+message RegenerateClientSecretResponse {
+  string client_secret = 1;
+}

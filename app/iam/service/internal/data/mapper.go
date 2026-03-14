@@ -1,6 +1,8 @@
 package data
 
 import (
+	"time"
+
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/pkg/mapper"
@@ -46,4 +48,22 @@ var projectMapper = mapper.NewForwardMapper(func(p *ent.Project) *entity.Project
 		e.Description = *p.Description
 	}
 	return e
+})
+
+var applicationMapper = mapper.NewForwardMapper(func(a *ent.Application) *entity.Application {
+	return &entity.Application{
+		ID:               a.ID.String(),
+		ClientID:         a.ClientID,
+		ClientSecretHash: a.ClientSecretHash,
+		Name:             a.Name,
+		RedirectURIs:     a.RedirectUris,
+		Scopes:           a.Scopes,
+		GrantTypes:       a.GrantTypes,
+		ApplicationType:  a.ApplicationType,
+		AccessTokenType:  a.AccessTokenType,
+		OrganizationID:   a.OrganizationID.String(),
+		IDTokenLifetime:  time.Duration(a.IDTokenLifetime) * time.Second,
+		CreatedAt:        a.CreatedAt,
+		UpdatedAt:        a.UpdatedAt,
+	}
 })

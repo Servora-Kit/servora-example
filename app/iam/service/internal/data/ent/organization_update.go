@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
@@ -155,6 +156,21 @@ func (_u *OrganizationUpdate) AddProjects(v ...*Project) *OrganizationUpdate {
 	return _u.AddProjectIDs(ids...)
 }
 
+// AddApplicationIDs adds the "applications" edge to the Application entity by IDs.
+func (_u *OrganizationUpdate) AddApplicationIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.AddApplicationIDs(ids...)
+	return _u
+}
+
+// AddApplications adds the "applications" edges to the Application entity.
+func (_u *OrganizationUpdate) AddApplications(v ...*Application) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddApplicationIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return _u.mutation
@@ -206,6 +222,27 @@ func (_u *OrganizationUpdate) RemoveProjects(v ...*Project) *OrganizationUpdate 
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveProjectIDs(ids...)
+}
+
+// ClearApplications clears all "applications" edges to the Application entity.
+func (_u *OrganizationUpdate) ClearApplications() *OrganizationUpdate {
+	_u.mutation.ClearApplications()
+	return _u
+}
+
+// RemoveApplicationIDs removes the "applications" edge to Application entities by IDs.
+func (_u *OrganizationUpdate) RemoveApplicationIDs(ids ...uuid.UUID) *OrganizationUpdate {
+	_u.mutation.RemoveApplicationIDs(ids...)
+	return _u
+}
+
+// RemoveApplications removes "applications" edges to Application entities.
+func (_u *OrganizationUpdate) RemoveApplications(v ...*Application) *OrganizationUpdate {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveApplicationIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -419,6 +456,51 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
+	if _u.mutation.ApplicationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedApplicationsIDs(); len(nodes) > 0 && !_u.mutation.ApplicationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ApplicationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{organization.Label}
@@ -562,6 +644,21 @@ func (_u *OrganizationUpdateOne) AddProjects(v ...*Project) *OrganizationUpdateO
 	return _u.AddProjectIDs(ids...)
 }
 
+// AddApplicationIDs adds the "applications" edge to the Application entity by IDs.
+func (_u *OrganizationUpdateOne) AddApplicationIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.AddApplicationIDs(ids...)
+	return _u
+}
+
+// AddApplications adds the "applications" edges to the Application entity.
+func (_u *OrganizationUpdateOne) AddApplications(v ...*Application) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.AddApplicationIDs(ids...)
+}
+
 // Mutation returns the OrganizationMutation object of the builder.
 func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return _u.mutation
@@ -613,6 +710,27 @@ func (_u *OrganizationUpdateOne) RemoveProjects(v ...*Project) *OrganizationUpda
 		ids[i] = v[i].ID
 	}
 	return _u.RemoveProjectIDs(ids...)
+}
+
+// ClearApplications clears all "applications" edges to the Application entity.
+func (_u *OrganizationUpdateOne) ClearApplications() *OrganizationUpdateOne {
+	_u.mutation.ClearApplications()
+	return _u
+}
+
+// RemoveApplicationIDs removes the "applications" edge to Application entities by IDs.
+func (_u *OrganizationUpdateOne) RemoveApplicationIDs(ids ...uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.RemoveApplicationIDs(ids...)
+	return _u
+}
+
+// RemoveApplications removes "applications" edges to Application entities.
+func (_u *OrganizationUpdateOne) RemoveApplications(v ...*Application) *OrganizationUpdateOne {
+	ids := make([]uuid.UUID, len(v))
+	for i := range v {
+		ids[i] = v[i].ID
+	}
+	return _u.RemoveApplicationIDs(ids...)
 }
 
 // Where appends a list predicates to the OrganizationUpdate builder.
@@ -849,6 +967,51 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(project.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	}
+	if _u.mutation.ApplicationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.RemovedApplicationsIDs(); len(nodes) > 0 && !_u.mutation.ApplicationsCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := _u.mutation.ApplicationsIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2M,
+			Inverse: false,
+			Table:   organization.ApplicationsTable,
+			Columns: []string{organization.ApplicationsColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(application.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

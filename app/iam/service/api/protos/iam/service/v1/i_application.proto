@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+package iam.service.v1;
+
+import "google/api/annotations.proto";
+import "application/service/v1/application.proto";
+import "servora/authz/v1/authz.proto";
+
+option go_package = "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1;iampb";
+
+service ApplicationService {
+  rpc CreateApplication(application.service.v1.CreateApplicationRequest) returns (application.service.v1.CreateApplicationResponse) {
+    option (google.api.http) = {
+      post: "/v1/applications"
+      body: "*"
+    };
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_ORGANIZATION
+      relation: RELATION_CAN_MANAGE
+      id_field: "organization_id"
+    };
+  }
+
+  rpc GetApplication(application.service.v1.GetApplicationRequest) returns (application.service.v1.GetApplicationResponse) {
+    option (google.api.http) = {get: "/v1/applications/{id}"};
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_NONE
+    };
+  }
+
+  rpc ListApplications(application.service.v1.ListApplicationsRequest) returns (application.service.v1.ListApplicationsResponse) {
+    option (google.api.http) = {get: "/v1/organizations/{organization_id}/applications"};
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_ORGANIZATION
+      relation: RELATION_CAN_VIEW
+      id_field: "organization_id"
+    };
+  }
+
+  rpc UpdateApplication(application.service.v1.UpdateApplicationRequest) returns (application.service.v1.UpdateApplicationResponse) {
+    option (google.api.http) = {
+      put: "/v1/applications/{id}"
+      body: "*"
+    };
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_NONE
+    };
+  }
+
+  rpc DeleteApplication(application.service.v1.DeleteApplicationRequest) returns (application.service.v1.DeleteApplicationResponse) {
+    option (google.api.http) = {delete: "/v1/applications/{id}"};
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_NONE
+    };
+  }
+
+  rpc RegenerateClientSecret(application.service.v1.RegenerateClientSecretRequest) returns (application.service.v1.RegenerateClientSecretResponse) {
+    option (google.api.http) = {
+      post: "/v1/applications/{id}/regenerate-secret"
+      body: "*"
+    };
+    option (servora.authz.v1.rule) = {
+      mode: AUTHZ_MODE_NONE
+    };
+  }
+}

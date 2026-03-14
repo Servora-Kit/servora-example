@@ -35,6 +35,8 @@ const (
 	EdgeMembers = "members"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
 	EdgeProjects = "projects"
+	// EdgeApplications holds the string denoting the applications edge name in mutations.
+	EdgeApplications = "applications"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
 	// PlatformTable is the table that holds the platform relation/edge.
@@ -58,6 +60,13 @@ const (
 	ProjectsInverseTable = "projects"
 	// ProjectsColumn is the table column denoting the projects relation/edge.
 	ProjectsColumn = "organization_id"
+	// ApplicationsTable is the table that holds the applications relation/edge.
+	ApplicationsTable = "applications"
+	// ApplicationsInverseTable is the table name for the Application entity.
+	// It exists in this package in order to avoid circular dependency with the "application" package.
+	ApplicationsInverseTable = "applications"
+	// ApplicationsColumn is the table column denoting the applications relation/edge.
+	ApplicationsColumn = "organization_id"
 )
 
 // Columns holds all SQL columns for organization fields.
@@ -176,6 +185,20 @@ func ByProjects(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newProjectsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
+
+// ByApplicationsCount orders the results by applications count.
+func ByApplicationsCount(opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborsCount(s, newApplicationsStep(), opts...)
+	}
+}
+
+// ByApplications orders the results by applications terms.
+func ByApplications(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newApplicationsStep(), append([]sql.OrderTerm{term}, terms...)...)
+	}
+}
 func newPlatformStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
@@ -195,5 +218,12 @@ func newProjectsStep() *sqlgraph.Step {
 		sqlgraph.From(Table, FieldID),
 		sqlgraph.To(ProjectsInverseTable, FieldID),
 		sqlgraph.Edge(sqlgraph.O2M, false, ProjectsTable, ProjectsColumn),
+	)
+}
+func newApplicationsStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(ApplicationsInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2M, false, ApplicationsTable, ApplicationsColumn),
 	)
 }

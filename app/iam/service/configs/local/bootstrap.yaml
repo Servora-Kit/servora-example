@@ -28,6 +28,10 @@ app:
     api_url: "http://localhost:8080"
     store_id: "${FGA_STORE_ID}"
     model_id: "${FGA_MODEL_ID}"
+  oidc:
+    crypto_key: "${OIDC_CRYPTO_KEY:0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}"
+    grant_type_refresh_token: true
+    default_logout_redirect_uri: "http://localhost:3000"
   log:
     level: 0
     filename: "./logs/iam.service.log"

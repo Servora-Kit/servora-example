@@ -1,6 +1,7 @@
 package service
 
 import (
+	apppb "github.com/Servora-Kit/servora/api/gen/go/application/service/v1"
 	orgpb "github.com/Servora-Kit/servora/api/gen/go/organization/service/v1"
 	projectpb "github.com/Servora-Kit/servora/api/gen/go/project/service/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
@@ -63,5 +64,22 @@ var projectMemberInfoMapper = mapper.NewForwardMapper(func(m *entity.ProjectMemb
 		UserEmail: m.UserEmail,
 		Role:      m.Role,
 		CreatedAt: timestamppb.New(m.CreatedAt),
+	}
+})
+
+var applicationInfoMapper = mapper.NewForwardMapper(func(a *entity.Application) *apppb.ApplicationInfo {
+	return &apppb.ApplicationInfo{
+		Id:              a.ID,
+		ClientId:        a.ClientID,
+		Name:            a.Name,
+		RedirectUris:    a.RedirectURIs,
+		Scopes:          a.Scopes,
+		GrantTypes:      a.GrantTypes,
+		ApplicationType: a.ApplicationType,
+		AccessTokenType: a.AccessTokenType,
+		OrganizationId:  a.OrganizationID,
+		IdTokenLifetime: int32(a.IDTokenLifetime.Seconds()),
+		CreatedAt:       timestamppb.New(a.CreatedAt),
+		UpdatedAt:       timestamppb.New(a.UpdatedAt),
 	}
 })
