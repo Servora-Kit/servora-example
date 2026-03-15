@@ -1360,15 +1360,15 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\x16GetOrganizationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"h\n" +
 	"\x17GetOrganizationResponse\x12M\n" +
-	"\forganization\x18\x01 \x01(\v2).organization.service.v1.OrganizationInfoR\forganization\"Y\n" +
-	"\x18ListOrganizationsRequest\x12=\n" +
+	"\forganization\x18\x01 \x01(\v2).organization.service.v1.OrganizationInfoR\forganization\"\\\n" +
+	"\x18ListOrganizationsRequest\x12@\n" +
 	"\n" +
-	"pagination\x18\x01 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\xac\x01\n" +
+	"pagination\x18\x01 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\xaf\x01\n" +
 	"\x19ListOrganizationsResponse\x12O\n" +
-	"\rorganizations\x18\x01 \x03(\v2).organization.service.v1.OrganizationInfoR\rorganizations\x12>\n" +
+	"\rorganizations\x18\x01 \x03(\v2).organization.service.v1.OrganizationInfoR\rorganizations\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"l\n" +
 	"\x19UpdateOrganizationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
@@ -1398,16 +1398,16 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"0\n" +
 	"\x14RemoveMemberResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x86\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x89\x01\n" +
 	"\x12ListMembersRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12=\n" +
+	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12@\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\xa0\x01\n" +
+	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\xa3\x01\n" +
 	"\x13ListMembersResponse\x12I\n" +
-	"\amembers\x18\x01 \x03(\v2/.organization.service.v1.OrganizationMemberInfoR\amembers\x12>\n" +
+	"\amembers\x18\x01 \x03(\v2/.organization.service.v1.OrganizationMemberInfoR\amembers\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"\xa8\x01\n" +
 	"\x17UpdateMemberRoleRequest\x121\n" +
 	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12!\n" +
@@ -1479,8 +1479,8 @@ var file_organization_service_v1_organization_proto_goTypes = []any{
 	(*UpdateMemberRoleRequest)(nil),     // 23: organization.service.v1.UpdateMemberRoleRequest
 	(*UpdateMemberRoleResponse)(nil),    // 24: organization.service.v1.UpdateMemberRoleResponse
 	(*timestamppb.Timestamp)(nil),       // 25: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 26: pagination.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 27: pagination.PaginationResponse
+	(*v1.PaginationRequest)(nil),        // 26: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),       // 27: pagination.v1.PaginationResponse
 }
 var file_organization_service_v1_organization_proto_depIdxs = []int32{
 	25, // 0: organization.service.v1.OrganizationInfo.created_at:type_name -> google.protobuf.Timestamp
@@ -1488,15 +1488,15 @@ var file_organization_service_v1_organization_proto_depIdxs = []int32{
 	25, // 2: organization.service.v1.OrganizationMemberInfo.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: organization.service.v1.CreateOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	1,  // 4: organization.service.v1.GetOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
-	26, // 5: organization.service.v1.ListOrganizationsRequest.pagination:type_name -> pagination.PaginationRequest
+	26, // 5: organization.service.v1.ListOrganizationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 6: organization.service.v1.ListOrganizationsResponse.organizations:type_name -> organization.service.v1.OrganizationInfo
-	27, // 7: organization.service.v1.ListOrganizationsResponse.pagination:type_name -> pagination.PaginationResponse
+	27, // 7: organization.service.v1.ListOrganizationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 8: organization.service.v1.UpdateOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	1,  // 9: organization.service.v1.RestoreOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	2,  // 10: organization.service.v1.AddMemberResponse.member:type_name -> organization.service.v1.OrganizationMemberInfo
-	26, // 11: organization.service.v1.ListMembersRequest.pagination:type_name -> pagination.PaginationRequest
+	26, // 11: organization.service.v1.ListMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	2,  // 12: organization.service.v1.ListMembersResponse.members:type_name -> organization.service.v1.OrganizationMemberInfo
-	27, // 13: organization.service.v1.ListMembersResponse.pagination:type_name -> pagination.PaginationResponse
+	27, // 13: organization.service.v1.ListMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	2,  // 14: organization.service.v1.UpdateMemberRoleResponse.member:type_name -> organization.service.v1.OrganizationMemberInfo
 	3,  // 15: organization.service.v1.OrganizationService.CreateOrganization:input_type -> organization.service.v1.CreateOrganizationRequest
 	5,  // 16: organization.service.v1.OrganizationService.GetOrganization:input_type -> organization.service.v1.GetOrganizationRequest

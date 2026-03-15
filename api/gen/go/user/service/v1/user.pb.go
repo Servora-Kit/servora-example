@@ -961,15 +961,15 @@ const file_user_service_v1_user_proto_rawDesc = "" +
 	"\x0eGetUserRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"@\n" +
 	"\x0fGetUserResponse\x12-\n" +
-	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"Q\n" +
-	"\x10ListUsersRequest\x12=\n" +
+	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"T\n" +
+	"\x10ListUsersRequest\x12@\n" +
 	"\n" +
-	"pagination\x18\x01 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\x84\x01\n" +
+	"pagination\x18\x01 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\x87\x01\n" +
 	"\x11ListUsersResponse\x12/\n" +
-	"\x05users\x18\x01 \x03(\v2\x19.user.service.v1.UserInfoR\x05users\x12>\n" +
+	"\x05users\x18\x01 \x03(\v2\x19.user.service.v1.UserInfoR\x05users\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"-\n" +
 	"\x11DeleteUserRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\".\n" +
@@ -1050,14 +1050,14 @@ var file_user_service_v1_user_proto_goTypes = []any{
 	(*UpdateUserResponse)(nil),      // 15: user.service.v1.UpdateUserResponse
 	(*SaveUserRequest)(nil),         // 16: user.service.v1.SaveUserRequest
 	(*SaveUserResponse)(nil),        // 17: user.service.v1.SaveUserResponse
-	(*v1.PaginationRequest)(nil),    // 18: pagination.PaginationRequest
-	(*v1.PaginationResponse)(nil),   // 19: pagination.PaginationResponse
+	(*v1.PaginationRequest)(nil),    // 18: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),   // 19: pagination.v1.PaginationResponse
 }
 var file_user_service_v1_user_proto_depIdxs = []int32{
 	1,  // 0: user.service.v1.GetUserResponse.user:type_name -> user.service.v1.UserInfo
-	18, // 1: user.service.v1.ListUsersRequest.pagination:type_name -> pagination.PaginationRequest
+	18, // 1: user.service.v1.ListUsersRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 2: user.service.v1.ListUsersResponse.users:type_name -> user.service.v1.UserInfo
-	19, // 3: user.service.v1.ListUsersResponse.pagination:type_name -> pagination.PaginationResponse
+	19, // 3: user.service.v1.ListUsersResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 4: user.service.v1.RestoreUserResponse.user:type_name -> user.service.v1.UserInfo
 	1,  // 5: user.service.v1.UpdateUserResponse.user:type_name -> user.service.v1.UserInfo
 	2,  // 6: user.service.v1.UserService.CurrentUserInfo:input_type -> user.service.v1.CurrentUserInfoRequest

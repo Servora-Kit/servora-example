@@ -406,17 +406,16 @@ var File_pagination_v1_pagination_proto protoreflect.FileDescriptor
 
 const file_pagination_v1_pagination_proto_rawDesc = "" +
 	"\n" +
-	"\x1epagination/v1/pagination.proto\x12\n" +
-	"pagination\x1a\x1bbuf/validate/validate.proto\"\\\n" +
+	"\x1epagination/v1/pagination.proto\x12\rpagination.v1\x1a\x1bbuf/validate/validate.proto\"\\\n" +
 	"\x15PagePaginationRequest\x12\x1b\n" +
 	"\x04page\x18\x01 \x01(\x05B\a\xbaH\x04\x1a\x02(\x00R\x04page\x12&\n" +
 	"\tpage_size\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\bpageSize\"R\n" +
 	"\x17CursorPaginationRequest\x12\x16\n" +
 	"\x06cursor\x18\x01 \x01(\tR\x06cursor\x12\x1f\n" +
-	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"\x93\x01\n" +
-	"\x11PaginationRequest\x127\n" +
-	"\x04page\x18\x01 \x01(\v2!.pagination.PagePaginationRequestH\x00R\x04page\x12=\n" +
-	"\x06cursor\x18\x02 \x01(\v2#.pagination.CursorPaginationRequestH\x00R\x06cursorB\x06\n" +
+	"\x05limit\x18\x02 \x01(\x05B\t\xbaH\x06\x1a\x04\x18d(\x00R\x05limit\"\x99\x01\n" +
+	"\x11PaginationRequest\x12:\n" +
+	"\x04page\x18\x01 \x01(\v2$.pagination.v1.PagePaginationRequestH\x00R\x04page\x12@\n" +
+	"\x06cursor\x18\x02 \x01(\v2&.pagination.v1.CursorPaginationRequestH\x00R\x06cursorB\x06\n" +
 	"\x04mode\"_\n" +
 	"\x16PagePaginationResponse\x12\x14\n" +
 	"\x05total\x18\x01 \x01(\x03R\x05total\x12\x12\n" +
@@ -425,15 +424,12 @@ const file_pagination_v1_pagination_proto_rawDesc = "" +
 	"\x18CursorPaginationResponse\x12\x1f\n" +
 	"\vnext_cursor\x18\x01 \x01(\tR\n" +
 	"nextCursor\x12\x19\n" +
-	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\x96\x01\n" +
-	"\x12PaginationResponse\x128\n" +
-	"\x04page\x18\x01 \x01(\v2\".pagination.PagePaginationResponseH\x00R\x04page\x12>\n" +
-	"\x06cursor\x18\x02 \x01(\v2$.pagination.CursorPaginationResponseH\x00R\x06cursorB\x06\n" +
-	"\x04modeB\xaf\x01\n" +
-	"\x0ecom.paginationB\x0fPaginationProtoP\x01ZDgithub.com/Servora-Kit/servora/api/gen/go/pagination/v1;paginationpb\xa2\x02\x03PXX\xaa\x02\n" +
-	"Pagination\xca\x02\n" +
-	"Pagination\xe2\x02\x16Pagination\\GPBMetadata\xea\x02\n" +
-	"Paginationb\x06proto3"
+	"\bhas_more\x18\x02 \x01(\bR\ahasMore\"\x9c\x01\n" +
+	"\x12PaginationResponse\x12;\n" +
+	"\x04page\x18\x01 \x01(\v2%.pagination.v1.PagePaginationResponseH\x00R\x04page\x12A\n" +
+	"\x06cursor\x18\x02 \x01(\v2'.pagination.v1.CursorPaginationResponseH\x00R\x06cursorB\x06\n" +
+	"\x04modeB\xbf\x01\n" +
+	"\x11com.pagination.v1B\x0fPaginationProtoP\x01ZDgithub.com/Servora-Kit/servora/api/gen/go/pagination/v1;paginationpb\xa2\x02\x03PXX\xaa\x02\rPagination.V1\xca\x02\rPagination\\V1\xe2\x02\x19Pagination\\V1\\GPBMetadata\xea\x02\x0ePagination::V1b\x06proto3"
 
 var (
 	file_pagination_v1_pagination_proto_rawDescOnce sync.Once
@@ -449,18 +445,18 @@ func file_pagination_v1_pagination_proto_rawDescGZIP() []byte {
 
 var file_pagination_v1_pagination_proto_msgTypes = make([]protoimpl.MessageInfo, 6)
 var file_pagination_v1_pagination_proto_goTypes = []any{
-	(*PagePaginationRequest)(nil),    // 0: pagination.PagePaginationRequest
-	(*CursorPaginationRequest)(nil),  // 1: pagination.CursorPaginationRequest
-	(*PaginationRequest)(nil),        // 2: pagination.PaginationRequest
-	(*PagePaginationResponse)(nil),   // 3: pagination.PagePaginationResponse
-	(*CursorPaginationResponse)(nil), // 4: pagination.CursorPaginationResponse
-	(*PaginationResponse)(nil),       // 5: pagination.PaginationResponse
+	(*PagePaginationRequest)(nil),    // 0: pagination.v1.PagePaginationRequest
+	(*CursorPaginationRequest)(nil),  // 1: pagination.v1.CursorPaginationRequest
+	(*PaginationRequest)(nil),        // 2: pagination.v1.PaginationRequest
+	(*PagePaginationResponse)(nil),   // 3: pagination.v1.PagePaginationResponse
+	(*CursorPaginationResponse)(nil), // 4: pagination.v1.CursorPaginationResponse
+	(*PaginationResponse)(nil),       // 5: pagination.v1.PaginationResponse
 }
 var file_pagination_v1_pagination_proto_depIdxs = []int32{
-	0, // 0: pagination.PaginationRequest.page:type_name -> pagination.PagePaginationRequest
-	1, // 1: pagination.PaginationRequest.cursor:type_name -> pagination.CursorPaginationRequest
-	3, // 2: pagination.PaginationResponse.page:type_name -> pagination.PagePaginationResponse
-	4, // 3: pagination.PaginationResponse.cursor:type_name -> pagination.CursorPaginationResponse
+	0, // 0: pagination.v1.PaginationRequest.page:type_name -> pagination.v1.PagePaginationRequest
+	1, // 1: pagination.v1.PaginationRequest.cursor:type_name -> pagination.v1.CursorPaginationRequest
+	3, // 2: pagination.v1.PaginationResponse.page:type_name -> pagination.v1.PagePaginationResponse
+	4, // 3: pagination.v1.PaginationResponse.cursor:type_name -> pagination.v1.CursorPaginationResponse
 	4, // [4:4] is the sub-list for method output_type
 	4, // [4:4] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name

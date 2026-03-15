@@ -72,12 +72,12 @@ message GetApplicationResponse {
 
 message ListApplicationsRequest {
   string organization_id = 1 [(buf.validate.field).string.uuid = true];
-  pagination.PaginationRequest pagination = 2;
+  pagination.v1.PaginationRequest pagination = 2;
 }
 
 message ListApplicationsResponse {
   repeated ApplicationInfo applications = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message UpdateApplicationRequest {

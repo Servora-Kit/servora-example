@@ -905,16 +905,16 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"\x15GetApplicationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"c\n" +
 	"\x16GetApplicationResponse\x12I\n" +
-	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"\x8b\x01\n" +
+	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"\x8e\x01\n" +
 	"\x17ListApplicationsRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12=\n" +
+	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12@\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\xa7\x01\n" +
+	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\xaa\x01\n" +
 	"\x18ListApplicationsResponse\x12K\n" +
-	"\fapplications\x18\x01 \x03(\v2'.application.service.v1.ApplicationInfoR\fapplications\x12>\n" +
+	"\fapplications\x18\x01 \x03(\v2'.application.service.v1.ApplicationInfoR\fapplications\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"\xd2\x01\n" +
 	"\x18UpdateApplicationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
@@ -980,17 +980,17 @@ var file_application_service_v1_application_proto_goTypes = []any{
 	(*RegenerateClientSecretRequest)(nil),  // 12: application.service.v1.RegenerateClientSecretRequest
 	(*RegenerateClientSecretResponse)(nil), // 13: application.service.v1.RegenerateClientSecretResponse
 	(*timestamppb.Timestamp)(nil),          // 14: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),           // 15: pagination.PaginationRequest
-	(*v1.PaginationResponse)(nil),          // 16: pagination.PaginationResponse
+	(*v1.PaginationRequest)(nil),           // 15: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),          // 16: pagination.v1.PaginationResponse
 }
 var file_application_service_v1_application_proto_depIdxs = []int32{
 	14, // 0: application.service.v1.ApplicationInfo.created_at:type_name -> google.protobuf.Timestamp
 	14, // 1: application.service.v1.ApplicationInfo.updated_at:type_name -> google.protobuf.Timestamp
 	1,  // 2: application.service.v1.CreateApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
 	1,  // 3: application.service.v1.GetApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
-	15, // 4: application.service.v1.ListApplicationsRequest.pagination:type_name -> pagination.PaginationRequest
+	15, // 4: application.service.v1.ListApplicationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 5: application.service.v1.ListApplicationsResponse.applications:type_name -> application.service.v1.ApplicationInfo
-	16, // 6: application.service.v1.ListApplicationsResponse.pagination:type_name -> pagination.PaginationResponse
+	16, // 6: application.service.v1.ListApplicationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 7: application.service.v1.UpdateApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
 	2,  // 8: application.service.v1.ApplicationService.CreateApplication:input_type -> application.service.v1.CreateApplicationRequest
 	4,  // 9: application.service.v1.ApplicationService.GetApplication:input_type -> application.service.v1.GetApplicationRequest

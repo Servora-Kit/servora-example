@@ -63,12 +63,12 @@ message GetUserResponse {
 }
 
 message ListUsersRequest {
-  pagination.PaginationRequest pagination = 1;
+  pagination.v1.PaginationRequest pagination = 1;
 }
 
 message ListUsersResponse {
   repeated UserInfo users = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message DeleteUserRequest {

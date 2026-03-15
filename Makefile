@@ -28,9 +28,10 @@ PKG_DIR     := pkg
 BUF_GO_GEN_TEMPLATE := buf.go.gen.yaml
 BUF_TS_GEN_TEMPLATE := buf.typescript.gen.yaml
 
-# Find all service Makefiles in app directory
+# Find all service Makefiles in app directory; derive per-service buf.typescript.gen.yaml
 SRCS_MK := $(foreach dir, app, $(wildcard $(dir)/*/*/Makefile))
 SERVICE_DIRS := $(dir $(realpath $(SRCS_MK)))
+BUF_TS_SERVICE_TEMPLATES := $(wildcard $(addsuffix api/buf.typescript.gen.yaml,$(SERVICE_DIRS)))
 
 # Go environment
 GOPATH := $(shell go env GOPATH)
@@ -169,10 +170,11 @@ api-authz:
 	@echo "$(CYAN)Generating AuthZ rules via buf.authz.gen.yaml...$(RESET)"
 	@buf generate --template buf.authz.gen.yaml
 
-# generate protobuf api typescript code for web
+# generate protobuf api typescript code for web (shared api/gen/ts + per-service templates under app/*/service/api/)
 api-ts:
-	@echo "$(CYAN)Generating protobuf TypeScript code via $(BUF_TS_GEN_TEMPLATE)...$(RESET)"
+	@echo "$(CYAN)Generating shared TypeScript (api/gen/ts) via $(BUF_TS_GEN_TEMPLATE)...$(RESET)"
 	@buf generate --template $(BUF_TS_GEN_TEMPLATE)
+	@$(foreach tpl,$(BUF_TS_SERVICE_TEMPLATES),echo "$(CYAN)Generating TypeScript via $(tpl)...$(RESET)" && buf generate --template $(tpl) &&) true
 
 # generate protobuf api OpenAPI v3 docs for all services
 openapi:

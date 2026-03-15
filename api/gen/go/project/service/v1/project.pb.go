@@ -1387,16 +1387,16 @@ const file_project_service_v1_project_proto_rawDesc = "" +
 	"\x11GetProjectRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"O\n" +
 	"\x12GetProjectResponse\x129\n" +
-	"\aproject\x18\x01 \x01(\v2\x1f.project.service.v1.ProjectInfoR\aproject\"\x87\x01\n" +
+	"\aproject\x18\x01 \x01(\v2\x1f.project.service.v1.ProjectInfoR\aproject\"\x8a\x01\n" +
 	"\x13ListProjectsRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12=\n" +
+	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12@\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\x93\x01\n" +
+	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\x96\x01\n" +
 	"\x14ListProjectsResponse\x12;\n" +
-	"\bprojects\x18\x01 \x03(\v2\x1f.project.service.v1.ProjectInfoR\bprojects\x12>\n" +
+	"\bprojects\x18\x01 \x03(\v2\x1f.project.service.v1.ProjectInfoR\bprojects\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"f\n" +
 	"\x14UpdateProjectRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
@@ -1428,17 +1428,17 @@ const file_project_service_v1_project_proto_rawDesc = "" +
 	"project_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tprojectId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"0\n" +
 	"\x14RemoveMemberResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"|\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x7f\n" +
 	"\x12ListMembersRequest\x12'\n" +
 	"\n" +
-	"project_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tprojectId\x12=\n" +
+	"project_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\tprojectId\x12@\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1d.pagination.PaginationRequestR\n" +
-	"pagination\"\x96\x01\n" +
+	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
+	"pagination\"\x99\x01\n" +
 	"\x13ListMembersResponse\x12?\n" +
-	"\amembers\x18\x01 \x03(\v2%.project.service.v1.ProjectMemberInfoR\amembers\x12>\n" +
+	"\amembers\x18\x01 \x03(\v2%.project.service.v1.ProjectMemberInfoR\amembers\x12A\n" +
 	"\n" +
-	"pagination\x18\x02 \x01(\v2\x1e.pagination.PaginationResponseR\n" +
+	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
 	"pagination\"\x97\x01\n" +
 	"\x17UpdateMemberRoleRequest\x12'\n" +
 	"\n" +
@@ -1511,8 +1511,8 @@ var file_project_service_v1_project_proto_goTypes = []any{
 	(*UpdateMemberRoleRequest)(nil),  // 23: project.service.v1.UpdateMemberRoleRequest
 	(*UpdateMemberRoleResponse)(nil), // 24: project.service.v1.UpdateMemberRoleResponse
 	(*timestamppb.Timestamp)(nil),    // 25: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),     // 26: pagination.PaginationRequest
-	(*v1.PaginationResponse)(nil),    // 27: pagination.PaginationResponse
+	(*v1.PaginationRequest)(nil),     // 26: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),    // 27: pagination.v1.PaginationResponse
 }
 var file_project_service_v1_project_proto_depIdxs = []int32{
 	25, // 0: project.service.v1.ProjectInfo.created_at:type_name -> google.protobuf.Timestamp
@@ -1520,15 +1520,15 @@ var file_project_service_v1_project_proto_depIdxs = []int32{
 	25, // 2: project.service.v1.ProjectMemberInfo.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: project.service.v1.CreateProjectResponse.project:type_name -> project.service.v1.ProjectInfo
 	1,  // 4: project.service.v1.GetProjectResponse.project:type_name -> project.service.v1.ProjectInfo
-	26, // 5: project.service.v1.ListProjectsRequest.pagination:type_name -> pagination.PaginationRequest
+	26, // 5: project.service.v1.ListProjectsRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 6: project.service.v1.ListProjectsResponse.projects:type_name -> project.service.v1.ProjectInfo
-	27, // 7: project.service.v1.ListProjectsResponse.pagination:type_name -> pagination.PaginationResponse
+	27, // 7: project.service.v1.ListProjectsResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 8: project.service.v1.UpdateProjectResponse.project:type_name -> project.service.v1.ProjectInfo
 	1,  // 9: project.service.v1.RestoreProjectResponse.project:type_name -> project.service.v1.ProjectInfo
 	2,  // 10: project.service.v1.AddMemberResponse.member:type_name -> project.service.v1.ProjectMemberInfo
-	26, // 11: project.service.v1.ListMembersRequest.pagination:type_name -> pagination.PaginationRequest
+	26, // 11: project.service.v1.ListMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	2,  // 12: project.service.v1.ListMembersResponse.members:type_name -> project.service.v1.ProjectMemberInfo
-	27, // 13: project.service.v1.ListMembersResponse.pagination:type_name -> pagination.PaginationResponse
+	27, // 13: project.service.v1.ListMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	2,  // 14: project.service.v1.UpdateMemberRoleResponse.member:type_name -> project.service.v1.ProjectMemberInfo
 	3,  // 15: project.service.v1.ProjectService.CreateProject:input_type -> project.service.v1.CreateProjectRequest
 	5,  // 16: project.service.v1.ProjectService.GetProject:input_type -> project.service.v1.GetProjectRequest

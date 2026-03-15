@@ -79,12 +79,12 @@ message GetOrganizationResponse {
 }
 
 message ListOrganizationsRequest {
-  pagination.PaginationRequest pagination = 1;
+  pagination.v1.PaginationRequest pagination = 1;
 }
 
 message ListOrganizationsResponse {
   repeated OrganizationInfo organizations = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message UpdateOrganizationRequest {
@@ -142,12 +142,12 @@ message RemoveMemberResponse {
 
 message ListMembersRequest {
   string organization_id = 1 [(buf.validate.field).string.uuid = true];
-  pagination.PaginationRequest pagination = 2;
+  pagination.v1.PaginationRequest pagination = 2;
 }
 
 message ListMembersResponse {
   repeated OrganizationMemberInfo members = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message UpdateMemberRoleRequest {

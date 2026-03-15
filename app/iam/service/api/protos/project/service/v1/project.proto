@@ -82,12 +82,12 @@ message GetProjectResponse {
 
 message ListProjectsRequest {
   string organization_id = 1 [(buf.validate.field).string.uuid = true];
-  pagination.PaginationRequest pagination = 2;
+  pagination.v1.PaginationRequest pagination = 2;
 }
 
 message ListProjectsResponse {
   repeated ProjectInfo projects = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message UpdateProjectRequest {
@@ -145,12 +145,12 @@ message RemoveMemberResponse {
 
 message ListMembersRequest {
   string project_id = 1 [(buf.validate.field).string.uuid = true];
-  pagination.PaginationRequest pagination = 2;
+  pagination.v1.PaginationRequest pagination = 2;
 }
 
 message ListMembersResponse {
   repeated ProjectMemberInfo members = 1;
-  pagination.PaginationResponse pagination = 2;
+  pagination.v1.PaginationResponse pagination = 2;
 }
 
 message UpdateMemberRoleRequest {
