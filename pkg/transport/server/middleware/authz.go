@@ -12,7 +12,7 @@ import (
 	"google.golang.org/protobuf/proto"
 	"google.golang.org/protobuf/reflect/protoreflect"
 
-	authzpb "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
+	authzpb "github.com/Servora-Kit/servora/api/gen/go/authz/service/v1"
 	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/openfga"
 	"github.com/Servora-Kit/servora/pkg/redis"

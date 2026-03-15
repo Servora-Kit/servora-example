@@ -7,7 +7,7 @@
 package iampb
 
 import (
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
+	_ "github.com/Servora-Kit/servora/api/gen/go/authz/service/v1"
 	v1 "github.com/Servora-Kit/servora/api/gen/go/test/service/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -27,7 +27,7 @@ var File_iam_service_v1_i_test_proto protoreflect.FileDescriptor
 
 const file_iam_service_v1_i_test_proto_rawDesc = "" +
 	"\n" +
-	"\x1biam/service/v1/i_test.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1cservora/authz/v1/authz.proto\x1a\x1atest/service/v1/test.proto2\xd8\x02\n" +
+	"\x1biam/service/v1/i_test.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1cauthz/service/v1/authz.proto\x1a\x1atest/service/v1/test.proto2\xd8\x02\n" +
 	"\vTestService\x12g\n" +
 	"\x05Hello\x12\x1d.test.service.v1.HelloRequest\x1a\x1e.test.service.v1.HelloResponse\"\x1f\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x13:\x01*\"\x0e/v1/test/Hello\x12c\n" +
 	"\x04Test\x12\x1c.test.service.v1.TestRequest\x1a\x1d.test.service.v1.TestResponse\"\x1e\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/v1/test/test\x12{\n" +

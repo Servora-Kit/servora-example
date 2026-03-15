@@ -2312,7 +2312,6 @@ func (x *App_OpenFGA) GetApiToken() string {
 	return ""
 }
 
-// OIDC Provider 配置（P1: OAuth2/OIDC）
 type App_Oidc struct {
 	state                    protoimpl.MessageState `protogen:"open.v1"`
 	CryptoKey                string                 `protobuf:"bytes,1,opt,name=crypto_key,json=cryptoKey,proto3" json:"crypto_key,omitempty"`                                                  // 32 字节 hex 编码 AES 密钥，用于 OIDC token 加密

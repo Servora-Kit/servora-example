@@ -4,7 +4,7 @@
 // - protoc             (unknown)
 // source: authz/service/v1/authz.proto
 
-package authzsvcpb
+package authzpb
 
 import (
 	context "context"

@@ -4,7 +4,7 @@ package iam.service.v1;
 
 import "google/api/annotations.proto";
 import "project/service/v1/project.proto";
-import "servora/authz/v1/authz.proto";
+import "authz/service/v1/authz.proto";
 
 option go_package = "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1;iampb";
 
@@ -14,7 +14,7 @@ service ProjectService {
       post: "/v1/projects"
       body: "*"
     };
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_MANAGE
       id_field: "organization_id"
@@ -23,7 +23,7 @@ service ProjectService {
 
   rpc GetProject(project.service.v1.GetProjectRequest) returns (project.service.v1.GetProjectResponse) {
     option (google.api.http) = {get: "/v1/projects/{id}"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_VIEW
       id_field: "id"
@@ -32,7 +32,7 @@ service ProjectService {
 
   rpc ListProjects(project.service.v1.ListProjectsRequest) returns (project.service.v1.ListProjectsResponse) {
     option (google.api.http) = {get: "/v1/organizations/{organization_id}/projects"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_VIEW
       id_field: "organization_id"
@@ -44,7 +44,7 @@ service ProjectService {
       put: "/v1/projects/{id}"
       body: "*"
     };
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_EDIT
       id_field: "id"
@@ -53,7 +53,7 @@ service ProjectService {
 
   rpc DeleteProject(project.service.v1.DeleteProjectRequest) returns (project.service.v1.DeleteProjectResponse) {
     option (google.api.http) = {delete: "/v1/projects/{id}"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_ADMIN
       id_field: "id"
@@ -62,7 +62,7 @@ service ProjectService {
 
   rpc PurgeProject(project.service.v1.PurgeProjectRequest) returns (project.service.v1.PurgeProjectResponse) {
     option (google.api.http) = {delete: "/v1/projects/{id}/purge"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_PLATFORM
       relation: RELATION_ADMIN
@@ -75,7 +75,7 @@ service ProjectService {
       post: "/v1/projects/{id}/restore"
       body: "*"
     };
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_PLATFORM
       relation: RELATION_ADMIN
@@ -88,7 +88,7 @@ service ProjectService {
       post: "/v1/projects/{project_id}/members"
       body: "*"
     };
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_ADMIN
       id_field: "project_id"
@@ -97,7 +97,7 @@ service ProjectService {
 
   rpc RemoveMember(project.service.v1.RemoveMemberRequest) returns (project.service.v1.RemoveMemberResponse) {
     option (google.api.http) = {delete: "/v1/projects/{project_id}/members/{user_id}"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_ADMIN
       id_field: "project_id"
@@ -106,7 +106,7 @@ service ProjectService {
 
   rpc ListMembers(project.service.v1.ListMembersRequest) returns (project.service.v1.ListMembersResponse) {
     option (google.api.http) = {get: "/v1/projects/{project_id}/members"};
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_VIEW
       id_field: "project_id"
@@ -118,7 +118,7 @@ service ProjectService {
       put: "/v1/projects/{project_id}/members/{user_id}/role"
       body: "*"
     };
-    option (servora.authz.v1.rule) = {
+    option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_PROJECT
       relation: RELATION_CAN_ADMIN
       id_field: "project_id"

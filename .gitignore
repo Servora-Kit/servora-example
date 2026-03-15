@@ -5,6 +5,7 @@
 *.dll
 *.dylib
 ./server
+/protoc-gen-servora-authz
 
 # Test binary, built with `go test -c`
 *.test

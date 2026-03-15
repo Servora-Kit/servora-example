@@ -3,7 +3,7 @@
 package iampb
 
 import (
-	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
+	v1 "github.com/Servora-Kit/servora/api/gen/go/authz/service/v1"
 )
 
 // AuthzRuleEntry describes the authorization requirement for a single RPC operation.

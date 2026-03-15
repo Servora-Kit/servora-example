@@ -7,8 +7,8 @@
 package iampb
 
 import (
+	_ "github.com/Servora-Kit/servora/api/gen/go/authz/service/v1"
 	v1 "github.com/Servora-Kit/servora/api/gen/go/project/service/v1"
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -27,7 +27,7 @@ var File_iam_service_v1_i_project_proto protoreflect.FileDescriptor
 
 const file_iam_service_v1_i_project_proto_rawDesc = "" +
 	"\n" +
-	"\x1eiam/service/v1/i_project.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a project/service/v1/project.proto\x1a\x1cservora/authz/v1/authz.proto2\xe0\r\n" +
+	"\x1eiam/service/v1/i_project.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a project/service/v1/project.proto\x1a\x1cauthz/service/v1/authz.proto2\xe0\r\n" +
 	"\x0eProjectService\x12\x96\x01\n" +
 	"\rCreateProject\x12(.project.service.v1.CreateProjectRequest\x1a).project.service.v1.CreateProjectResponse\"0\xa2\xbb\x18\x15\b\x02\x10\r\"\x0forganization_id\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/v1/projects\x12\x82\x01\n" +
 	"\n" +

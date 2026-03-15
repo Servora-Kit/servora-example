@@ -91,8 +91,8 @@ type(scope): description
 ## 当前目录约定
 
 ### API / Proto
-- 共享 proto 放在 `api/protos/`（含 `servora/authz/v1/authz.proto` 授权注解定义）
-- IAM 服务 proto 放在 `app/iam/service/api/protos/`
+- 共享 proto 放在 `api/protos/`
+- IAM 服务 proto 放在 `app/iam/service/api/protos/`（含 `authz/service/v1/authz.proto` 授权注解定义）
 - `sayhello` 服务 proto 放在 `app/sayhello/service/api/protos/`
 - Go 生成代码统一输出到 `api/gen/go/`
 

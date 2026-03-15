@@ -110,7 +110,7 @@ go build ./app/iam/service/...
 2. **Ent Schema**：在 `app/iam/service/internal/data/schema/` 中新增 schema
 3. **Proto**：新增 proto 服务定义 + HTTP 聚合 proto + AuthZ 注解
 4. **业务代码**：Biz usecase + Data repo + Service layer + OpenFGA tuple 双写
-5. **AuthZ 枚举**：如需新增 ObjectType/Relation，更新 `api/protos/servora/authz/v1/authz.proto`
+5. **AuthZ 枚举**：如需新增 ObjectType/Relation，更新 `app/iam/service/api/protos/authz/service/v1/authz.proto`
 6. **生成与同步**：`make gen` + `make openfga.model.apply`
 
 ## AuthZ Proto 注解参考
@@ -118,7 +118,7 @@ go build ./app/iam/service/...
 在 IAM HTTP 聚合 proto（`i_*.proto`）的每个 RPC 方法上声明权限：
 
 ```protobuf
-import "servora/authz/v1/authz.proto";
+import "authz/service/v1/authz.proto";
 
 rpc GetOrganization(...) returns (...) {
   option (google.api.http) = {get: "/v1/organizations/{id}"};
