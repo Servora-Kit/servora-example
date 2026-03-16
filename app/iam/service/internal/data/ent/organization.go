@@ -10,7 +10,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -21,8 +21,8 @@ type Organization struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	// PlatformID holds the value of the "platform_id" field.
-	PlatformID uuid.UUID `json:"platform_id,omitempty"`
+	// TenantID holds the value of the "tenant_id" field.
+	TenantID uuid.UUID `json:"tenant_id,omitempty"`
 	// Name holds the value of the "name" field.
 	Name string `json:"name,omitempty"`
 	// Slug holds the value of the "slug" field.
@@ -41,8 +41,8 @@ type Organization struct {
 
 // OrganizationEdges holds the relations/edges for other nodes in the graph.
 type OrganizationEdges struct {
-	// Platform holds the value of the platform edge.
-	Platform *Platform `json:"platform,omitempty"`
+	// Tenant holds the value of the tenant edge.
+	Tenant *Tenant `json:"tenant,omitempty"`
 	// Members holds the value of the members edge.
 	Members []*OrganizationMember `json:"members,omitempty"`
 	// Projects holds the value of the projects edge.
@@ -54,15 +54,15 @@ type OrganizationEdges struct {
 	loadedTypes [4]bool
 }
 
-// PlatformOrErr returns the Platform value or an error if the edge
+// TenantOrErr returns the Tenant value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e OrganizationEdges) PlatformOrErr() (*Platform, error) {
-	if e.Platform != nil {
-		return e.Platform, nil
+func (e OrganizationEdges) TenantOrErr() (*Tenant, error) {
+	if e.Tenant != nil {
+		return e.Tenant, nil
 	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: platform.Label}
+		return nil, &NotFoundError{label: tenant.Label}
 	}
-	return nil, &NotLoadedError{edge: "platform"}
+	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // MembersOrErr returns the Members value or an error if the edge
@@ -101,7 +101,7 @@ func (*Organization) scanValues(columns []string) ([]any, error) {
 			values[i] = new(sql.NullString)
 		case organization.FieldDeletedAt, organization.FieldCreatedAt, organization.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case organization.FieldID, organization.FieldPlatformID:
+		case organization.FieldID, organization.FieldTenantID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -131,11 +131,11 @@ func (_m *Organization) assignValues(columns []string, values []any) error {
 				_m.DeletedAt = new(time.Time)
 				*_m.DeletedAt = value.Time
 			}
-		case organization.FieldPlatformID:
+		case organization.FieldTenantID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field platform_id", values[i])
+				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
 			} else if value != nil {
-				_m.PlatformID = *value
+				_m.TenantID = *value
 			}
 		case organization.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -181,9 +181,9 @@ func (_m *Organization) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryPlatform queries the "platform" edge of the Organization entity.
-func (_m *Organization) QueryPlatform() *PlatformQuery {
-	return NewOrganizationClient(_m.config).QueryPlatform(_m)
+// QueryTenant queries the "tenant" edge of the Organization entity.
+func (_m *Organization) QueryTenant() *TenantQuery {
+	return NewOrganizationClient(_m.config).QueryTenant(_m)
 }
 
 // QueryMembers queries the "members" edge of the Organization entity.
@@ -229,8 +229,8 @@ func (_m *Organization) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("platform_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.PlatformID))
+	builder.WriteString("tenant_id=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
 	builder.WriteString(", ")
 	builder.WriteString("name=")
 	builder.WriteString(_m.Name)

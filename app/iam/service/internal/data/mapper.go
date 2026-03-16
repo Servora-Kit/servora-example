@@ -23,7 +23,7 @@ var userMapper = mapper.NewForwardMapper(func(u *ent.User) *entity.User {
 var orgMapper = mapper.NewForwardMapper(func(o *ent.Organization) *entity.Organization {
 	e := &entity.Organization{
 		ID:         o.ID.String(),
-		PlatformID: o.PlatformID.String(),
+		TenantID: o.TenantID.String(),
 		Name:       o.Name,
 		Slug:       o.Slug,
 		CreatedAt:  o.CreatedAt,

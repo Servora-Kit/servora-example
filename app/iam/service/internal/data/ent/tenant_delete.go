@@ -8,30 +8,30 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 )
 
-// PlatformDelete is the builder for deleting a Platform entity.
-type PlatformDelete struct {
+// TenantDelete is the builder for deleting a Tenant entity.
+type TenantDelete struct {
 	config
 	hooks    []Hook
-	mutation *PlatformMutation
+	mutation *TenantMutation
 }
 
-// Where appends a list predicates to the PlatformDelete builder.
-func (_d *PlatformDelete) Where(ps ...predicate.Platform) *PlatformDelete {
+// Where appends a list predicates to the TenantDelete builder.
+func (_d *TenantDelete) Where(ps ...predicate.Tenant) *TenantDelete {
 	_d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query and returns how many vertices were deleted.
-func (_d *PlatformDelete) Exec(ctx context.Context) (int, error) {
+func (_d *TenantDelete) Exec(ctx context.Context) (int, error) {
 	return withHooks(ctx, _d.sqlExec, _d.mutation, _d.hooks)
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *PlatformDelete) ExecX(ctx context.Context) int {
+func (_d *TenantDelete) ExecX(ctx context.Context) int {
 	n, err := _d.Exec(ctx)
 	if err != nil {
 		panic(err)
@@ -39,8 +39,8 @@ func (_d *PlatformDelete) ExecX(ctx context.Context) int {
 	return n
 }
 
-func (_d *PlatformDelete) sqlExec(ctx context.Context) (int, error) {
-	_spec := sqlgraph.NewDeleteSpec(platform.Table, sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID))
+func (_d *TenantDelete) sqlExec(ctx context.Context) (int, error) {
+	_spec := sqlgraph.NewDeleteSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID))
 	if ps := _d.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -56,32 +56,32 @@ func (_d *PlatformDelete) sqlExec(ctx context.Context) (int, error) {
 	return affected, err
 }
 
-// PlatformDeleteOne is the builder for deleting a single Platform entity.
-type PlatformDeleteOne struct {
-	_d *PlatformDelete
+// TenantDeleteOne is the builder for deleting a single Tenant entity.
+type TenantDeleteOne struct {
+	_d *TenantDelete
 }
 
-// Where appends a list predicates to the PlatformDelete builder.
-func (_d *PlatformDeleteOne) Where(ps ...predicate.Platform) *PlatformDeleteOne {
+// Where appends a list predicates to the TenantDelete builder.
+func (_d *TenantDeleteOne) Where(ps ...predicate.Tenant) *TenantDeleteOne {
 	_d._d.mutation.Where(ps...)
 	return _d
 }
 
 // Exec executes the deletion query.
-func (_d *PlatformDeleteOne) Exec(ctx context.Context) error {
+func (_d *TenantDeleteOne) Exec(ctx context.Context) error {
 	n, err := _d._d.Exec(ctx)
 	switch {
 	case err != nil:
 		return err
 	case n == 0:
-		return &NotFoundError{platform.Label}
+		return &NotFoundError{tenant.Label}
 	default:
 		return nil
 	}
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_d *PlatformDeleteOne) ExecX(ctx context.Context) {
+func (_d *TenantDeleteOne) ExecX(ctx context.Context) {
 	if err := _d.Exec(ctx); err != nil {
 		panic(err)
 	}

@@ -37,7 +37,7 @@ func NewGRPCMiddleware(
 	km *jwks.KeyManager,
 	fga *openfga.Client,
 	rdb *redis.Client,
-	platID biz.PlatformRootID,
+	tenantID biz.TenantRootID,
 ) GRPCMiddleware {
 	ms := svrmw.NewChainBuilder(logger.With(l, logger.WithModule("grpc/server/iam-service"))).
 		WithTrace(trace).
@@ -58,7 +58,7 @@ func NewGRPCMiddleware(
 	authzOpts := []iammw.AuthzOption{
 		iammw.WithFGAClient(fga),
 		iammw.WithAuthzRules(authzRules),
-		iammw.WithPlatformRootID(string(platID)),
+		iammw.WithTenantRootID(string(tenantID)),
 	}
 	if rdb != nil {
 		authzOpts = append(authzOpts, iammw.WithAuthzCache(rdb, openfga.DefaultCheckCacheTTL))

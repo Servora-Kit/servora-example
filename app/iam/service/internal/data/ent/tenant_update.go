@@ -11,32 +11,32 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
-// PlatformUpdate is the builder for updating Platform entities.
-type PlatformUpdate struct {
+// TenantUpdate is the builder for updating Tenant entities.
+type TenantUpdate struct {
 	config
 	hooks    []Hook
-	mutation *PlatformMutation
+	mutation *TenantMutation
 }
 
-// Where appends a list predicates to the PlatformUpdate builder.
-func (_u *PlatformUpdate) Where(ps ...predicate.Platform) *PlatformUpdate {
+// Where appends a list predicates to the TenantUpdate builder.
+func (_u *TenantUpdate) Where(ps ...predicate.Tenant) *TenantUpdate {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // SetSlug sets the "slug" field.
-func (_u *PlatformUpdate) SetSlug(v string) *PlatformUpdate {
+func (_u *TenantUpdate) SetSlug(v string) *TenantUpdate {
 	_u.mutation.SetSlug(v)
 	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlatformUpdate) SetNillableSlug(v *string) *PlatformUpdate {
+func (_u *TenantUpdate) SetNillableSlug(v *string) *TenantUpdate {
 	if v != nil {
 		_u.SetSlug(*v)
 	}
@@ -44,13 +44,13 @@ func (_u *PlatformUpdate) SetNillableSlug(v *string) *PlatformUpdate {
 }
 
 // SetName sets the "name" field.
-func (_u *PlatformUpdate) SetName(v string) *PlatformUpdate {
+func (_u *TenantUpdate) SetName(v string) *TenantUpdate {
 	_u.mutation.SetName(v)
 	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (_u *PlatformUpdate) SetNillableName(v *string) *PlatformUpdate {
+func (_u *TenantUpdate) SetNillableName(v *string) *TenantUpdate {
 	if v != nil {
 		_u.SetName(*v)
 	}
@@ -58,13 +58,13 @@ func (_u *PlatformUpdate) SetNillableName(v *string) *PlatformUpdate {
 }
 
 // SetType sets the "type" field.
-func (_u *PlatformUpdate) SetType(v string) *PlatformUpdate {
+func (_u *TenantUpdate) SetType(v string) *TenantUpdate {
 	_u.mutation.SetType(v)
 	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (_u *PlatformUpdate) SetNillableType(v *string) *PlatformUpdate {
+func (_u *TenantUpdate) SetNillableType(v *string) *TenantUpdate {
 	if v != nil {
 		_u.SetType(*v)
 	}
@@ -72,13 +72,13 @@ func (_u *PlatformUpdate) SetNillableType(v *string) *PlatformUpdate {
 }
 
 // AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
-func (_u *PlatformUpdate) AddOrganizationIDs(ids ...uuid.UUID) *PlatformUpdate {
+func (_u *TenantUpdate) AddOrganizationIDs(ids ...uuid.UUID) *TenantUpdate {
 	_u.mutation.AddOrganizationIDs(ids...)
 	return _u
 }
 
 // AddOrganizations adds the "organizations" edges to the Organization entity.
-func (_u *PlatformUpdate) AddOrganizations(v ...*Organization) *PlatformUpdate {
+func (_u *TenantUpdate) AddOrganizations(v ...*Organization) *TenantUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -86,25 +86,25 @@ func (_u *PlatformUpdate) AddOrganizations(v ...*Organization) *PlatformUpdate {
 	return _u.AddOrganizationIDs(ids...)
 }
 
-// Mutation returns the PlatformMutation object of the builder.
-func (_u *PlatformUpdate) Mutation() *PlatformMutation {
+// Mutation returns the TenantMutation object of the builder.
+func (_u *TenantUpdate) Mutation() *TenantMutation {
 	return _u.mutation
 }
 
 // ClearOrganizations clears all "organizations" edges to the Organization entity.
-func (_u *PlatformUpdate) ClearOrganizations() *PlatformUpdate {
+func (_u *TenantUpdate) ClearOrganizations() *TenantUpdate {
 	_u.mutation.ClearOrganizations()
 	return _u
 }
 
 // RemoveOrganizationIDs removes the "organizations" edge to Organization entities by IDs.
-func (_u *PlatformUpdate) RemoveOrganizationIDs(ids ...uuid.UUID) *PlatformUpdate {
+func (_u *TenantUpdate) RemoveOrganizationIDs(ids ...uuid.UUID) *TenantUpdate {
 	_u.mutation.RemoveOrganizationIDs(ids...)
 	return _u
 }
 
 // RemoveOrganizations removes "organizations" edges to Organization entities.
-func (_u *PlatformUpdate) RemoveOrganizations(v ...*Organization) *PlatformUpdate {
+func (_u *TenantUpdate) RemoveOrganizations(v ...*Organization) *TenantUpdate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -113,12 +113,12 @@ func (_u *PlatformUpdate) RemoveOrganizations(v ...*Organization) *PlatformUpdat
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
-func (_u *PlatformUpdate) Save(ctx context.Context) (int, error) {
+func (_u *TenantUpdate) Save(ctx context.Context) (int, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *PlatformUpdate) SaveX(ctx context.Context) int {
+func (_u *TenantUpdate) SaveX(ctx context.Context) int {
 	affected, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -127,43 +127,43 @@ func (_u *PlatformUpdate) SaveX(ctx context.Context) int {
 }
 
 // Exec executes the query.
-func (_u *PlatformUpdate) Exec(ctx context.Context) error {
+func (_u *TenantUpdate) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *PlatformUpdate) ExecX(ctx context.Context) {
+func (_u *TenantUpdate) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *PlatformUpdate) check() error {
+func (_u *TenantUpdate) check() error {
 	if v, ok := _u.mutation.Slug(); ok {
-		if err := platform.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Platform.slug": %w`, err)}
+		if err := tenant.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Tenant.slug": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Name(); ok {
-		if err := platform.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Platform.name": %w`, err)}
+		if err := tenant.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.GetType(); ok {
-		if err := platform.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Platform.type": %w`, err)}
+		if err := tenant.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Tenant.type": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
+func (_u *TenantUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(platform.Table, platform.Columns, sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
@@ -172,20 +172,20 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		}
 	}
 	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(platform.FieldSlug, field.TypeString, value)
+		_spec.SetField(tenant.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(platform.FieldName, field.TypeString, value)
+		_spec.SetField(tenant.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(platform.FieldType, field.TypeString, value)
+		_spec.SetField(tenant.FieldType, field.TypeString, value)
 	}
 	if _u.mutation.OrganizationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -197,8 +197,8 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -213,8 +213,8 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -227,7 +227,7 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{platform.Label}
+			err = &NotFoundError{tenant.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}
@@ -237,22 +237,22 @@ func (_u *PlatformUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	return _node, nil
 }
 
-// PlatformUpdateOne is the builder for updating a single Platform entity.
-type PlatformUpdateOne struct {
+// TenantUpdateOne is the builder for updating a single Tenant entity.
+type TenantUpdateOne struct {
 	config
 	fields   []string
 	hooks    []Hook
-	mutation *PlatformMutation
+	mutation *TenantMutation
 }
 
 // SetSlug sets the "slug" field.
-func (_u *PlatformUpdateOne) SetSlug(v string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetSlug(v string) *TenantUpdateOne {
 	_u.mutation.SetSlug(v)
 	return _u
 }
 
 // SetNillableSlug sets the "slug" field if the given value is not nil.
-func (_u *PlatformUpdateOne) SetNillableSlug(v *string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetNillableSlug(v *string) *TenantUpdateOne {
 	if v != nil {
 		_u.SetSlug(*v)
 	}
@@ -260,13 +260,13 @@ func (_u *PlatformUpdateOne) SetNillableSlug(v *string) *PlatformUpdateOne {
 }
 
 // SetName sets the "name" field.
-func (_u *PlatformUpdateOne) SetName(v string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetName(v string) *TenantUpdateOne {
 	_u.mutation.SetName(v)
 	return _u
 }
 
 // SetNillableName sets the "name" field if the given value is not nil.
-func (_u *PlatformUpdateOne) SetNillableName(v *string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetNillableName(v *string) *TenantUpdateOne {
 	if v != nil {
 		_u.SetName(*v)
 	}
@@ -274,13 +274,13 @@ func (_u *PlatformUpdateOne) SetNillableName(v *string) *PlatformUpdateOne {
 }
 
 // SetType sets the "type" field.
-func (_u *PlatformUpdateOne) SetType(v string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetType(v string) *TenantUpdateOne {
 	_u.mutation.SetType(v)
 	return _u
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (_u *PlatformUpdateOne) SetNillableType(v *string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) SetNillableType(v *string) *TenantUpdateOne {
 	if v != nil {
 		_u.SetType(*v)
 	}
@@ -288,13 +288,13 @@ func (_u *PlatformUpdateOne) SetNillableType(v *string) *PlatformUpdateOne {
 }
 
 // AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
-func (_u *PlatformUpdateOne) AddOrganizationIDs(ids ...uuid.UUID) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) AddOrganizationIDs(ids ...uuid.UUID) *TenantUpdateOne {
 	_u.mutation.AddOrganizationIDs(ids...)
 	return _u
 }
 
 // AddOrganizations adds the "organizations" edges to the Organization entity.
-func (_u *PlatformUpdateOne) AddOrganizations(v ...*Organization) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) AddOrganizations(v ...*Organization) *TenantUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -302,25 +302,25 @@ func (_u *PlatformUpdateOne) AddOrganizations(v ...*Organization) *PlatformUpdat
 	return _u.AddOrganizationIDs(ids...)
 }
 
-// Mutation returns the PlatformMutation object of the builder.
-func (_u *PlatformUpdateOne) Mutation() *PlatformMutation {
+// Mutation returns the TenantMutation object of the builder.
+func (_u *TenantUpdateOne) Mutation() *TenantMutation {
 	return _u.mutation
 }
 
 // ClearOrganizations clears all "organizations" edges to the Organization entity.
-func (_u *PlatformUpdateOne) ClearOrganizations() *PlatformUpdateOne {
+func (_u *TenantUpdateOne) ClearOrganizations() *TenantUpdateOne {
 	_u.mutation.ClearOrganizations()
 	return _u
 }
 
 // RemoveOrganizationIDs removes the "organizations" edge to Organization entities by IDs.
-func (_u *PlatformUpdateOne) RemoveOrganizationIDs(ids ...uuid.UUID) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) RemoveOrganizationIDs(ids ...uuid.UUID) *TenantUpdateOne {
 	_u.mutation.RemoveOrganizationIDs(ids...)
 	return _u
 }
 
 // RemoveOrganizations removes "organizations" edges to Organization entities.
-func (_u *PlatformUpdateOne) RemoveOrganizations(v ...*Organization) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) RemoveOrganizations(v ...*Organization) *TenantUpdateOne {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -328,26 +328,26 @@ func (_u *PlatformUpdateOne) RemoveOrganizations(v ...*Organization) *PlatformUp
 	return _u.RemoveOrganizationIDs(ids...)
 }
 
-// Where appends a list predicates to the PlatformUpdate builder.
-func (_u *PlatformUpdateOne) Where(ps ...predicate.Platform) *PlatformUpdateOne {
+// Where appends a list predicates to the TenantUpdate builder.
+func (_u *TenantUpdateOne) Where(ps ...predicate.Tenant) *TenantUpdateOne {
 	_u.mutation.Where(ps...)
 	return _u
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
 // The default is selecting all fields defined in the entity schema.
-func (_u *PlatformUpdateOne) Select(field string, fields ...string) *PlatformUpdateOne {
+func (_u *TenantUpdateOne) Select(field string, fields ...string) *TenantUpdateOne {
 	_u.fields = append([]string{field}, fields...)
 	return _u
 }
 
-// Save executes the query and returns the updated Platform entity.
-func (_u *PlatformUpdateOne) Save(ctx context.Context) (*Platform, error) {
+// Save executes the query and returns the updated Tenant entity.
+func (_u *TenantUpdateOne) Save(ctx context.Context) (*Tenant, error) {
 	return withHooks(ctx, _u.sqlSave, _u.mutation, _u.hooks)
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_u *PlatformUpdateOne) SaveX(ctx context.Context) *Platform {
+func (_u *TenantUpdateOne) SaveX(ctx context.Context) *Tenant {
 	node, err := _u.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -356,56 +356,56 @@ func (_u *PlatformUpdateOne) SaveX(ctx context.Context) *Platform {
 }
 
 // Exec executes the query on the entity.
-func (_u *PlatformUpdateOne) Exec(ctx context.Context) error {
+func (_u *TenantUpdateOne) Exec(ctx context.Context) error {
 	_, err := _u.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_u *PlatformUpdateOne) ExecX(ctx context.Context) {
+func (_u *TenantUpdateOne) ExecX(ctx context.Context) {
 	if err := _u.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_u *PlatformUpdateOne) check() error {
+func (_u *TenantUpdateOne) check() error {
 	if v, ok := _u.mutation.Slug(); ok {
-		if err := platform.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Platform.slug": %w`, err)}
+		if err := tenant.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Tenant.slug": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Name(); ok {
-		if err := platform.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Platform.name": %w`, err)}
+		if err := tenant.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.GetType(); ok {
-		if err := platform.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Platform.type": %w`, err)}
+		if err := tenant.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Tenant.type": %w`, err)}
 		}
 	}
 	return nil
 }
 
-func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err error) {
+func (_u *TenantUpdateOne) sqlSave(ctx context.Context) (_node *Tenant, err error) {
 	if err := _u.check(); err != nil {
 		return _node, err
 	}
-	_spec := sqlgraph.NewUpdateSpec(platform.Table, platform.Columns, sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID))
+	_spec := sqlgraph.NewUpdateSpec(tenant.Table, tenant.Columns, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
-		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Platform.id" for update`)}
+		return nil, &ValidationError{Name: "id", err: errors.New(`ent: missing "Tenant.id" for update`)}
 	}
 	_spec.Node.ID.Value = id
 	if fields := _u.fields; len(fields) > 0 {
 		_spec.Node.Columns = make([]string, 0, len(fields))
-		_spec.Node.Columns = append(_spec.Node.Columns, platform.FieldID)
+		_spec.Node.Columns = append(_spec.Node.Columns, tenant.FieldID)
 		for _, f := range fields {
-			if !platform.ValidColumn(f) {
+			if !tenant.ValidColumn(f) {
 				return nil, &ValidationError{Name: f, err: fmt.Errorf("ent: invalid field %q for query", f)}
 			}
-			if f != platform.FieldID {
+			if f != tenant.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, f)
 			}
 		}
@@ -418,20 +418,20 @@ func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err 
 		}
 	}
 	if value, ok := _u.mutation.Slug(); ok {
-		_spec.SetField(platform.FieldSlug, field.TypeString, value)
+		_spec.SetField(tenant.FieldSlug, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.Name(); ok {
-		_spec.SetField(platform.FieldName, field.TypeString, value)
+		_spec.SetField(tenant.FieldName, field.TypeString, value)
 	}
 	if value, ok := _u.mutation.GetType(); ok {
-		_spec.SetField(platform.FieldType, field.TypeString, value)
+		_spec.SetField(tenant.FieldType, field.TypeString, value)
 	}
 	if _u.mutation.OrganizationsCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -443,8 +443,8 @@ func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -459,8 +459,8 @@ func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err 
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -471,12 +471,12 @@ func (_u *PlatformUpdateOne) sqlSave(ctx context.Context) (_node *Platform, err 
 		}
 		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
-	_node = &Platform{config: _u.config}
+	_node = &Tenant{config: _u.config}
 	_spec.Assign = _node.assignValues
 	_spec.ScanValues = _node.scanValues
 	if err = sqlgraph.UpdateNode(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
-			err = &NotFoundError{platform.Label}
+			err = &NotFoundError{tenant.Label}
 		} else if sqlgraph.IsConstraintError(err) {
 			err = &ConstraintError{msg: err.Error(), wrap: err}
 		}

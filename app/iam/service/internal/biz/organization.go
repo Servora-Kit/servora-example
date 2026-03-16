@@ -12,8 +12,8 @@ import (
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
 
-// PlatformRootID is the UUID string of the root platform record, used for Wire injection.
-type PlatformRootID string
+// TenantRootID is the UUID string of the root tenant record, used for Wire injection.
+type TenantRootID string
 
 type OrganizationRepo interface {
 	Create(ctx context.Context, org *entity.Organization) (*entity.Organization, error)
@@ -43,16 +43,16 @@ type OrganizationUsecase struct {
 	projRepo ProjectRepo
 	authz    AuthZRepo
 	log      *logger.Helper
-	platID   string
+	tenantID string
 }
 
-func NewOrganizationUsecase(repo OrganizationRepo, projRepo ProjectRepo, authz AuthZRepo, l logger.Logger, platID PlatformRootID) *OrganizationUsecase {
+func NewOrganizationUsecase(repo OrganizationRepo, projRepo ProjectRepo, authz AuthZRepo, l logger.Logger, tenantID TenantRootID) *OrganizationUsecase {
 	return &OrganizationUsecase{
 		repo:     repo,
 		projRepo: projRepo,
 		authz:    authz,
 		log:      logger.NewHelper(l, logger.WithModule("organization/biz/iam-service")),
-		platID:   string(platID),
+		tenantID: string(tenantID),
 	}
 }
 
@@ -70,7 +70,7 @@ func (uc *OrganizationUsecase) Create(ctx context.Context, org *entity.Organizat
 		return nil, errors.InternalServer("INTERNAL", "internal error")
 	}
 
-	org.PlatformID = uc.platID
+	org.TenantID = uc.tenantID
 	created, err := uc.repo.Create(ctx, org)
 	if err != nil {
 		uc.log.Errorf("create organization failed: %v", err)
@@ -79,10 +79,9 @@ func (uc *OrganizationUsecase) Create(ctx context.Context, org *entity.Organizat
 
 	if uc.authz != nil {
 		_ = uc.authz.WriteTuples(ctx,
-			Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + created.ID},
+			Tuple{User: "tenant:" + uc.tenantID, Relation: "tenant", Object: "organization:" + created.ID},
 			Tuple{User: "user:" + userID, Relation: "owner", Object: "organization:" + created.ID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "organization")
 	}
 
 	if _, err := uc.repo.AddMember(ctx, &entity.OrganizationMember{
@@ -98,7 +97,7 @@ func (uc *OrganizationUsecase) Create(ctx context.Context, org *entity.Organizat
 
 func (uc *OrganizationUsecase) CreateDefault(ctx context.Context, userID, name, slug string) (*entity.Organization, error) {
 	org := &entity.Organization{
-		PlatformID:  uc.platID,
+		TenantID:    uc.tenantID,
 		Name:        name,
 		Slug:        slug,
 		DisplayName: name,
@@ -111,10 +110,9 @@ func (uc *OrganizationUsecase) CreateDefault(ctx context.Context, userID, name, 
 
 	if uc.authz != nil {
 		_ = uc.authz.WriteTuples(ctx,
-			Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + created.ID},
+			Tuple{User: "tenant:" + uc.tenantID, Relation: "tenant", Object: "organization:" + created.ID},
 			Tuple{User: "user:" + userID, Relation: "owner", Object: "organization:" + created.ID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "organization")
 	}
 
 	if _, err := uc.repo.AddMember(ctx, &entity.OrganizationMember{
@@ -260,7 +258,7 @@ func (uc *OrganizationUsecase) purgeOrgFGA(ctx context.Context, orgID string) {
 		)
 	}
 	tuples = append(tuples,
-		Tuple{User: "platform:" + uc.platID, Relation: "platform", Object: "organization:" + orgID},
+		Tuple{User: "tenant:" + uc.tenantID, Relation: "tenant", Object: "organization:" + orgID},
 	)
 
 	if err := uc.authz.DeleteTuples(ctx, tuples...); err != nil {
@@ -287,7 +285,6 @@ func (uc *OrganizationUsecase) AddMember(ctx context.Context, m *entity.Organiza
 		_ = uc.authz.WriteTuples(ctx,
 			Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "organization:" + m.OrganizationID},
 		)
-		uc.authz.InvalidateListObjects(ctx, m.UserID, "can_view", "organization")
 	}
 	return created, nil
 }
@@ -307,7 +304,6 @@ func (uc *OrganizationUsecase) RemoveMember(ctx context.Context, orgID, userID s
 		_ = uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: member.Role, Object: "organization:" + orgID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "organization")
 	}
 	return nil
 }

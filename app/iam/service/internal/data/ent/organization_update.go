@@ -14,9 +14,9 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -53,16 +53,16 @@ func (_u *OrganizationUpdate) ClearDeletedAt() *OrganizationUpdate {
 	return _u
 }
 
-// SetPlatformID sets the "platform_id" field.
-func (_u *OrganizationUpdate) SetPlatformID(v uuid.UUID) *OrganizationUpdate {
-	_u.mutation.SetPlatformID(v)
+// SetTenantID sets the "tenant_id" field.
+func (_u *OrganizationUpdate) SetTenantID(v uuid.UUID) *OrganizationUpdate {
+	_u.mutation.SetTenantID(v)
 	return _u
 }
 
-// SetNillablePlatformID sets the "platform_id" field if the given value is not nil.
-func (_u *OrganizationUpdate) SetNillablePlatformID(v *uuid.UUID) *OrganizationUpdate {
+// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
+func (_u *OrganizationUpdate) SetNillableTenantID(v *uuid.UUID) *OrganizationUpdate {
 	if v != nil {
-		_u.SetPlatformID(*v)
+		_u.SetTenantID(*v)
 	}
 	return _u
 }
@@ -121,9 +121,9 @@ func (_u *OrganizationUpdate) SetUpdatedAt(v time.Time) *OrganizationUpdate {
 	return _u
 }
 
-// SetPlatform sets the "platform" edge to the Platform entity.
-func (_u *OrganizationUpdate) SetPlatform(v *Platform) *OrganizationUpdate {
-	return _u.SetPlatformID(v.ID)
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (_u *OrganizationUpdate) SetTenant(v *Tenant) *OrganizationUpdate {
+	return _u.SetTenantID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the OrganizationMember entity by IDs.
@@ -176,9 +176,9 @@ func (_u *OrganizationUpdate) Mutation() *OrganizationMutation {
 	return _u.mutation
 }
 
-// ClearPlatform clears the "platform" edge to the Platform entity.
-func (_u *OrganizationUpdate) ClearPlatform() *OrganizationUpdate {
-	_u.mutation.ClearPlatform()
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (_u *OrganizationUpdate) ClearTenant() *OrganizationUpdate {
+	_u.mutation.ClearTenant()
 	return _u
 }
 
@@ -298,8 +298,8 @@ func (_u *OrganizationUpdate) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "Organization.display_name": %w`, err)}
 		}
 	}
-	if _u.mutation.PlatformCleared() && len(_u.mutation.PlatformIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Organization.platform"`)
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
 	return nil
 }
@@ -337,28 +337,28 @@ func (_u *OrganizationUpdate) sqlSave(ctx context.Context) (_node int, err error
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.PlatformCleared() {
+	if _u.mutation.TenantCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   organization.PlatformTable,
-			Columns: []string{organization.PlatformColumn},
+			Table:   organization.TenantTable,
+			Columns: []string{organization.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.PlatformIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   organization.PlatformTable,
-			Columns: []string{organization.PlatformColumn},
+			Table:   organization.TenantTable,
+			Columns: []string{organization.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
@@ -541,16 +541,16 @@ func (_u *OrganizationUpdateOne) ClearDeletedAt() *OrganizationUpdateOne {
 	return _u
 }
 
-// SetPlatformID sets the "platform_id" field.
-func (_u *OrganizationUpdateOne) SetPlatformID(v uuid.UUID) *OrganizationUpdateOne {
-	_u.mutation.SetPlatformID(v)
+// SetTenantID sets the "tenant_id" field.
+func (_u *OrganizationUpdateOne) SetTenantID(v uuid.UUID) *OrganizationUpdateOne {
+	_u.mutation.SetTenantID(v)
 	return _u
 }
 
-// SetNillablePlatformID sets the "platform_id" field if the given value is not nil.
-func (_u *OrganizationUpdateOne) SetNillablePlatformID(v *uuid.UUID) *OrganizationUpdateOne {
+// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
+func (_u *OrganizationUpdateOne) SetNillableTenantID(v *uuid.UUID) *OrganizationUpdateOne {
 	if v != nil {
-		_u.SetPlatformID(*v)
+		_u.SetTenantID(*v)
 	}
 	return _u
 }
@@ -609,9 +609,9 @@ func (_u *OrganizationUpdateOne) SetUpdatedAt(v time.Time) *OrganizationUpdateOn
 	return _u
 }
 
-// SetPlatform sets the "platform" edge to the Platform entity.
-func (_u *OrganizationUpdateOne) SetPlatform(v *Platform) *OrganizationUpdateOne {
-	return _u.SetPlatformID(v.ID)
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (_u *OrganizationUpdateOne) SetTenant(v *Tenant) *OrganizationUpdateOne {
+	return _u.SetTenantID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the OrganizationMember entity by IDs.
@@ -664,9 +664,9 @@ func (_u *OrganizationUpdateOne) Mutation() *OrganizationMutation {
 	return _u.mutation
 }
 
-// ClearPlatform clears the "platform" edge to the Platform entity.
-func (_u *OrganizationUpdateOne) ClearPlatform() *OrganizationUpdateOne {
-	_u.mutation.ClearPlatform()
+// ClearTenant clears the "tenant" edge to the Tenant entity.
+func (_u *OrganizationUpdateOne) ClearTenant() *OrganizationUpdateOne {
+	_u.mutation.ClearTenant()
 	return _u
 }
 
@@ -799,8 +799,8 @@ func (_u *OrganizationUpdateOne) check() error {
 			return &ValidationError{Name: "display_name", err: fmt.Errorf(`ent: validator failed for field "Organization.display_name": %w`, err)}
 		}
 	}
-	if _u.mutation.PlatformCleared() && len(_u.mutation.PlatformIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Organization.platform"`)
+	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
+		return errors.New(`ent: clearing a required unique edge "Organization.tenant"`)
 	}
 	return nil
 }
@@ -855,28 +855,28 @@ func (_u *OrganizationUpdateOne) sqlSave(ctx context.Context) (_node *Organizati
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 	}
-	if _u.mutation.PlatformCleared() {
+	if _u.mutation.TenantCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   organization.PlatformTable,
-			Columns: []string{organization.PlatformColumn},
+			Table:   organization.TenantTable,
+			Columns: []string{organization.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
 			},
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := _u.mutation.PlatformIDs(); len(nodes) > 0 {
+	if nodes := _u.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   organization.PlatformTable,
-			Columns: []string{organization.PlatformColumn},
+			Table:   organization.TenantTable,
+			Columns: []string{organization.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {

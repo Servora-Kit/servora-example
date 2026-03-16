@@ -2,14 +2,14 @@ name: servora authorization model tests
 model_file: ../model/servora.fga
 
 tuples:
-  # Platform admin
-  - user: user:platform-admin
+  # Tenant admin
+  - user: user:tenant-admin
     relation: admin
-    object: platform:root
+    object: tenant:root
 
   # Organization setup
-  - user: platform:root
-    relation: platform
+  - user: tenant:root
+    relation: tenant
     object: organization:acme
 
   - user: user:org-owner
@@ -28,10 +28,10 @@ tuples:
     relation: viewer
     object: organization:acme
 
-  # Organization member also on platform
+  # Organization member also on tenant
   - user: user:org-owner
     relation: member
-    object: platform:root
+    object: tenant:root
 
   # Project setup
   - user: organization:acme
@@ -47,10 +47,10 @@ tuples:
     object: project:alpha
 
 tests:
-  - name: platform admin has member and can_manage access
+  - name: tenant admin has member and can_manage access
     check:
-      - user: user:platform-admin
-        object: platform:root
+      - user: user:tenant-admin
+        object: tenant:root
         assertions:
           admin: true
           member: true

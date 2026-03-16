@@ -30,8 +30,8 @@ enum AuthzMode {
 enum ObjectType {
   // 未指定
   OBJECT_TYPE_UNSPECIFIED = 0;
-  // 平台
-  OBJECT_TYPE_PLATFORM = 1;
+  // 租户
+  OBJECT_TYPE_TENANT = 1;
   // 组织
   OBJECT_TYPE_ORGANIZATION = 2;
   // 项目

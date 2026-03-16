@@ -32,12 +32,12 @@ func NewOrganizationRepo(data *Data, l logger.Logger) biz.OrganizationRepo {
 }
 
 func (r *organizationRepo) Create(ctx context.Context, org *entity.Organization) (*entity.Organization, error) {
-	platformID, err := uuid.Parse(org.PlatformID)
+	tenantID, err := uuid.Parse(org.TenantID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid platform ID: %w", err)
+		return nil, fmt.Errorf("invalid tenant ID: %w", err)
 	}
 	b := r.data.Ent(ctx).Organization.Create().
-		SetPlatformID(platformID).
+		SetTenantID(tenantID).
 		SetName(org.Name).
 		SetSlug(org.Slug)
 	if org.DisplayName != "" {

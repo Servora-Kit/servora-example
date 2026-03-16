@@ -19,9 +19,9 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 )
 
@@ -36,12 +36,12 @@ type Client struct {
 	Organization *OrganizationClient
 	// OrganizationMember is the client for interacting with the OrganizationMember builders.
 	OrganizationMember *OrganizationMemberClient
-	// Platform is the client for interacting with the Platform builders.
-	Platform *PlatformClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// ProjectMember is the client for interacting with the ProjectMember builders.
 	ProjectMember *ProjectMemberClient
+	// Tenant is the client for interacting with the Tenant builders.
+	Tenant *TenantClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 }
@@ -58,9 +58,9 @@ func (c *Client) init() {
 	c.Application = NewApplicationClient(c.config)
 	c.Organization = NewOrganizationClient(c.config)
 	c.OrganizationMember = NewOrganizationMemberClient(c.config)
-	c.Platform = NewPlatformClient(c.config)
 	c.Project = NewProjectClient(c.config)
 	c.ProjectMember = NewProjectMemberClient(c.config)
+	c.Tenant = NewTenantClient(c.config)
 	c.User = NewUserClient(c.config)
 }
 
@@ -157,9 +157,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 		Application:        NewApplicationClient(cfg),
 		Organization:       NewOrganizationClient(cfg),
 		OrganizationMember: NewOrganizationMemberClient(cfg),
-		Platform:           NewPlatformClient(cfg),
 		Project:            NewProjectClient(cfg),
 		ProjectMember:      NewProjectMemberClient(cfg),
+		Tenant:             NewTenantClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -183,9 +183,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 		Application:        NewApplicationClient(cfg),
 		Organization:       NewOrganizationClient(cfg),
 		OrganizationMember: NewOrganizationMemberClient(cfg),
-		Platform:           NewPlatformClient(cfg),
 		Project:            NewProjectClient(cfg),
 		ProjectMember:      NewProjectMemberClient(cfg),
+		Tenant:             NewTenantClient(cfg),
 		User:               NewUserClient(cfg),
 	}, nil
 }
@@ -216,8 +216,8 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Application, c.Organization, c.OrganizationMember, c.Platform, c.Project,
-		c.ProjectMember, c.User,
+		c.Application, c.Organization, c.OrganizationMember, c.Project, c.ProjectMember,
+		c.Tenant, c.User,
 	} {
 		n.Use(hooks...)
 	}
@@ -227,8 +227,8 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Application, c.Organization, c.OrganizationMember, c.Platform, c.Project,
-		c.ProjectMember, c.User,
+		c.Application, c.Organization, c.OrganizationMember, c.Project, c.ProjectMember,
+		c.Tenant, c.User,
 	} {
 		n.Intercept(interceptors...)
 	}
@@ -243,12 +243,12 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.Organization.mutate(ctx, m)
 	case *OrganizationMemberMutation:
 		return c.OrganizationMember.mutate(ctx, m)
-	case *PlatformMutation:
-		return c.Platform.mutate(ctx, m)
 	case *ProjectMutation:
 		return c.Project.mutate(ctx, m)
 	case *ProjectMemberMutation:
 		return c.ProjectMember.mutate(ctx, m)
+	case *TenantMutation:
+		return c.Tenant.mutate(ctx, m)
 	case *UserMutation:
 		return c.User.mutate(ctx, m)
 	default:
@@ -513,15 +513,15 @@ func (c *OrganizationClient) GetX(ctx context.Context, id uuid.UUID) *Organizati
 	return obj
 }
 
-// QueryPlatform queries the platform edge of a Organization.
-func (c *OrganizationClient) QueryPlatform(_m *Organization) *PlatformQuery {
-	query := (&PlatformClient{config: c.config}).Query()
+// QueryTenant queries the tenant edge of a Organization.
+func (c *OrganizationClient) QueryTenant(_m *Organization) *TenantQuery {
+	query := (&TenantClient{config: c.config}).Query()
 	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
 		id := _m.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(organization.Table, organization.FieldID, id),
-			sqlgraph.To(platform.Table, platform.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, organization.PlatformTable, organization.PlatformColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organization.TenantTable, organization.TenantColumn),
 		)
 		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
 		return fromV, nil
@@ -764,155 +764,6 @@ func (c *OrganizationMemberClient) mutate(ctx context.Context, m *OrganizationMe
 		return (&OrganizationMemberDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown OrganizationMember mutation op: %q", m.Op())
-	}
-}
-
-// PlatformClient is a client for the Platform schema.
-type PlatformClient struct {
-	config
-}
-
-// NewPlatformClient returns a client for the Platform from the given config.
-func NewPlatformClient(c config) *PlatformClient {
-	return &PlatformClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `platform.Hooks(f(g(h())))`.
-func (c *PlatformClient) Use(hooks ...Hook) {
-	c.hooks.Platform = append(c.hooks.Platform, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `platform.Intercept(f(g(h())))`.
-func (c *PlatformClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Platform = append(c.inters.Platform, interceptors...)
-}
-
-// Create returns a builder for creating a Platform entity.
-func (c *PlatformClient) Create() *PlatformCreate {
-	mutation := newPlatformMutation(c.config, OpCreate)
-	return &PlatformCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Platform entities.
-func (c *PlatformClient) CreateBulk(builders ...*PlatformCreate) *PlatformCreateBulk {
-	return &PlatformCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *PlatformClient) MapCreateBulk(slice any, setFunc func(*PlatformCreate, int)) *PlatformCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &PlatformCreateBulk{err: fmt.Errorf("calling to PlatformClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*PlatformCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &PlatformCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Platform.
-func (c *PlatformClient) Update() *PlatformUpdate {
-	mutation := newPlatformMutation(c.config, OpUpdate)
-	return &PlatformUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *PlatformClient) UpdateOne(_m *Platform) *PlatformUpdateOne {
-	mutation := newPlatformMutation(c.config, OpUpdateOne, withPlatform(_m))
-	return &PlatformUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *PlatformClient) UpdateOneID(id uuid.UUID) *PlatformUpdateOne {
-	mutation := newPlatformMutation(c.config, OpUpdateOne, withPlatformID(id))
-	return &PlatformUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Platform.
-func (c *PlatformClient) Delete() *PlatformDelete {
-	mutation := newPlatformMutation(c.config, OpDelete)
-	return &PlatformDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *PlatformClient) DeleteOne(_m *Platform) *PlatformDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *PlatformClient) DeleteOneID(id uuid.UUID) *PlatformDeleteOne {
-	builder := c.Delete().Where(platform.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &PlatformDeleteOne{builder}
-}
-
-// Query returns a query builder for Platform.
-func (c *PlatformClient) Query() *PlatformQuery {
-	return &PlatformQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypePlatform},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Platform entity by its id.
-func (c *PlatformClient) Get(ctx context.Context, id uuid.UUID) (*Platform, error) {
-	return c.Query().Where(platform.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *PlatformClient) GetX(ctx context.Context, id uuid.UUID) *Platform {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryOrganizations queries the organizations edge of a Platform.
-func (c *PlatformClient) QueryOrganizations(_m *Platform) *OrganizationQuery {
-	query := (&OrganizationClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := _m.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(platform.Table, platform.FieldID, id),
-			sqlgraph.To(organization.Table, organization.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, platform.OrganizationsTable, platform.OrganizationsColumn),
-		)
-		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *PlatformClient) Hooks() []Hook {
-	return c.hooks.Platform
-}
-
-// Interceptors returns the client interceptors.
-func (c *PlatformClient) Interceptors() []Interceptor {
-	return c.inters.Platform
-}
-
-func (c *PlatformClient) mutate(ctx context.Context, m *PlatformMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&PlatformCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&PlatformUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&PlatformUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&PlatformDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Platform mutation op: %q", m.Op())
 	}
 }
 
@@ -1246,6 +1097,155 @@ func (c *ProjectMemberClient) mutate(ctx context.Context, m *ProjectMemberMutati
 	}
 }
 
+// TenantClient is a client for the Tenant schema.
+type TenantClient struct {
+	config
+}
+
+// NewTenantClient returns a client for the Tenant from the given config.
+func NewTenantClient(c config) *TenantClient {
+	return &TenantClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `tenant.Hooks(f(g(h())))`.
+func (c *TenantClient) Use(hooks ...Hook) {
+	c.hooks.Tenant = append(c.hooks.Tenant, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `tenant.Intercept(f(g(h())))`.
+func (c *TenantClient) Intercept(interceptors ...Interceptor) {
+	c.inters.Tenant = append(c.inters.Tenant, interceptors...)
+}
+
+// Create returns a builder for creating a Tenant entity.
+func (c *TenantClient) Create() *TenantCreate {
+	mutation := newTenantMutation(c.config, OpCreate)
+	return &TenantCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of Tenant entities.
+func (c *TenantClient) CreateBulk(builders ...*TenantCreate) *TenantCreateBulk {
+	return &TenantCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *TenantClient) MapCreateBulk(slice any, setFunc func(*TenantCreate, int)) *TenantCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &TenantCreateBulk{err: fmt.Errorf("calling to TenantClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*TenantCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &TenantCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for Tenant.
+func (c *TenantClient) Update() *TenantUpdate {
+	mutation := newTenantMutation(c.config, OpUpdate)
+	return &TenantUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *TenantClient) UpdateOne(_m *Tenant) *TenantUpdateOne {
+	mutation := newTenantMutation(c.config, OpUpdateOne, withTenant(_m))
+	return &TenantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *TenantClient) UpdateOneID(id uuid.UUID) *TenantUpdateOne {
+	mutation := newTenantMutation(c.config, OpUpdateOne, withTenantID(id))
+	return &TenantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for Tenant.
+func (c *TenantClient) Delete() *TenantDelete {
+	mutation := newTenantMutation(c.config, OpDelete)
+	return &TenantDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *TenantClient) DeleteOne(_m *Tenant) *TenantDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *TenantClient) DeleteOneID(id uuid.UUID) *TenantDeleteOne {
+	builder := c.Delete().Where(tenant.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &TenantDeleteOne{builder}
+}
+
+// Query returns a query builder for Tenant.
+func (c *TenantClient) Query() *TenantQuery {
+	return &TenantQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeTenant},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a Tenant entity by its id.
+func (c *TenantClient) Get(ctx context.Context, id uuid.UUID) (*Tenant, error) {
+	return c.Query().Where(tenant.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *TenantClient) GetX(ctx context.Context, id uuid.UUID) *Tenant {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryOrganizations queries the organizations edge of a Tenant.
+func (c *TenantClient) QueryOrganizations(_m *Tenant) *OrganizationQuery {
+	query := (&OrganizationClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := _m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(tenant.Table, tenant.FieldID, id),
+			sqlgraph.To(organization.Table, organization.FieldID),
+			sqlgraph.Edge(sqlgraph.O2M, false, tenant.OrganizationsTable, tenant.OrganizationsColumn),
+		)
+		fromV = sqlgraph.Neighbors(_m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *TenantClient) Hooks() []Hook {
+	return c.hooks.Tenant
+}
+
+// Interceptors returns the client interceptors.
+func (c *TenantClient) Interceptors() []Interceptor {
+	return c.inters.Tenant
+}
+
+func (c *TenantClient) mutate(ctx context.Context, m *TenantMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&TenantCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&TenantUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&TenantUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&TenantDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown Tenant mutation op: %q", m.Op())
+	}
+}
+
 // UserClient is a client for the User schema.
 type UserClient struct {
 	config
@@ -1414,11 +1414,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Application, Organization, OrganizationMember, Platform, Project, ProjectMember,
+		Application, Organization, OrganizationMember, Project, ProjectMember, Tenant,
 		User []ent.Hook
 	}
 	inters struct {
-		Application, Organization, OrganizationMember, Platform, Project, ProjectMember,
+		Application, Organization, OrganizationMember, Project, ProjectMember, Tenant,
 		User []ent.Interceptor
 	}
 )

@@ -13,8 +13,8 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -39,9 +39,9 @@ func (_c *OrganizationCreate) SetNillableDeletedAt(v *time.Time) *OrganizationCr
 	return _c
 }
 
-// SetPlatformID sets the "platform_id" field.
-func (_c *OrganizationCreate) SetPlatformID(v uuid.UUID) *OrganizationCreate {
-	_c.mutation.SetPlatformID(v)
+// SetTenantID sets the "tenant_id" field.
+func (_c *OrganizationCreate) SetTenantID(v uuid.UUID) *OrganizationCreate {
+	_c.mutation.SetTenantID(v)
 	return _c
 }
 
@@ -113,9 +113,9 @@ func (_c *OrganizationCreate) SetNillableID(v *uuid.UUID) *OrganizationCreate {
 	return _c
 }
 
-// SetPlatform sets the "platform" edge to the Platform entity.
-func (_c *OrganizationCreate) SetPlatform(v *Platform) *OrganizationCreate {
-	return _c.SetPlatformID(v.ID)
+// SetTenant sets the "tenant" edge to the Tenant entity.
+func (_c *OrganizationCreate) SetTenant(v *Tenant) *OrganizationCreate {
+	return _c.SetTenantID(v.ID)
 }
 
 // AddMemberIDs adds the "members" edge to the OrganizationMember entity by IDs.
@@ -214,8 +214,8 @@ func (_c *OrganizationCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (_c *OrganizationCreate) check() error {
-	if _, ok := _c.mutation.PlatformID(); !ok {
-		return &ValidationError{Name: "platform_id", err: errors.New(`ent: missing required field "Organization.platform_id"`)}
+	if _, ok := _c.mutation.TenantID(); !ok {
+		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Organization.tenant_id"`)}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
 		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Organization.name"`)}
@@ -244,8 +244,8 @@ func (_c *OrganizationCreate) check() error {
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Organization.updated_at"`)}
 	}
-	if len(_c.mutation.PlatformIDs()) == 0 {
-		return &ValidationError{Name: "platform", err: errors.New(`ent: missing required edge "Organization.platform"`)}
+	if len(_c.mutation.TenantIDs()) == 0 {
+		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Organization.tenant"`)}
 	}
 	return nil
 }
@@ -306,21 +306,21 @@ func (_c *OrganizationCreate) createSpec() (*Organization, *sqlgraph.CreateSpec)
 		_spec.SetField(organization.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
 	}
-	if nodes := _c.mutation.PlatformIDs(); len(nodes) > 0 {
+	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2O,
 			Inverse: true,
-			Table:   organization.PlatformTable,
-			Columns: []string{organization.PlatformColumn},
+			Table:   organization.TenantTable,
+			Columns: []string{organization.TenantColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID),
+				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
 			},
 		}
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.PlatformID = nodes[0]
+		_node.TenantID = nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	if nodes := _c.mutation.MembersIDs(); len(nodes) > 0 {

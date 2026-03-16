@@ -8,9 +8,9 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/projectmember"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/schema"
 	"github.com/google/uuid"
@@ -114,30 +114,6 @@ func init() {
 	organizationmemberDescID := organizationmemberFields[0].Descriptor()
 	// organizationmember.DefaultID holds the default value on creation for the id field.
 	organizationmember.DefaultID = organizationmemberDescID.Default.(func() uuid.UUID)
-	platformFields := schema.Platform{}.Fields()
-	_ = platformFields
-	// platformDescSlug is the schema descriptor for slug field.
-	platformDescSlug := platformFields[1].Descriptor()
-	// platform.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
-	platform.SlugValidator = platformDescSlug.Validators[0].(func(string) error)
-	// platformDescName is the schema descriptor for name field.
-	platformDescName := platformFields[2].Descriptor()
-	// platform.NameValidator is a validator for the "name" field. It is called by the builders before save.
-	platform.NameValidator = platformDescName.Validators[0].(func(string) error)
-	// platformDescType is the schema descriptor for type field.
-	platformDescType := platformFields[3].Descriptor()
-	// platform.DefaultType holds the default value on creation for the type field.
-	platform.DefaultType = platformDescType.Default.(string)
-	// platform.TypeValidator is a validator for the "type" field. It is called by the builders before save.
-	platform.TypeValidator = platformDescType.Validators[0].(func(string) error)
-	// platformDescCreatedAt is the schema descriptor for created_at field.
-	platformDescCreatedAt := platformFields[4].Descriptor()
-	// platform.DefaultCreatedAt holds the default value on creation for the created_at field.
-	platform.DefaultCreatedAt = platformDescCreatedAt.Default.(func() time.Time)
-	// platformDescID is the schema descriptor for id field.
-	platformDescID := platformFields[0].Descriptor()
-	// platform.DefaultID holds the default value on creation for the id field.
-	platform.DefaultID = platformDescID.Default.(func() uuid.UUID)
 	projectFields := schema.Project{}.Fields()
 	_ = projectFields
 	// projectDescName is the schema descriptor for name field.
@@ -188,6 +164,30 @@ func init() {
 	projectmemberDescID := projectmemberFields[0].Descriptor()
 	// projectmember.DefaultID holds the default value on creation for the id field.
 	projectmember.DefaultID = projectmemberDescID.Default.(func() uuid.UUID)
+	tenantFields := schema.Tenant{}.Fields()
+	_ = tenantFields
+	// tenantDescSlug is the schema descriptor for slug field.
+	tenantDescSlug := tenantFields[1].Descriptor()
+	// tenant.SlugValidator is a validator for the "slug" field. It is called by the builders before save.
+	tenant.SlugValidator = tenantDescSlug.Validators[0].(func(string) error)
+	// tenantDescName is the schema descriptor for name field.
+	tenantDescName := tenantFields[2].Descriptor()
+	// tenant.NameValidator is a validator for the "name" field. It is called by the builders before save.
+	tenant.NameValidator = tenantDescName.Validators[0].(func(string) error)
+	// tenantDescType is the schema descriptor for type field.
+	tenantDescType := tenantFields[3].Descriptor()
+	// tenant.DefaultType holds the default value on creation for the type field.
+	tenant.DefaultType = tenantDescType.Default.(string)
+	// tenant.TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	tenant.TypeValidator = tenantDescType.Validators[0].(func(string) error)
+	// tenantDescCreatedAt is the schema descriptor for created_at field.
+	tenantDescCreatedAt := tenantFields[4].Descriptor()
+	// tenant.DefaultCreatedAt holds the default value on creation for the created_at field.
+	tenant.DefaultCreatedAt = tenantDescCreatedAt.Default.(func() time.Time)
+	// tenantDescID is the schema descriptor for id field.
+	tenantDescID := tenantFields[0].Descriptor()
+	// tenant.DefaultID holds the default value on creation for the id field.
+	tenant.DefaultID = tenantDescID.Default.(func() uuid.UUID)
 	userFields := schema.User{}.Fields()
 	_ = userFields
 	// userDescName is the schema descriptor for name field.

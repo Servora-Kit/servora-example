@@ -9,12 +9,12 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
-// Platform is the model entity for the Platform schema.
-type Platform struct {
+// Tenant is the model entity for the Tenant schema.
+type Tenant struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
@@ -27,13 +27,13 @@ type Platform struct {
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the PlatformQuery when eager-loading is set.
-	Edges        PlatformEdges `json:"edges"`
+	// The values are being populated by the TenantQuery when eager-loading is set.
+	Edges        TenantEdges `json:"edges"`
 	selectValues sql.SelectValues
 }
 
-// PlatformEdges holds the relations/edges for other nodes in the graph.
-type PlatformEdges struct {
+// TenantEdges holds the relations/edges for other nodes in the graph.
+type TenantEdges struct {
 	// Organizations holds the value of the organizations edge.
 	Organizations []*Organization `json:"organizations,omitempty"`
 	// loadedTypes holds the information for reporting if a
@@ -43,7 +43,7 @@ type PlatformEdges struct {
 
 // OrganizationsOrErr returns the Organizations value or an error if the edge
 // was not loaded in eager-loading.
-func (e PlatformEdges) OrganizationsOrErr() ([]*Organization, error) {
+func (e TenantEdges) OrganizationsOrErr() ([]*Organization, error) {
 	if e.loadedTypes[0] {
 		return e.Organizations, nil
 	}
@@ -51,15 +51,15 @@ func (e PlatformEdges) OrganizationsOrErr() ([]*Organization, error) {
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
-func (*Platform) scanValues(columns []string) ([]any, error) {
+func (*Tenant) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case platform.FieldSlug, platform.FieldName, platform.FieldType:
+		case tenant.FieldSlug, tenant.FieldName, tenant.FieldType:
 			values[i] = new(sql.NullString)
-		case platform.FieldCreatedAt:
+		case tenant.FieldCreatedAt:
 			values[i] = new(sql.NullTime)
-		case platform.FieldID:
+		case tenant.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -69,38 +69,38 @@ func (*Platform) scanValues(columns []string) ([]any, error) {
 }
 
 // assignValues assigns the values that were returned from sql.Rows (after scanning)
-// to the Platform fields.
-func (_m *Platform) assignValues(columns []string, values []any) error {
+// to the Tenant fields.
+func (_m *Tenant) assignValues(columns []string, values []any) error {
 	if m, n := len(values), len(columns); m < n {
 		return fmt.Errorf("mismatch number of scan values: %d != %d", m, n)
 	}
 	for i := range columns {
 		switch columns[i] {
-		case platform.FieldID:
+		case tenant.FieldID:
 			if value, ok := values[i].(*uuid.UUID); !ok {
 				return fmt.Errorf("unexpected type %T for field id", values[i])
 			} else if value != nil {
 				_m.ID = *value
 			}
-		case platform.FieldSlug:
+		case tenant.FieldSlug:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field slug", values[i])
 			} else if value.Valid {
 				_m.Slug = value.String
 			}
-		case platform.FieldName:
+		case tenant.FieldName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field name", values[i])
 			} else if value.Valid {
 				_m.Name = value.String
 			}
-		case platform.FieldType:
+		case tenant.FieldType:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field type", values[i])
 			} else if value.Valid {
 				_m.Type = value.String
 			}
-		case platform.FieldCreatedAt:
+		case tenant.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
 			} else if value.Valid {
@@ -113,39 +113,39 @@ func (_m *Platform) assignValues(columns []string, values []any) error {
 	return nil
 }
 
-// Value returns the ent.Value that was dynamically selected and assigned to the Platform.
+// Value returns the ent.Value that was dynamically selected and assigned to the Tenant.
 // This includes values selected through modifiers, order, etc.
-func (_m *Platform) Value(name string) (ent.Value, error) {
+func (_m *Tenant) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
 }
 
-// QueryOrganizations queries the "organizations" edge of the Platform entity.
-func (_m *Platform) QueryOrganizations() *OrganizationQuery {
-	return NewPlatformClient(_m.config).QueryOrganizations(_m)
+// QueryOrganizations queries the "organizations" edge of the Tenant entity.
+func (_m *Tenant) QueryOrganizations() *OrganizationQuery {
+	return NewTenantClient(_m.config).QueryOrganizations(_m)
 }
 
-// Update returns a builder for updating this Platform.
-// Note that you need to call Platform.Unwrap() before calling this method if this Platform
+// Update returns a builder for updating this Tenant.
+// Note that you need to call Tenant.Unwrap() before calling this method if this Tenant
 // was returned from a transaction, and the transaction was committed or rolled back.
-func (_m *Platform) Update() *PlatformUpdateOne {
-	return NewPlatformClient(_m.config).UpdateOne(_m)
+func (_m *Tenant) Update() *TenantUpdateOne {
+	return NewTenantClient(_m.config).UpdateOne(_m)
 }
 
-// Unwrap unwraps the Platform entity that was returned from a transaction after it was closed,
+// Unwrap unwraps the Tenant entity that was returned from a transaction after it was closed,
 // so that all future queries will be executed through the driver which created the transaction.
-func (_m *Platform) Unwrap() *Platform {
+func (_m *Tenant) Unwrap() *Tenant {
 	_tx, ok := _m.config.driver.(*txDriver)
 	if !ok {
-		panic("ent: Platform is not a transactional entity")
+		panic("ent: Tenant is not a transactional entity")
 	}
 	_m.config.driver = _tx.drv
 	return _m
 }
 
 // String implements the fmt.Stringer.
-func (_m *Platform) String() string {
+func (_m *Tenant) String() string {
 	var builder strings.Builder
-	builder.WriteString("Platform(")
+	builder.WriteString("Tenant(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
 	builder.WriteString("slug=")
 	builder.WriteString(_m.Slug)
@@ -162,5 +162,5 @@ func (_m *Platform) String() string {
 	return builder.String()
 }
 
-// Platforms is a parsable slice of Platform.
-type Platforms []*Platform
+// Tenants is a parsable slice of Tenant.
+type Tenants []*Tenant

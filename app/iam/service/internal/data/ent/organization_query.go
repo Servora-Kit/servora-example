@@ -15,9 +15,9 @@ import (
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organizationmember"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/project"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -28,7 +28,7 @@ type OrganizationQuery struct {
 	order            []organization.OrderOption
 	inters           []Interceptor
 	predicates       []predicate.Organization
-	withPlatform     *PlatformQuery
+	withTenant       *TenantQuery
 	withMembers      *OrganizationMemberQuery
 	withProjects     *ProjectQuery
 	withApplications *ApplicationQuery
@@ -68,9 +68,9 @@ func (_q *OrganizationQuery) Order(o ...organization.OrderOption) *OrganizationQ
 	return _q
 }
 
-// QueryPlatform chains the current query on the "platform" edge.
-func (_q *OrganizationQuery) QueryPlatform() *PlatformQuery {
-	query := (&PlatformClient{config: _q.config}).Query()
+// QueryTenant chains the current query on the "tenant" edge.
+func (_q *OrganizationQuery) QueryTenant() *TenantQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := _q.prepareQuery(ctx); err != nil {
 			return nil, err
@@ -81,8 +81,8 @@ func (_q *OrganizationQuery) QueryPlatform() *PlatformQuery {
 		}
 		step := sqlgraph.NewStep(
 			sqlgraph.From(organization.Table, organization.FieldID, selector),
-			sqlgraph.To(platform.Table, platform.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, organization.PlatformTable, organization.PlatformColumn),
+			sqlgraph.To(tenant.Table, tenant.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, organization.TenantTable, organization.TenantColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
 		return fromU, nil
@@ -348,7 +348,7 @@ func (_q *OrganizationQuery) Clone() *OrganizationQuery {
 		order:            append([]organization.OrderOption{}, _q.order...),
 		inters:           append([]Interceptor{}, _q.inters...),
 		predicates:       append([]predicate.Organization{}, _q.predicates...),
-		withPlatform:     _q.withPlatform.Clone(),
+		withTenant:       _q.withTenant.Clone(),
 		withMembers:      _q.withMembers.Clone(),
 		withProjects:     _q.withProjects.Clone(),
 		withApplications: _q.withApplications.Clone(),
@@ -358,14 +358,14 @@ func (_q *OrganizationQuery) Clone() *OrganizationQuery {
 	}
 }
 
-// WithPlatform tells the query-builder to eager-load the nodes that are connected to
-// the "platform" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *OrganizationQuery) WithPlatform(opts ...func(*PlatformQuery)) *OrganizationQuery {
-	query := (&PlatformClient{config: _q.config}).Query()
+// WithTenant tells the query-builder to eager-load the nodes that are connected to
+// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
+func (_q *OrganizationQuery) WithTenant(opts ...func(*TenantQuery)) *OrganizationQuery {
+	query := (&TenantClient{config: _q.config}).Query()
 	for _, opt := range opts {
 		opt(query)
 	}
-	_q.withPlatform = query
+	_q.withTenant = query
 	return _q
 }
 
@@ -481,7 +481,7 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 		nodes       = []*Organization{}
 		_spec       = _q.querySpec()
 		loadedTypes = [4]bool{
-			_q.withPlatform != nil,
+			_q.withTenant != nil,
 			_q.withMembers != nil,
 			_q.withProjects != nil,
 			_q.withApplications != nil,
@@ -505,9 +505,9 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withPlatform; query != nil {
-		if err := _q.loadPlatform(ctx, query, nodes, nil,
-			func(n *Organization, e *Platform) { n.Edges.Platform = e }); err != nil {
+	if query := _q.withTenant; query != nil {
+		if err := _q.loadTenant(ctx, query, nodes, nil,
+			func(n *Organization, e *Tenant) { n.Edges.Tenant = e }); err != nil {
 			return nil, err
 		}
 	}
@@ -535,11 +535,11 @@ func (_q *OrganizationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]
 	return nodes, nil
 }
 
-func (_q *OrganizationQuery) loadPlatform(ctx context.Context, query *PlatformQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *Platform)) error {
+func (_q *OrganizationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Organization, init func(*Organization), assign func(*Organization, *Tenant)) error {
 	ids := make([]uuid.UUID, 0, len(nodes))
 	nodeids := make(map[uuid.UUID][]*Organization)
 	for i := range nodes {
-		fk := nodes[i].PlatformID
+		fk := nodes[i].TenantID
 		if _, ok := nodeids[fk]; !ok {
 			ids = append(ids, fk)
 		}
@@ -548,7 +548,7 @@ func (_q *OrganizationQuery) loadPlatform(ctx context.Context, query *PlatformQu
 	if len(ids) == 0 {
 		return nil
 	}
-	query.Where(platform.IDIn(ids...))
+	query.Where(tenant.IDIn(ids...))
 	neighbors, err := query.All(ctx)
 	if err != nil {
 		return err
@@ -556,7 +556,7 @@ func (_q *OrganizationQuery) loadPlatform(ctx context.Context, query *PlatformQu
 	for _, n := range neighbors {
 		nodes, ok := nodeids[n.ID]
 		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "platform_id" returned %v`, n.ID)
+			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
 		}
 		for i := range nodes {
 			assign(nodes[i], n)
@@ -680,8 +680,8 @@ func (_q *OrganizationQuery) querySpec() *sqlgraph.QuerySpec {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
 		}
-		if _q.withPlatform != nil {
-			_spec.Node.AddColumnOnce(organization.FieldPlatformID)
+		if _q.withTenant != nil {
+			_spec.Node.AddColumnOnce(organization.FieldTenantID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

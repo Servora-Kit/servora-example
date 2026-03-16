@@ -17,8 +17,8 @@ const (
 	FieldID = "id"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
-	// FieldPlatformID holds the string denoting the platform_id field in the database.
-	FieldPlatformID = "platform_id"
+	// FieldTenantID holds the string denoting the tenant_id field in the database.
+	FieldTenantID = "tenant_id"
 	// FieldName holds the string denoting the name field in the database.
 	FieldName = "name"
 	// FieldSlug holds the string denoting the slug field in the database.
@@ -29,8 +29,8 @@ const (
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgePlatform holds the string denoting the platform edge name in mutations.
-	EdgePlatform = "platform"
+	// EdgeTenant holds the string denoting the tenant edge name in mutations.
+	EdgeTenant = "tenant"
 	// EdgeMembers holds the string denoting the members edge name in mutations.
 	EdgeMembers = "members"
 	// EdgeProjects holds the string denoting the projects edge name in mutations.
@@ -39,13 +39,13 @@ const (
 	EdgeApplications = "applications"
 	// Table holds the table name of the organization in the database.
 	Table = "organizations"
-	// PlatformTable is the table that holds the platform relation/edge.
-	PlatformTable = "organizations"
-	// PlatformInverseTable is the table name for the Platform entity.
-	// It exists in this package in order to avoid circular dependency with the "platform" package.
-	PlatformInverseTable = "platforms"
-	// PlatformColumn is the table column denoting the platform relation/edge.
-	PlatformColumn = "platform_id"
+	// TenantTable is the table that holds the tenant relation/edge.
+	TenantTable = "organizations"
+	// TenantInverseTable is the table name for the Tenant entity.
+	// It exists in this package in order to avoid circular dependency with the "tenant" package.
+	TenantInverseTable = "tenants"
+	// TenantColumn is the table column denoting the tenant relation/edge.
+	TenantColumn = "tenant_id"
 	// MembersTable is the table that holds the members relation/edge.
 	MembersTable = "organization_members"
 	// MembersInverseTable is the table name for the OrganizationMember entity.
@@ -73,7 +73,7 @@ const (
 var Columns = []string{
 	FieldID,
 	FieldDeletedAt,
-	FieldPlatformID,
+	FieldTenantID,
 	FieldName,
 	FieldSlug,
 	FieldDisplayName,
@@ -121,9 +121,9 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
-// ByPlatformID orders the results by the platform_id field.
-func ByPlatformID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldPlatformID, opts...).ToFunc()
+// ByTenantID orders the results by the tenant_id field.
+func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
 }
 
 // ByName orders the results by the name field.
@@ -151,10 +151,10 @@ func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
 }
 
-// ByPlatformField orders the results by platform field.
-func ByPlatformField(field string, opts ...sql.OrderTermOption) OrderOption {
+// ByTenantField orders the results by tenant field.
+func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
 	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newPlatformStep(), sql.OrderByField(field, opts...))
+		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
 	}
 }
 
@@ -199,11 +199,11 @@ func ByApplications(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
 		sqlgraph.OrderByNeighborTerms(s, newApplicationsStep(), append([]sql.OrderTerm{term}, terms...)...)
 	}
 }
-func newPlatformStep() *sqlgraph.Step {
+func newTenantStep() *sqlgraph.Step {
 	return sqlgraph.NewStep(
 		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(PlatformInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, PlatformTable, PlatformColumn),
+		sqlgraph.To(TenantInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.M2O, true, TenantTable, TenantColumn),
 	)
 }
 func newMembersStep() *sqlgraph.Step {

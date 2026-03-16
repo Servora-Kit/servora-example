@@ -18,12 +18,12 @@ type Tx struct {
 	Organization *OrganizationClient
 	// OrganizationMember is the client for interacting with the OrganizationMember builders.
 	OrganizationMember *OrganizationMemberClient
-	// Platform is the client for interacting with the Platform builders.
-	Platform *PlatformClient
 	// Project is the client for interacting with the Project builders.
 	Project *ProjectClient
 	// ProjectMember is the client for interacting with the ProjectMember builders.
 	ProjectMember *ProjectMemberClient
+	// Tenant is the client for interacting with the Tenant builders.
+	Tenant *TenantClient
 	// User is the client for interacting with the User builders.
 	User *UserClient
 
@@ -160,9 +160,9 @@ func (tx *Tx) init() {
 	tx.Application = NewApplicationClient(tx.config)
 	tx.Organization = NewOrganizationClient(tx.config)
 	tx.OrganizationMember = NewOrganizationMemberClient(tx.config)
-	tx.Platform = NewPlatformClient(tx.config)
 	tx.Project = NewProjectClient(tx.config)
 	tx.ProjectMember = NewProjectMemberClient(tx.config)
+	tx.Tenant = NewTenantClient(tx.config)
 	tx.User = NewUserClient(tx.config)
 }
 

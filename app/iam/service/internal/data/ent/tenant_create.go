@@ -11,37 +11,37 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/organization"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/platform"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
-// PlatformCreate is the builder for creating a Platform entity.
-type PlatformCreate struct {
+// TenantCreate is the builder for creating a Tenant entity.
+type TenantCreate struct {
 	config
-	mutation *PlatformMutation
+	mutation *TenantMutation
 	hooks    []Hook
 }
 
 // SetSlug sets the "slug" field.
-func (_c *PlatformCreate) SetSlug(v string) *PlatformCreate {
+func (_c *TenantCreate) SetSlug(v string) *TenantCreate {
 	_c.mutation.SetSlug(v)
 	return _c
 }
 
 // SetName sets the "name" field.
-func (_c *PlatformCreate) SetName(v string) *PlatformCreate {
+func (_c *TenantCreate) SetName(v string) *TenantCreate {
 	_c.mutation.SetName(v)
 	return _c
 }
 
 // SetType sets the "type" field.
-func (_c *PlatformCreate) SetType(v string) *PlatformCreate {
+func (_c *TenantCreate) SetType(v string) *TenantCreate {
 	_c.mutation.SetType(v)
 	return _c
 }
 
 // SetNillableType sets the "type" field if the given value is not nil.
-func (_c *PlatformCreate) SetNillableType(v *string) *PlatformCreate {
+func (_c *TenantCreate) SetNillableType(v *string) *TenantCreate {
 	if v != nil {
 		_c.SetType(*v)
 	}
@@ -49,13 +49,13 @@ func (_c *PlatformCreate) SetNillableType(v *string) *PlatformCreate {
 }
 
 // SetCreatedAt sets the "created_at" field.
-func (_c *PlatformCreate) SetCreatedAt(v time.Time) *PlatformCreate {
+func (_c *TenantCreate) SetCreatedAt(v time.Time) *TenantCreate {
 	_c.mutation.SetCreatedAt(v)
 	return _c
 }
 
 // SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (_c *PlatformCreate) SetNillableCreatedAt(v *time.Time) *PlatformCreate {
+func (_c *TenantCreate) SetNillableCreatedAt(v *time.Time) *TenantCreate {
 	if v != nil {
 		_c.SetCreatedAt(*v)
 	}
@@ -63,13 +63,13 @@ func (_c *PlatformCreate) SetNillableCreatedAt(v *time.Time) *PlatformCreate {
 }
 
 // SetID sets the "id" field.
-func (_c *PlatformCreate) SetID(v uuid.UUID) *PlatformCreate {
+func (_c *TenantCreate) SetID(v uuid.UUID) *TenantCreate {
 	_c.mutation.SetID(v)
 	return _c
 }
 
 // SetNillableID sets the "id" field if the given value is not nil.
-func (_c *PlatformCreate) SetNillableID(v *uuid.UUID) *PlatformCreate {
+func (_c *TenantCreate) SetNillableID(v *uuid.UUID) *TenantCreate {
 	if v != nil {
 		_c.SetID(*v)
 	}
@@ -77,13 +77,13 @@ func (_c *PlatformCreate) SetNillableID(v *uuid.UUID) *PlatformCreate {
 }
 
 // AddOrganizationIDs adds the "organizations" edge to the Organization entity by IDs.
-func (_c *PlatformCreate) AddOrganizationIDs(ids ...uuid.UUID) *PlatformCreate {
+func (_c *TenantCreate) AddOrganizationIDs(ids ...uuid.UUID) *TenantCreate {
 	_c.mutation.AddOrganizationIDs(ids...)
 	return _c
 }
 
 // AddOrganizations adds the "organizations" edges to the Organization entity.
-func (_c *PlatformCreate) AddOrganizations(v ...*Organization) *PlatformCreate {
+func (_c *TenantCreate) AddOrganizations(v ...*Organization) *TenantCreate {
 	ids := make([]uuid.UUID, len(v))
 	for i := range v {
 		ids[i] = v[i].ID
@@ -91,19 +91,19 @@ func (_c *PlatformCreate) AddOrganizations(v ...*Organization) *PlatformCreate {
 	return _c.AddOrganizationIDs(ids...)
 }
 
-// Mutation returns the PlatformMutation object of the builder.
-func (_c *PlatformCreate) Mutation() *PlatformMutation {
+// Mutation returns the TenantMutation object of the builder.
+func (_c *TenantCreate) Mutation() *TenantMutation {
 	return _c.mutation
 }
 
-// Save creates the Platform in the database.
-func (_c *PlatformCreate) Save(ctx context.Context) (*Platform, error) {
+// Save creates the Tenant in the database.
+func (_c *TenantCreate) Save(ctx context.Context) (*Tenant, error) {
 	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
 // SaveX calls Save and panics if Save returns an error.
-func (_c *PlatformCreate) SaveX(ctx context.Context) *Platform {
+func (_c *TenantCreate) SaveX(ctx context.Context) *Tenant {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -112,67 +112,67 @@ func (_c *PlatformCreate) SaveX(ctx context.Context) *Platform {
 }
 
 // Exec executes the query.
-func (_c *PlatformCreate) Exec(ctx context.Context) error {
+func (_c *TenantCreate) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *PlatformCreate) ExecX(ctx context.Context) {
+func (_c *TenantCreate) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}
 }
 
 // defaults sets the default values of the builder before save.
-func (_c *PlatformCreate) defaults() {
+func (_c *TenantCreate) defaults() {
 	if _, ok := _c.mutation.GetType(); !ok {
-		v := platform.DefaultType
+		v := tenant.DefaultType
 		_c.mutation.SetType(v)
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		v := platform.DefaultCreatedAt()
+		v := tenant.DefaultCreatedAt()
 		_c.mutation.SetCreatedAt(v)
 	}
 	if _, ok := _c.mutation.ID(); !ok {
-		v := platform.DefaultID()
+		v := tenant.DefaultID()
 		_c.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
-func (_c *PlatformCreate) check() error {
+func (_c *TenantCreate) check() error {
 	if _, ok := _c.mutation.Slug(); !ok {
-		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Platform.slug"`)}
+		return &ValidationError{Name: "slug", err: errors.New(`ent: missing required field "Tenant.slug"`)}
 	}
 	if v, ok := _c.mutation.Slug(); ok {
-		if err := platform.SlugValidator(v); err != nil {
-			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Platform.slug": %w`, err)}
+		if err := tenant.SlugValidator(v); err != nil {
+			return &ValidationError{Name: "slug", err: fmt.Errorf(`ent: validator failed for field "Tenant.slug": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Platform.name"`)}
+		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Tenant.name"`)}
 	}
 	if v, ok := _c.mutation.Name(); ok {
-		if err := platform.NameValidator(v); err != nil {
-			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Platform.name": %w`, err)}
+		if err := tenant.NameValidator(v); err != nil {
+			return &ValidationError{Name: "name", err: fmt.Errorf(`ent: validator failed for field "Tenant.name": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.GetType(); !ok {
-		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Platform.type"`)}
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Tenant.type"`)}
 	}
 	if v, ok := _c.mutation.GetType(); ok {
-		if err := platform.TypeValidator(v); err != nil {
-			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Platform.type": %w`, err)}
+		if err := tenant.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Tenant.type": %w`, err)}
 		}
 	}
 	if _, ok := _c.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Platform.created_at"`)}
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Tenant.created_at"`)}
 	}
 	return nil
 }
 
-func (_c *PlatformCreate) sqlSave(ctx context.Context) (*Platform, error) {
+func (_c *TenantCreate) sqlSave(ctx context.Context) (*Tenant, error) {
 	if err := _c.check(); err != nil {
 		return nil, err
 	}
@@ -195,37 +195,37 @@ func (_c *PlatformCreate) sqlSave(ctx context.Context) (*Platform, error) {
 	return _node, nil
 }
 
-func (_c *PlatformCreate) createSpec() (*Platform, *sqlgraph.CreateSpec) {
+func (_c *TenantCreate) createSpec() (*Tenant, *sqlgraph.CreateSpec) {
 	var (
-		_node = &Platform{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(platform.Table, sqlgraph.NewFieldSpec(platform.FieldID, field.TypeUUID))
+		_node = &Tenant{config: _c.config}
+		_spec = sqlgraph.NewCreateSpec(tenant.Table, sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID))
 	)
 	if id, ok := _c.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
 	if value, ok := _c.mutation.Slug(); ok {
-		_spec.SetField(platform.FieldSlug, field.TypeString, value)
+		_spec.SetField(tenant.FieldSlug, field.TypeString, value)
 		_node.Slug = value
 	}
 	if value, ok := _c.mutation.Name(); ok {
-		_spec.SetField(platform.FieldName, field.TypeString, value)
+		_spec.SetField(tenant.FieldName, field.TypeString, value)
 		_node.Name = value
 	}
 	if value, ok := _c.mutation.GetType(); ok {
-		_spec.SetField(platform.FieldType, field.TypeString, value)
+		_spec.SetField(tenant.FieldType, field.TypeString, value)
 		_node.Type = value
 	}
 	if value, ok := _c.mutation.CreatedAt(); ok {
-		_spec.SetField(platform.FieldCreatedAt, field.TypeTime, value)
+		_spec.SetField(tenant.FieldCreatedAt, field.TypeTime, value)
 		_node.CreatedAt = value
 	}
 	if nodes := _c.mutation.OrganizationsIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2M,
 			Inverse: false,
-			Table:   platform.OrganizationsTable,
-			Columns: []string{platform.OrganizationsColumn},
+			Table:   tenant.OrganizationsTable,
+			Columns: []string{tenant.OrganizationsColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: sqlgraph.NewFieldSpec(organization.FieldID, field.TypeUUID),
@@ -239,27 +239,27 @@ func (_c *PlatformCreate) createSpec() (*Platform, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
-// PlatformCreateBulk is the builder for creating many Platform entities in bulk.
-type PlatformCreateBulk struct {
+// TenantCreateBulk is the builder for creating many Tenant entities in bulk.
+type TenantCreateBulk struct {
 	config
 	err      error
-	builders []*PlatformCreate
+	builders []*TenantCreate
 }
 
-// Save creates the Platform entities in the database.
-func (_c *PlatformCreateBulk) Save(ctx context.Context) ([]*Platform, error) {
+// Save creates the Tenant entities in the database.
+func (_c *TenantCreateBulk) Save(ctx context.Context) ([]*Tenant, error) {
 	if _c.err != nil {
 		return nil, _c.err
 	}
 	specs := make([]*sqlgraph.CreateSpec, len(_c.builders))
-	nodes := make([]*Platform, len(_c.builders))
+	nodes := make([]*Tenant, len(_c.builders))
 	mutators := make([]Mutator, len(_c.builders))
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
 			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
-				mutation, ok := m.(*PlatformMutation)
+				mutation, ok := m.(*TenantMutation)
 				if !ok {
 					return nil, fmt.Errorf("unexpected mutation type %T", m)
 				}
@@ -302,7 +302,7 @@ func (_c *PlatformCreateBulk) Save(ctx context.Context) ([]*Platform, error) {
 }
 
 // SaveX is like Save, but panics if an error occurs.
-func (_c *PlatformCreateBulk) SaveX(ctx context.Context) []*Platform {
+func (_c *TenantCreateBulk) SaveX(ctx context.Context) []*Tenant {
 	v, err := _c.Save(ctx)
 	if err != nil {
 		panic(err)
@@ -311,13 +311,13 @@ func (_c *PlatformCreateBulk) SaveX(ctx context.Context) []*Platform {
 }
 
 // Exec executes the query.
-func (_c *PlatformCreateBulk) Exec(ctx context.Context) error {
+func (_c *TenantCreateBulk) Exec(ctx context.Context) error {
 	_, err := _c.Save(ctx)
 	return err
 }
 
 // ExecX is like Exec, but panics if an error occurs.
-func (_c *PlatformCreateBulk) ExecX(ctx context.Context) {
+func (_c *TenantCreateBulk) ExecX(ctx context.Context) {
 	if err := _c.Exec(ctx); err != nil {
 		panic(err)
 	}

@@ -19,7 +19,7 @@ type Organization struct {
 func (Organization) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(newUUIDv7),
-		field.UUID("platform_id", uuid.UUID{}),
+		field.UUID("tenant_id", uuid.UUID{}),
 		field.String("name").MaxLen(128),
 		field.String("slug").MaxLen(128).Unique(),
 		field.String("display_name").MaxLen(255).Optional().Nillable(),
@@ -36,9 +36,9 @@ func (Organization) Mixin() []ent.Mixin {
 
 func (Organization) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("platform", Platform.Type).
+		edge.From("tenant", Tenant.Type).
 			Ref("organizations").
-			Field("platform_id").
+			Field("tenant_id").
 			Unique().
 			Required(),
 		edge.To("members", OrganizationMember.Type),

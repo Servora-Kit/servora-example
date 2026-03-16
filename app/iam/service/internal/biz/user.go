@@ -34,7 +34,7 @@ type UserUsecase struct {
 	orgRepo   OrganizationRepo
 	projRepo  ProjectRepo
 	authz     AuthZRepo
-	platID    string
+	tenantID string
 }
 
 func NewUserUsecase(
@@ -45,7 +45,7 @@ func NewUserUsecase(
 	orgRepo OrganizationRepo,
 	projRepo ProjectRepo,
 	authz AuthZRepo,
-	platID PlatformRootID,
+	tenantID TenantRootID,
 ) *UserUsecase {
 	return &UserUsecase{
 		repo:      repo,
@@ -55,7 +55,7 @@ func NewUserUsecase(
 		orgRepo:   orgRepo,
 		projRepo:  projRepo,
 		authz:     authz,
-		platID:    string(platID),
+		tenantID:  string(tenantID),
 	}
 }
 
@@ -225,9 +225,9 @@ func (uc *UserUsecase) purgeUserFGA(ctx context.Context, userID string) {
 		)
 	}
 
-	if uc.platID != "" {
+	if uc.tenantID != "" {
 		tuples = append(tuples,
-			Tuple{User: "user:" + userID, Relation: "admin", Object: "platform:" + uc.platID},
+			Tuple{User: "user:" + userID, Relation: "admin", Object: "tenant:" + uc.tenantID},
 		)
 	}
 

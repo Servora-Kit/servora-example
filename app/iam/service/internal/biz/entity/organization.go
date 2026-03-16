@@ -3,8 +3,8 @@ package entity
 import "time"
 
 type Organization struct {
-	ID          string
-	PlatformID  string
+	ID       string
+	TenantID string
 	Name        string
 	Slug        string
 	DisplayName string

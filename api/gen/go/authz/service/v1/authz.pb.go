@@ -133,8 +133,8 @@ type ObjectType int32
 const (
 	// 未指定
 	ObjectType_OBJECT_TYPE_UNSPECIFIED ObjectType = 0
-	// 平台
-	ObjectType_OBJECT_TYPE_PLATFORM ObjectType = 1
+	// 租户
+	ObjectType_OBJECT_TYPE_TENANT ObjectType = 1
 	// 组织
 	ObjectType_OBJECT_TYPE_ORGANIZATION ObjectType = 2
 	// 项目
@@ -145,13 +145,13 @@ const (
 var (
 	ObjectType_name = map[int32]string{
 		0: "OBJECT_TYPE_UNSPECIFIED",
-		1: "OBJECT_TYPE_PLATFORM",
+		1: "OBJECT_TYPE_TENANT",
 		2: "OBJECT_TYPE_ORGANIZATION",
 		3: "OBJECT_TYPE_PROJECT",
 	}
 	ObjectType_value = map[string]int32{
 		"OBJECT_TYPE_UNSPECIFIED":  0,
-		"OBJECT_TYPE_PLATFORM":     1,
+		"OBJECT_TYPE_TENANT":       1,
 		"OBJECT_TYPE_ORGANIZATION": 2,
 		"OBJECT_TYPE_PROJECT":      3,
 	}
@@ -487,11 +487,11 @@ const file_authz_service_v1_authz_proto_rawDesc = "" +
 	"\x0fAUTHZ_MODE_NONE\x10\x01\x12\x1b\n" +
 	"\x17AUTHZ_MODE_ORGANIZATION\x10\x02\x12\x16\n" +
 	"\x12AUTHZ_MODE_PROJECT\x10\x03\x12\x15\n" +
-	"\x11AUTHZ_MODE_OBJECT\x10\x04*z\n" +
+	"\x11AUTHZ_MODE_OBJECT\x10\x04*x\n" +
 	"\n" +
 	"ObjectType\x12\x1b\n" +
-	"\x17OBJECT_TYPE_UNSPECIFIED\x10\x00\x12\x18\n" +
-	"\x14OBJECT_TYPE_PLATFORM\x10\x01\x12\x1c\n" +
+	"\x17OBJECT_TYPE_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12OBJECT_TYPE_TENANT\x10\x01\x12\x1c\n" +
 	"\x18OBJECT_TYPE_ORGANIZATION\x10\x02\x12\x17\n" +
 	"\x13OBJECT_TYPE_PROJECT\x10\x03*\xf6\x01\n" +
 	"\bRelation\x12\x18\n" +

@@ -3,7 +3,7 @@ model
 
 type user
 
-type platform
+type tenant
   relations
     define admin: [user]
     define member: [user] or admin
@@ -12,7 +12,7 @@ type platform
 
 type organization
   relations
-    define platform: [platform]
+    define tenant: [tenant]
     define owner: [user]
     define admin: [user] or owner
     define member: [user] or admin

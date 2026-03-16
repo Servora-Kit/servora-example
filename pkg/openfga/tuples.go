@@ -10,7 +10,7 @@ import (
 // Tuple represents a single OpenFGA relationship tuple.
 type Tuple struct {
 	User     string // e.g. "user:uuid" or "organization:uuid"
-	Relation string // e.g. "owner", "admin", "platform"
+	Relation string // e.g. "owner", "admin", "tenant"
 	Object   string // e.g. "organization:uuid", "project:uuid"
 }
 

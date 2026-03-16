@@ -11,11 +11,11 @@ import (
 	"github.com/google/uuid"
 )
 
-type Platform struct {
+type Tenant struct {
 	ent.Schema
 }
 
-func (Platform) Fields() []ent.Field {
+func (Tenant) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).Default(newUUIDv7),
 		field.String("slug").MaxLen(64).Unique(),
@@ -25,14 +25,14 @@ func (Platform) Fields() []ent.Field {
 	}
 }
 
-func (Platform) Edges() []ent.Edge {
+func (Tenant) Edges() []ent.Edge {
 	return []ent.Edge{
 		edge.To("organizations", Organization.Type),
 	}
 }
 
-func (Platform) Annotations() []schema.Annotation {
+func (Tenant) Annotations() []schema.Annotation {
 	return []schema.Annotation{
-		entsql.Annotation{Table: "platforms"},
+		entsql.Annotation{Table: "tenants"},
 	}
 }

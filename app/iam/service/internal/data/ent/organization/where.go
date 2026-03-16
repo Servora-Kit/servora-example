@@ -61,9 +61,9 @@ func DeletedAt(v time.Time) predicate.Organization {
 	return predicate.Organization(sql.FieldEQ(FieldDeletedAt, v))
 }
 
-// PlatformID applies equality check predicate on the "platform_id" field. It's identical to PlatformIDEQ.
-func PlatformID(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldPlatformID, v))
+// TenantID applies equality check predicate on the "tenant_id" field. It's identical to TenantIDEQ.
+func TenantID(v uuid.UUID) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldTenantID, v))
 }
 
 // Name applies equality check predicate on the "name" field. It's identical to NameEQ.
@@ -141,24 +141,24 @@ func DeletedAtNotNil() predicate.Organization {
 	return predicate.Organization(sql.FieldNotNull(FieldDeletedAt))
 }
 
-// PlatformIDEQ applies the EQ predicate on the "platform_id" field.
-func PlatformIDEQ(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldEQ(FieldPlatformID, v))
+// TenantIDEQ applies the EQ predicate on the "tenant_id" field.
+func TenantIDEQ(v uuid.UUID) predicate.Organization {
+	return predicate.Organization(sql.FieldEQ(FieldTenantID, v))
 }
 
-// PlatformIDNEQ applies the NEQ predicate on the "platform_id" field.
-func PlatformIDNEQ(v uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldNEQ(FieldPlatformID, v))
+// TenantIDNEQ applies the NEQ predicate on the "tenant_id" field.
+func TenantIDNEQ(v uuid.UUID) predicate.Organization {
+	return predicate.Organization(sql.FieldNEQ(FieldTenantID, v))
 }
 
-// PlatformIDIn applies the In predicate on the "platform_id" field.
-func PlatformIDIn(vs ...uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldIn(FieldPlatformID, vs...))
+// TenantIDIn applies the In predicate on the "tenant_id" field.
+func TenantIDIn(vs ...uuid.UUID) predicate.Organization {
+	return predicate.Organization(sql.FieldIn(FieldTenantID, vs...))
 }
 
-// PlatformIDNotIn applies the NotIn predicate on the "platform_id" field.
-func PlatformIDNotIn(vs ...uuid.UUID) predicate.Organization {
-	return predicate.Organization(sql.FieldNotIn(FieldPlatformID, vs...))
+// TenantIDNotIn applies the NotIn predicate on the "tenant_id" field.
+func TenantIDNotIn(vs ...uuid.UUID) predicate.Organization {
+	return predicate.Organization(sql.FieldNotIn(FieldTenantID, vs...))
 }
 
 // NameEQ applies the EQ predicate on the "name" field.
@@ -446,21 +446,21 @@ func UpdatedAtLTE(v time.Time) predicate.Organization {
 	return predicate.Organization(sql.FieldLTE(FieldUpdatedAt, v))
 }
 
-// HasPlatform applies the HasEdge predicate on the "platform" edge.
-func HasPlatform() predicate.Organization {
+// HasTenant applies the HasEdge predicate on the "tenant" edge.
+func HasTenant() predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, PlatformTable, PlatformColumn),
+			sqlgraph.Edge(sqlgraph.M2O, true, TenantTable, TenantColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasPlatformWith applies the HasEdge predicate on the "platform" edge with a given conditions (other predicates).
-func HasPlatformWith(preds ...predicate.Platform) predicate.Organization {
+// HasTenantWith applies the HasEdge predicate on the "tenant" edge with a given conditions (other predicates).
+func HasTenantWith(preds ...predicate.Tenant) predicate.Organization {
 	return predicate.Organization(func(s *sql.Selector) {
-		step := newPlatformStep()
+		step := newTenantStep()
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
 				p(s)

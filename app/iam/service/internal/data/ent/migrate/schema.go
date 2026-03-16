@@ -49,7 +49,7 @@ var (
 		{Name: "display_name", Type: field.TypeString, Nullable: true, Size: 255},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "platform_id", Type: field.TypeUUID},
+		{Name: "tenant_id", Type: field.TypeUUID},
 	}
 	// OrganizationsTable holds the schema information for the "organizations" table.
 	OrganizationsTable = &schema.Table{
@@ -58,9 +58,9 @@ var (
 		PrimaryKey: []*schema.Column{OrganizationsColumns[0]},
 		ForeignKeys: []*schema.ForeignKey{
 			{
-				Symbol:     "organizations_platforms_organizations",
+				Symbol:     "organizations_tenants_organizations",
 				Columns:    []*schema.Column{OrganizationsColumns[7]},
-				RefColumns: []*schema.Column{PlatformsColumns[0]},
+				RefColumns: []*schema.Column{TenantsColumns[0]},
 				OnDelete:   schema.NoAction,
 			},
 		},
@@ -100,20 +100,6 @@ var (
 				Columns: []*schema.Column{OrganizationMembersColumns[4], OrganizationMembersColumns[5]},
 			},
 		},
-	}
-	// PlatformsColumns holds the columns for the "platforms" table.
-	PlatformsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "slug", Type: field.TypeString, Unique: true, Size: 64},
-		{Name: "name", Type: field.TypeString, Size: 128},
-		{Name: "type", Type: field.TypeString, Size: 32, Default: "system"},
-		{Name: "created_at", Type: field.TypeTime},
-	}
-	// PlatformsTable holds the schema information for the "platforms" table.
-	PlatformsTable = &schema.Table{
-		Name:       "platforms",
-		Columns:    PlatformsColumns,
-		PrimaryKey: []*schema.Column{PlatformsColumns[0]},
 	}
 	// ProjectsColumns holds the columns for the "projects" table.
 	ProjectsColumns = []*schema.Column{
@@ -183,6 +169,20 @@ var (
 			},
 		},
 	}
+	// TenantsColumns holds the columns for the "tenants" table.
+	TenantsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeUUID},
+		{Name: "slug", Type: field.TypeString, Unique: true, Size: 64},
+		{Name: "name", Type: field.TypeString, Size: 128},
+		{Name: "type", Type: field.TypeString, Size: 32, Default: "system"},
+		{Name: "created_at", Type: field.TypeTime},
+	}
+	// TenantsTable holds the schema information for the "tenants" table.
+	TenantsTable = &schema.Table{
+		Name:       "tenants",
+		Columns:    TenantsColumns,
+		PrimaryKey: []*schema.Column{TenantsColumns[0]},
+	}
 	// UsersColumns holds the columns for the "users" table.
 	UsersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
@@ -207,9 +207,9 @@ var (
 		ApplicationsTable,
 		OrganizationsTable,
 		OrganizationMembersTable,
-		PlatformsTable,
 		ProjectsTable,
 		ProjectMembersTable,
+		TenantsTable,
 		UsersTable,
 	}
 )
@@ -219,7 +219,7 @@ func init() {
 	ApplicationsTable.Annotation = &entsql.Annotation{
 		Table: "applications",
 	}
-	OrganizationsTable.ForeignKeys[0].RefTable = PlatformsTable
+	OrganizationsTable.ForeignKeys[0].RefTable = TenantsTable
 	OrganizationsTable.Annotation = &entsql.Annotation{
 		Table: "organizations",
 	}
@@ -227,9 +227,6 @@ func init() {
 	OrganizationMembersTable.ForeignKeys[1].RefTable = UsersTable
 	OrganizationMembersTable.Annotation = &entsql.Annotation{
 		Table: "organization_members",
-	}
-	PlatformsTable.Annotation = &entsql.Annotation{
-		Table: "platforms",
 	}
 	ProjectsTable.ForeignKeys[0].RefTable = OrganizationsTable
 	ProjectsTable.Annotation = &entsql.Annotation{
@@ -239,6 +236,9 @@ func init() {
 	ProjectMembersTable.ForeignKeys[1].RefTable = UsersTable
 	ProjectMembersTable.Annotation = &entsql.Annotation{
 		Table: "project_members",
+	}
+	TenantsTable.Annotation = &entsql.Annotation{
+		Table: "tenants",
 	}
 	UsersTable.Annotation = &entsql.Annotation{
 		Table: "users",

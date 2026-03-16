@@ -39,7 +39,7 @@ func WithAuthzRules(rules map[string]iamv1.AuthzRuleEntry) AuthzOption {
 	return func(cfg *authzConfig) { cfg.rules = rules }
 }
 
-func WithPlatformRootID(id string) AuthzOption {
+func WithTenantRootID(id string) AuthzOption {
 	return func(cfg *authzConfig) { cfg.platRootID = id }
 }
 
@@ -130,7 +130,7 @@ func resolveObject(rule iamv1.AuthzRuleEntry, platRootID string, req any) (objec
 		objectID, err = extractProtoField(req, rule.IDField)
 	case authzpb.AuthzMode_AUTHZ_MODE_OBJECT:
 		objectType = objectTypeToFGA(rule.ObjectType)
-		if rule.IDField == "root" && objectType == "platform" {
+		if rule.IDField == "root" && objectType == "tenant" {
 			objectID = platRootID
 		} else {
 			objectID, err = extractProtoField(req, rule.IDField)

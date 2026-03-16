@@ -56,12 +56,12 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		cleanup()
 		return nil, nil, err
 	}
-	platformRootID, err := data.NewPlatformRootID(entClient, openfgaClient, confBiz, logger)
+	tenantRootID, err := data.NewTenantRootID(entClient, openfgaClient, confBiz, logger)
 	if err != nil {
 		cleanup()
 		return nil, nil, err
 	}
-	grpcMiddleware := server.NewGRPCMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, redisClient, platformRootID)
+	grpcMiddleware := server.NewGRPCMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, redisClient, tenantRootID)
 	registryDiscovery := registry.NewDiscovery(discovery)
 	clientClient, err := client.NewClient(confData, trace, registryDiscovery, logger)
 	if err != nil {
@@ -79,12 +79,12 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	organizationRepo := data.NewOrganizationRepo(dataData, logger)
 	projectRepo := data.NewProjectRepo(dataData, logger)
 	authZRepo := data.NewAuthZRepo(openfgaClient, redisClient)
-	organizationUsecase := biz.NewOrganizationUsecase(organizationRepo, projectRepo, authZRepo, logger, platformRootID)
+	organizationUsecase := biz.NewOrganizationUsecase(organizationRepo, projectRepo, authZRepo, logger, tenantRootID)
 	projectUsecase := biz.NewProjectUsecase(projectRepo, organizationRepo, authZRepo, logger)
 	authnUsecase := biz.NewAuthnUsecase(authnRepo, otpRepo, sender, mail, logger, app, keyManager, organizationUsecase, projectUsecase)
 	authnService := service.NewAuthnService(authnUsecase)
 	userRepo := data.NewUserRepo(dataData, logger)
-	userUsecase := biz.NewUserUsecase(userRepo, logger, app, authnRepo, organizationRepo, projectRepo, authZRepo, platformRootID)
+	userUsecase := biz.NewUserUsecase(userRepo, logger, app, authnRepo, organizationRepo, projectRepo, authZRepo, tenantRootID)
 	userService := service.NewUserService(userUsecase)
 	testRepo := data.NewTestRepo(dataData, logger)
 	testUsecase := biz.NewTestUsecase(testRepo, logger)
@@ -92,7 +92,7 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	organizationService := service.NewOrganizationService(organizationUsecase)
 	projectService := service.NewProjectService(projectUsecase)
 	grpcServer := server.NewGRPCServer(confServer, grpcMiddleware, logger, authnService, userService, testService, organizationService, projectService)
-	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, redisClient, platformRootID)
+	httpMiddleware := server.NewHTTPMiddleware(trace, telemetryMetrics, logger, keyManager, openfgaClient, redisClient, tenantRootID)
 	handler := server.NewHealthHandler(redisClient, driver)
 	applicationRepo := data.NewApplicationRepo(dataData, logger)
 	applicationUsecase := biz.NewApplicationUsecase(applicationRepo, logger)

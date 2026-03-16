@@ -24,7 +24,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var ProviderSet = wire.NewSet(registry.NewDiscovery, NewEntDriver, NewDBClient, NewPlatformRootID, NewRedis, NewData, NewAuthnRepo, NewAuthZRepo, NewUserRepo, NewTestRepo, NewOrganizationRepo, NewProjectRepo, NewOTPRepo, NewMailSender, NewApplicationRepo, NewOIDCStorage)
+var ProviderSet = wire.NewSet(registry.NewDiscovery, NewEntDriver, NewDBClient, NewTenantRootID, NewRedis, NewData, NewAuthnRepo, NewAuthZRepo, NewUserRepo, NewTestRepo, NewOrganizationRepo, NewProjectRepo, NewOTPRepo, NewMailSender, NewApplicationRepo, NewOIDCStorage)
 
 type Data struct {
 	entClient *ent.Client
@@ -101,13 +101,13 @@ func NewDBClient(driver *entsql.Driver, app *conf.App, bizConf *iamconf.Biz, l l
 		return nil, errors.New("ent auto-migrate: " + err.Error())
 	}
 
-	if _, err := seedPlatform(ctx, ec); err != nil {
-		return nil, errors.New("seed platform: " + err.Error())
+	if _, err := seedTenant(ctx, ec); err != nil {
+		return nil, errors.New("seed tenant: " + err.Error())
 	}
 
-	if err := seedPlatformAdmin(ctx, ec, bizConf.GetSeed()); err != nil {
+	if err := seedTenantAdmin(ctx, ec, bizConf.GetSeed()); err != nil {
 		seedLog := logger.NewHelper(l, logger.WithModule("seed/data/iam-service"))
-		seedLog.Warnf("seed platform admin: %v", err)
+		seedLog.Warnf("seed tenant admin: %v", err)
 	}
 
 	return ec, nil
