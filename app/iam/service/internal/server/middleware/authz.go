@@ -27,7 +27,7 @@ type authzConfig struct {
 	redis      *redis.Client
 	cacheTTL   time.Duration
 	rules      map[string]iamv1.AuthzRuleEntry
-	platRootID string
+	tenantRootID string
 }
 
 func WithFGAClient(c *openfga.Client) AuthzOption {
@@ -40,7 +40,7 @@ func WithAuthzRules(rules map[string]iamv1.AuthzRuleEntry) AuthzOption {
 }
 
 func WithTenantRootID(id string) AuthzOption {
-	return func(cfg *authzConfig) { cfg.platRootID = id }
+	return func(cfg *authzConfig) { cfg.tenantRootID = id }
 }
 
 func WithAuthzCache(rdb *redis.Client, ttl time.Duration) AuthzOption {
@@ -94,7 +94,7 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 				return nil, errors.ServiceUnavailable("AUTHZ_UNAVAILABLE", "authorization service not available")
 			}
 
-			objectType, objectID, err := resolveObject(rule, cfg.platRootID, req)
+			objectType, objectID, err := resolveObject(rule, cfg.tenantRootID, req)
 			if err != nil {
 				return nil, errors.BadRequest("AUTHZ_BAD_REQUEST",
 					fmt.Sprintf("cannot resolve authorization target: %v", err))
@@ -120,7 +120,7 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 	}
 }
 
-func resolveObject(rule iamv1.AuthzRuleEntry, platRootID string, req any) (objectType, objectID string, err error) {
+func resolveObject(rule iamv1.AuthzRuleEntry, tenantRootID string, req any) (objectType, objectID string, err error) {
 	switch rule.Mode {
 	case authzpb.AuthzMode_AUTHZ_MODE_ORGANIZATION:
 		objectType = "organization"
@@ -131,7 +131,7 @@ func resolveObject(rule iamv1.AuthzRuleEntry, platRootID string, req any) (objec
 	case authzpb.AuthzMode_AUTHZ_MODE_OBJECT:
 		objectType = objectTypeToFGA(rule.ObjectType)
 		if rule.IDField == "root" && objectType == "tenant" {
-			objectID = platRootID
+			objectID = tenantRootID
 		} else {
 			objectID, err = extractProtoField(req, rule.IDField)
 		}
