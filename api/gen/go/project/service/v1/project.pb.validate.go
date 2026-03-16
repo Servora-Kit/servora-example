@@ -367,8 +367,6 @@ func (m *CreateProjectRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for OrganizationId
-
 	// no validation rules for Name
 
 	// no validation rules for Slug
@@ -842,8 +840,6 @@ func (m *ListProjectsRequest) validate(all bool) error {
 	}
 
 	var errors []error
-
-	// no validation rules for OrganizationId
 
 	if all {
 		switch v := interface{}(m.GetPagination()).(type) {

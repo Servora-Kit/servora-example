@@ -17,7 +17,6 @@ service ProjectService {
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_MANAGE
-      id_field: "organization_id"
     };
   }
 
@@ -31,11 +30,10 @@ service ProjectService {
   }
 
   rpc ListProjects(project.service.v1.ListProjectsRequest) returns (project.service.v1.ListProjectsResponse) {
-    option (google.api.http) = {get: "/v1/organizations/{organization_id}/projects"};
+    option (google.api.http) = {get: "/v1/projects"};
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_VIEW
-      id_field: "organization_id"
     };
   }
 

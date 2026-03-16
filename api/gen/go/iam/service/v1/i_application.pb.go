@@ -27,12 +27,12 @@ var File_iam_service_v1_i_application_proto protoreflect.FileDescriptor
 
 const file_iam_service_v1_i_application_proto_rawDesc = "" +
 	"\n" +
-	"\"iam/service/v1/i_application.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a(application/service/v1/application.proto\x1a\x1cauthz/service/v1/authz.proto2\xae\b\n" +
-	"\x12ApplicationService\x12\xae\x01\n" +
-	"\x11CreateApplication\x120.application.service.v1.CreateApplicationRequest\x1a1.application.service.v1.CreateApplicationResponse\"4\xa2\xbb\x18\x15\b\x02\x10\r\"\x0forganization_id\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/applications\x12\x94\x01\n" +
-	"\x0eGetApplication\x12-.application.service.v1.GetApplicationRequest\x1a..application.service.v1.GetApplicationResponse\"#\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/applications/{id}\x12\xc8\x01\n" +
-	"\x10ListApplications\x12/.application.service.v1.ListApplicationsRequest\x1a0.application.service.v1.ListApplicationsResponse\"Q\xa2\xbb\x18\x15\b\x02\x10\n" +
-	"\"\x0forganization_id\x82\xd3\xe4\x93\x022\x120/v1/organizations/{organization_id}/applications\x12\xa0\x01\n" +
+	"\"iam/service/v1/i_application.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a(application/service/v1/application.proto\x1a\x1cauthz/service/v1/authz.proto2\xec\a\n" +
+	"\x12ApplicationService\x12\x9d\x01\n" +
+	"\x11CreateApplication\x120.application.service.v1.CreateApplicationRequest\x1a1.application.service.v1.CreateApplicationResponse\"#\xa2\xbb\x18\x04\b\x02\x10\r\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/applications\x12\x94\x01\n" +
+	"\x0eGetApplication\x12-.application.service.v1.GetApplicationRequest\x1a..application.service.v1.GetApplicationResponse\"#\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/applications/{id}\x12\x97\x01\n" +
+	"\x10ListApplications\x12/.application.service.v1.ListApplicationsRequest\x1a0.application.service.v1.ListApplicationsResponse\" \xa2\xbb\x18\x04\b\x02\x10\n" +
+	"\x82\xd3\xe4\x93\x02\x12\x12\x10/v1/applications\x12\xa0\x01\n" +
 	"\x11UpdateApplication\x120.application.service.v1.UpdateApplicationRequest\x1a1.application.service.v1.UpdateApplicationResponse\"&\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x1a:\x01*\x1a\x15/v1/applications/{id}\x12\x9d\x01\n" +
 	"\x11DeleteApplication\x120.application.service.v1.DeleteApplicationRequest\x1a1.application.service.v1.DeleteApplicationResponse\"#\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x17*\x15/v1/applications/{id}\x12\xc1\x01\n" +
 	"\x16RegenerateClientSecret\x125.application.service.v1.RegenerateClientSecretRequest\x1a6.application.service.v1.RegenerateClientSecretResponse\"8\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02,:\x01*\"'/v1/applications/{id}/regenerate-secretB\xc1\x01\n" +

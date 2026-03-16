@@ -50,7 +50,7 @@ func RegisterProjectServiceHTTPServer(s *http.Server, srv ProjectServiceHTTPServ
 	r := s.Route("/")
 	r.POST("/v1/projects", _ProjectService_CreateProject0_HTTP_Handler(srv))
 	r.GET("/v1/projects/{id}", _ProjectService_GetProject0_HTTP_Handler(srv))
-	r.GET("/v1/organizations/{organization_id}/projects", _ProjectService_ListProjects0_HTTP_Handler(srv))
+	r.GET("/v1/projects", _ProjectService_ListProjects0_HTTP_Handler(srv))
 	r.PUT("/v1/projects/{id}", _ProjectService_UpdateProject0_HTTP_Handler(srv))
 	r.DELETE("/v1/projects/{id}", _ProjectService_DeleteProject0_HTTP_Handler(srv))
 	r.DELETE("/v1/projects/{id}/purge", _ProjectService_PurgeProject0_HTTP_Handler(srv))
@@ -109,9 +109,6 @@ func _ProjectService_ListProjects0_HTTP_Handler(srv ProjectServiceHTTPServer) fu
 	return func(ctx http.Context) error {
 		var in v1.ListProjectsRequest
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationProjectServiceListProjects)
@@ -404,7 +401,7 @@ func (c *ProjectServiceHTTPClientImpl) ListMembers(ctx context.Context, in *v1.L
 
 func (c *ProjectServiceHTTPClientImpl) ListProjects(ctx context.Context, in *v1.ListProjectsRequest, opts ...http.CallOption) (*v1.ListProjectsResponse, error) {
 	var out v1.ListProjectsResponse
-	pattern := "/v1/organizations/{organization_id}/projects"
+	pattern := "/v1/projects"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationProjectServiceListProjects))
 	opts = append(opts, http.PathTemplate(pattern))

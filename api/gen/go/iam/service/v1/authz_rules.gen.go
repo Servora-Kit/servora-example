@@ -19,7 +19,6 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.ApplicationService/CreateApplication": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_MANAGE,
-		IDField:  "organization_id",
 	},
 	"/iam.service.v1.ApplicationService/DeleteApplication": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
@@ -30,7 +29,6 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.ApplicationService/ListApplications": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_VIEW,
-		IDField:  "organization_id",
 	},
 	"/iam.service.v1.ApplicationService/RegenerateClientSecret": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
@@ -129,7 +127,6 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.ProjectService/CreateProject": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_MANAGE,
-		IDField:  "organization_id",
 	},
 	"/iam.service.v1.ProjectService/DeleteProject": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
@@ -149,7 +146,6 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.ProjectService/ListProjects": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_VIEW,
-		IDField:  "organization_id",
 	},
 	"/iam.service.v1.ProjectService/PurgeProject": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,

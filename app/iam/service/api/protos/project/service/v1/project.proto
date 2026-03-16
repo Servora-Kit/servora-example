@@ -58,7 +58,7 @@ message ProjectMemberInfo {
 }
 
 message CreateProjectRequest {
-  string organization_id = 1 [(buf.validate.field).string.uuid = true];
+  reserved 1;
   string name = 2 [(buf.validate.field).string = {min_len: 2, max_len: 128}];
   string slug = 3 [(buf.validate.field).string = {
     min_len: 2,
@@ -81,7 +81,7 @@ message GetProjectResponse {
 }
 
 message ListProjectsRequest {
-  string organization_id = 1 [(buf.validate.field).string.uuid = true];
+  reserved 1;
   pagination.v1.PaginationRequest pagination = 2;
 }
 

@@ -21,3 +21,29 @@ func MustFromContext(ctx context.Context) Actor {
 	}
 	return a
 }
+
+// OrganizationIDFromContext returns the organization scope from the UserActor in context.
+func OrganizationIDFromContext(ctx context.Context) (string, bool) {
+	a, ok := FromContext(ctx)
+	if !ok {
+		return "", false
+	}
+	ua, ok := a.(*UserActor)
+	if !ok || ua.organizationID == "" {
+		return "", false
+	}
+	return ua.organizationID, true
+}
+
+// ProjectIDFromContext returns the project scope from the UserActor in context.
+func ProjectIDFromContext(ctx context.Context) (string, bool) {
+	a, ok := FromContext(ctx)
+	if !ok {
+		return "", false
+	}
+	ua, ok := a.(*UserActor)
+	if !ok || ua.projectID == "" {
+		return "", false
+	}
+	return ua.projectID, true
+}

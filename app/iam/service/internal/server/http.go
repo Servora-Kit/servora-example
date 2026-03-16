@@ -68,6 +68,7 @@ func NewHTTPMiddleware(
 		selector.Server(authn).
 			Match(publicWhitelist.MatchFunc()).
 			Build(),
+		svrmw.ScopeFromHeaders(),
 		authz,
 	)
 

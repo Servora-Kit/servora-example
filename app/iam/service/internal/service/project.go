@@ -20,8 +20,12 @@ func NewProjectService(uc *biz.ProjectUsecase) *ProjectService {
 }
 
 func (s *ProjectService) CreateProject(ctx context.Context, req *projectpb.CreateProjectRequest) (*projectpb.CreateProjectResponse, error) {
+	_, orgID, err := requireOrgScope(ctx)
+	if err != nil {
+		return nil, err
+	}
 	p, err := s.uc.Create(ctx, &entity.Project{
-		OrganizationID: req.OrganizationId,
+		OrganizationID: orgID,
 		Name:           req.Name,
 		Slug:           req.Slug,
 		Description:    req.Description,
@@ -41,8 +45,12 @@ func (s *ProjectService) GetProject(ctx context.Context, req *projectpb.GetProje
 }
 
 func (s *ProjectService) ListProjects(ctx context.Context, req *projectpb.ListProjectsRequest) (*projectpb.ListProjectsResponse, error) {
+	_, orgID, err := requireOrgScope(ctx)
+	if err != nil {
+		return nil, err
+	}
 	page, pageSize := pagination.ExtractPage(req.Pagination)
-	projects, total, err := s.uc.List(ctx, req.OrganizationId, page, pageSize)
+	projects, total, err := s.uc.List(ctx, orgID, page, pageSize)
 	if err != nil {
 		return nil, err
 	}

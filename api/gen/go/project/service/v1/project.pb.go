@@ -271,13 +271,12 @@ func (x *ProjectMemberInfo) GetCreatedAt() *timestamppb.Timestamp {
 }
 
 type CreateProjectRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Name           string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	Slug           string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
-	Description    string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Slug          string                 `protobuf:"bytes,3,opt,name=slug,proto3" json:"slug,omitempty"`
+	Description   string                 `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateProjectRequest) Reset() {
@@ -308,13 +307,6 @@ func (x *CreateProjectRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateProjectRequest.ProtoReflect.Descriptor instead.
 func (*CreateProjectRequest) Descriptor() ([]byte, []int) {
 	return file_project_service_v1_project_proto_rawDescGZIP(), []int{2}
-}
-
-func (x *CreateProjectRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
 }
 
 func (x *CreateProjectRequest) GetName() string {
@@ -471,11 +463,10 @@ func (x *GetProjectResponse) GetProject() *ProjectInfo {
 }
 
 type ListProjectsRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Pagination     *v1.PaginationRequest  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pagination    *v1.PaginationRequest  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListProjectsRequest) Reset() {
@@ -506,13 +497,6 @@ func (x *ListProjectsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListProjectsRequest.ProtoReflect.Descriptor instead.
 func (*ListProjectsRequest) Descriptor() ([]byte, []int) {
 	return file_project_service_v1_project_proto_rawDescGZIP(), []int{6}
-}
-
-func (x *ListProjectsRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
 }
 
 func (x *ListProjectsRequest) GetPagination() *v1.PaginationRequest {
@@ -1375,24 +1359,22 @@ const file_project_service_v1_project_proto_rawDesc = "" +
 	"user_email\x18\x05 \x01(\tR\tuserEmail\x12\x12\n" +
 	"\x04role\x18\x06 \x01(\tR\x04role\x129\n" +
 	"\n" +
-	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xc9\x01\n" +
-	"\x14CreateProjectRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12\x1e\n" +
+	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\x9c\x01\n" +
+	"\x14CreateProjectRequest\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x02\x18\x80\x01R\x04name\x12<\n" +
 	"\x04slug\x18\x03 \x01(\tB(\xbaH%r#\x10\x02\x18\x80\x012\x1c^[a-z0-9][a-z0-9-]*[a-z0-9]$R\x04slug\x12 \n" +
-	"\vdescription\x18\x04 \x01(\tR\vdescription\"R\n" +
+	"\vdescription\x18\x04 \x01(\tR\vdescriptionJ\x04\b\x01\x10\x02\"R\n" +
 	"\x15CreateProjectResponse\x129\n" +
 	"\aproject\x18\x01 \x01(\v2\x1f.project.service.v1.ProjectInfoR\aproject\"-\n" +
 	"\x11GetProjectRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"O\n" +
 	"\x12GetProjectResponse\x129\n" +
-	"\aproject\x18\x01 \x01(\v2\x1f.project.service.v1.ProjectInfoR\aproject\"\x8a\x01\n" +
-	"\x13ListProjectsRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12@\n" +
+	"\aproject\x18\x01 \x01(\v2\x1f.project.service.v1.ProjectInfoR\aproject\"]\n" +
+	"\x13ListProjectsRequest\x12@\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
-	"pagination\"\x96\x01\n" +
+	"paginationJ\x04\b\x01\x10\x02\"\x96\x01\n" +
 	"\x14ListProjectsResponse\x12;\n" +
 	"\bprojects\x18\x01 \x03(\v2\x1f.project.service.v1.ProjectInfoR\bprojects\x12A\n" +
 	"\n" +

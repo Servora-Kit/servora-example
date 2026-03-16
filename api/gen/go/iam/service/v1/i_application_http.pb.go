@@ -40,7 +40,7 @@ func RegisterApplicationServiceHTTPServer(s *http.Server, srv ApplicationService
 	r := s.Route("/")
 	r.POST("/v1/applications", _ApplicationService_CreateApplication0_HTTP_Handler(srv))
 	r.GET("/v1/applications/{id}", _ApplicationService_GetApplication0_HTTP_Handler(srv))
-	r.GET("/v1/organizations/{organization_id}/applications", _ApplicationService_ListApplications0_HTTP_Handler(srv))
+	r.GET("/v1/applications", _ApplicationService_ListApplications0_HTTP_Handler(srv))
 	r.PUT("/v1/applications/{id}", _ApplicationService_UpdateApplication0_HTTP_Handler(srv))
 	r.DELETE("/v1/applications/{id}", _ApplicationService_DeleteApplication0_HTTP_Handler(srv))
 	r.POST("/v1/applications/{id}/regenerate-secret", _ApplicationService_RegenerateClientSecret0_HTTP_Handler(srv))
@@ -94,9 +94,6 @@ func _ApplicationService_ListApplications0_HTTP_Handler(srv ApplicationServiceHT
 	return func(ctx http.Context) error {
 		var in v1.ListApplicationsRequest
 		if err := ctx.BindQuery(&in); err != nil {
-			return err
-		}
-		if err := ctx.BindVars(&in); err != nil {
 			return err
 		}
 		http.SetOperation(ctx, OperationApplicationServiceListApplications)
@@ -242,7 +239,7 @@ func (c *ApplicationServiceHTTPClientImpl) GetApplication(ctx context.Context, i
 
 func (c *ApplicationServiceHTTPClientImpl) ListApplications(ctx context.Context, in *v1.ListApplicationsRequest, opts ...http.CallOption) (*v1.ListApplicationsResponse, error) {
 	var out v1.ListApplicationsResponse
-	pattern := "/v1/organizations/{organization_id}/applications"
+	pattern := "/v1/applications"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationApplicationServiceListApplications))
 	opts = append(opts, http.PathTemplate(pattern))

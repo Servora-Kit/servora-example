@@ -17,7 +17,6 @@ service ApplicationService {
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_MANAGE
-      id_field: "organization_id"
     };
   }
 
@@ -29,11 +28,10 @@ service ApplicationService {
   }
 
   rpc ListApplications(application.service.v1.ListApplicationsRequest) returns (application.service.v1.ListApplicationsResponse) {
-    option (google.api.http) = {get: "/v1/organizations/{organization_id}/applications"};
+    option (google.api.http) = {get: "/v1/applications"};
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_ORGANIZATION
       relation: RELATION_CAN_VIEW
-      id_field: "organization_id"
     };
   }
 

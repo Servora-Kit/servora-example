@@ -14,6 +14,37 @@ info:
     version: "1.0"
 paths:
     /v1/applications:
+        get:
+            tags:
+                - ApplicationService
+            operationId: ApplicationService_ListApplications
+            parameters:
+                - name: pagination.page.page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.page.pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.cursor.cursor
+                  in: query
+                  schema:
+                    type: string
+                - name: pagination.cursor.limit
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListApplicationsResponse'
         post:
             tags:
                 - ApplicationService
@@ -442,43 +473,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/RestoreOrganizationResponse'
-    /v1/organizations/{organizationId}/applications:
-        get:
-            tags:
-                - ApplicationService
-            operationId: ApplicationService_ListApplications
-            parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: pagination.page.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.page.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.cursor.cursor
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.cursor.limit
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListApplicationsResponse'
     /v1/organizations/{organizationId}/members:
         get:
             tags:
@@ -591,17 +585,12 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UpdateMemberRoleResponse'
-    /v1/organizations/{organizationId}/projects:
+    /v1/projects:
         get:
             tags:
                 - ProjectService
             operationId: ProjectService_ListProjects
             parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
                 - name: pagination.page.page
                   in: query
                   schema:
@@ -628,7 +617,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListProjectsResponse'
-    /v1/projects:
         post:
             tags:
                 - ProjectService
@@ -1139,8 +1127,6 @@ components:
         CreateApplicationRequest:
             type: object
             properties:
-                organizationId:
-                    type: string
                 name:
                     type: string
                 redirectUris:
@@ -1186,8 +1172,6 @@ components:
         CreateProjectRequest:
             type: object
             properties:
-                organizationId:
-                    type: string
                 name:
                     type: string
                 slug:

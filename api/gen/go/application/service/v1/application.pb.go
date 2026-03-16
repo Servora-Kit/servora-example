@@ -217,7 +217,6 @@ func (x *ApplicationInfo) GetUpdatedAt() *timestamppb.Timestamp {
 
 type CreateApplicationRequest struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId  string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	RedirectUris    []string               `protobuf:"bytes,3,rep,name=redirect_uris,json=redirectUris,proto3" json:"redirect_uris,omitempty"`
 	Scopes          []string               `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty"`
@@ -257,13 +256,6 @@ func (x *CreateApplicationRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use CreateApplicationRequest.ProtoReflect.Descriptor instead.
 func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *CreateApplicationRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
 }
 
 func (x *CreateApplicationRequest) GetName() string {
@@ -456,11 +448,10 @@ func (x *GetApplicationResponse) GetApplication() *ApplicationInfo {
 }
 
 type ListApplicationsRequest struct {
-	state          protoimpl.MessageState `protogen:"open.v1"`
-	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	Pagination     *v1.PaginationRequest  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
-	unknownFields  protoimpl.UnknownFields
-	sizeCache      protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Pagination    *v1.PaginationRequest  `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListApplicationsRequest) Reset() {
@@ -491,13 +482,6 @@ func (x *ListApplicationsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListApplicationsRequest.ProtoReflect.Descriptor instead.
 func (*ListApplicationsRequest) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{5}
-}
-
-func (x *ListApplicationsRequest) GetOrganizationId() string {
-	if x != nil {
-		return x.OrganizationId
-	}
-	return ""
 }
 
 func (x *ListApplicationsRequest) GetPagination() *v1.PaginationRequest {
@@ -884,9 +868,8 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x9e\x03\n" +
-	"\x18CreateApplicationRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12\x1e\n" +
+	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xf1\x02\n" +
+	"\x18CreateApplicationRequest\x12\x1e\n" +
 	"\x04name\x18\x02 \x01(\tB\n" +
 	"\xbaH\ar\x05\x10\x02\x18\x80\x01R\x04name\x12#\n" +
 	"\rredirect_uris\x18\x03 \x03(\tR\fredirectUris\x12\x16\n" +
@@ -898,19 +881,18 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"\x11id_token_lifetime\x18\b \x01(\x05H\x02R\x0fidTokenLifetime\x88\x01\x01B\x13\n" +
 	"\x11_application_typeB\x14\n" +
 	"\x12_access_token_typeB\x14\n" +
-	"\x12_id_token_lifetime\"\x8b\x01\n" +
+	"\x12_id_token_lifetimeJ\x04\b\x01\x10\x02\"\x8b\x01\n" +
 	"\x19CreateApplicationResponse\x12I\n" +
 	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\x12#\n" +
 	"\rclient_secret\x18\x02 \x01(\tR\fclientSecret\"1\n" +
 	"\x15GetApplicationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"c\n" +
 	"\x16GetApplicationResponse\x12I\n" +
-	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"\x8e\x01\n" +
-	"\x17ListApplicationsRequest\x121\n" +
-	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12@\n" +
+	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"a\n" +
+	"\x17ListApplicationsRequest\x12@\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
-	"pagination\"\xaa\x01\n" +
+	"paginationJ\x04\b\x01\x10\x02\"\xaa\x01\n" +
 	"\x18ListApplicationsResponse\x12K\n" +
 	"\fapplications\x18\x01 \x03(\v2'.application.service.v1.ApplicationInfoR\fapplications\x12A\n" +
 	"\n" +

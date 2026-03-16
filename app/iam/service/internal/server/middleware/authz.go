@@ -94,7 +94,7 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 				return nil, errors.ServiceUnavailable("AUTHZ_UNAVAILABLE", "authorization service not available")
 			}
 
-			objectType, objectID, err := resolveObject(rule, cfg.tenantRootID, req)
+			objectType, objectID, err := resolveObject(rule, cfg.tenantRootID, req, a)
 			if err != nil {
 				return nil, errors.BadRequest("AUTHZ_BAD_REQUEST",
 					fmt.Sprintf("cannot resolve authorization target: %v", err))
@@ -120,14 +120,22 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 	}
 }
 
-func resolveObject(rule iamv1.AuthzRuleEntry, tenantRootID string, req any) (objectType, objectID string, err error) {
+func resolveObject(rule iamv1.AuthzRuleEntry, tenantRootID string, req any, a actor.Actor) (objectType, objectID string, err error) {
 	switch rule.Mode {
 	case authzpb.AuthzMode_AUTHZ_MODE_ORGANIZATION:
 		objectType = "organization"
-		objectID, err = extractProtoField(req, rule.IDField)
+		if rule.IDField == "" {
+			objectID, err = scopeFromActor(a, "OrganizationID")
+		} else {
+			objectID, err = extractProtoField(req, rule.IDField)
+		}
 	case authzpb.AuthzMode_AUTHZ_MODE_PROJECT:
 		objectType = "project"
-		objectID, err = extractProtoField(req, rule.IDField)
+		if rule.IDField == "" {
+			objectID, err = scopeFromActor(a, "ProjectID")
+		} else {
+			objectID, err = extractProtoField(req, rule.IDField)
+		}
 	case authzpb.AuthzMode_AUTHZ_MODE_OBJECT:
 		objectType = objectTypeToFGA(rule.ObjectType)
 		if rule.IDField == "root" && objectType == "tenant" {
@@ -139,6 +147,27 @@ func resolveObject(rule iamv1.AuthzRuleEntry, tenantRootID string, req any) (obj
 		err = fmt.Errorf("unsupported authz mode: %v", rule.Mode)
 	}
 	return
+}
+
+func scopeFromActor(a actor.Actor, field string) (string, error) {
+	ua, ok := a.(*actor.UserActor)
+	if !ok {
+		return "", fmt.Errorf("actor is not a UserActor")
+	}
+	switch field {
+	case "OrganizationID":
+		if id := ua.OrganizationID(); id != "" {
+			return id, nil
+		}
+		return "", fmt.Errorf("missing X-Organization-ID header")
+	case "ProjectID":
+		if id := ua.ProjectID(); id != "" {
+			return id, nil
+		}
+		return "", fmt.Errorf("missing X-Project-ID header")
+	default:
+		return "", fmt.Errorf("unknown scope field: %s", field)
+	}
 }
 
 func extractProtoField(req any, fieldName string) (string, error) {

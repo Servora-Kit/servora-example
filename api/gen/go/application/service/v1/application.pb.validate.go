@@ -229,8 +229,6 @@ func (m *CreateApplicationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for OrganizationId
-
 	// no validation rules for Name
 
 	if m.ApplicationType != nil {
@@ -714,8 +712,6 @@ func (m *ListApplicationsRequest) validate(all bool) error {
 	}
 
 	var errors []error
-
-	// no validation rules for OrganizationId
 
 	if all {
 		switch v := interface{}(m.GetPagination()).(type) {

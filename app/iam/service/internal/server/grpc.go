@@ -69,6 +69,7 @@ func NewGRPCMiddleware(
 		selector.Server(authn).
 			Match(publicWhitelist.MatchFunc()).
 			Build(),
+		svrmw.ScopeFromHeaders(),
 		authz,
 	)
 
