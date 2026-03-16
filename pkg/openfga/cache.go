@@ -3,6 +3,7 @@ package openfga
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/Servora-Kit/servora/pkg/redis"
@@ -88,6 +89,79 @@ func InvalidateListObjects(ctx context.Context, rdb *redis.Client, userID, relat
 		return
 	}
 	_ = rdb.Del(ctx, listCacheKey(userID, relation, objectType))
+}
+
+// InvalidateForTuples invalidates all cached Check and ListObjects entries
+// that could be affected by the given tuples. This should be called after
+// WriteTuples or DeleteTuples to keep the cache consistent.
+//
+// For each tuple it invalidates:
+//   - The exact Check cache entry (user + relation + object)
+//   - The ListObjects cache for the user on the object's type with the tuple's relation
+//   - The ListObjects cache for common computed relations (can_view, can_edit, can_admin, can_manage)
+func InvalidateForTuples(ctx context.Context, rdb *redis.Client, tuples []Tuple) {
+	if rdb == nil || len(tuples) == 0 {
+		return
+	}
+
+	var keys []string
+	seen := make(map[string]struct{})
+
+	for _, t := range tuples {
+		userID, objectType, objectID := parseTupleComponents(t)
+		if userID == "" || objectType == "" {
+			continue
+		}
+
+		if objectID != "" {
+			k := checkCacheKey(userID, t.Relation, objectType, objectID)
+			if _, ok := seen[k]; !ok {
+				keys = append(keys, k)
+				seen[k] = struct{}{}
+			}
+		}
+
+		for _, rel := range affectedRelations(t.Relation, objectType) {
+			k := listCacheKey(userID, rel, objectType)
+			if _, ok := seen[k]; !ok {
+				keys = append(keys, k)
+				seen[k] = struct{}{}
+			}
+		}
+	}
+
+	for _, k := range keys {
+		_ = rdb.Del(ctx, k)
+	}
+}
+
+// parseTupleComponents extracts the bare userID, objectType, and objectID from a Tuple.
+// Tuple.User is e.g. "user:abc" or "tenant:root"; Tuple.Object is e.g. "organization:xyz".
+func parseTupleComponents(t Tuple) (userID, objectType, objectID string) {
+	if i := strings.IndexByte(t.User, ':'); i >= 0 && strings.HasPrefix(t.User, "user:") {
+		userID = t.User[i+1:]
+	}
+	if i := strings.IndexByte(t.Object, ':'); i >= 0 {
+		objectType = t.Object[:i]
+		objectID = t.Object[i+1:]
+	}
+	return
+}
+
+// affectedRelations returns the tuple's own relation plus computed relations
+// that might be affected by a change to the given assignable relation.
+func affectedRelations(relation, objectType string) []string {
+	rels := []string{relation}
+
+	computedByType := map[string][]string{
+		"tenant":       {"can_view", "can_manage"},
+		"organization": {"can_view", "can_manage", "can_manage_members"},
+		"project":      {"can_view", "can_edit", "can_admin", "can_manage_members"},
+	}
+	if computed, ok := computedByType[objectType]; ok {
+		rels = append(rels, computed...)
+	}
+	return rels
 }
 
 func checkCacheKey(userID, relation, objectType, objectID string) string {

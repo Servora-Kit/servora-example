@@ -22,11 +22,21 @@ func NewAuthZRepo(fga *openfga.Client, rdb *redis.Client) biz.AuthZRepo {
 }
 
 func (r *authzRepo) WriteTuples(ctx context.Context, tuples ...biz.Tuple) error {
-	return r.fga.WriteTuples(ctx, toFGATuples(tuples)...)
+	fgaTuples := toFGATuples(tuples)
+	if err := r.fga.WriteTuples(ctx, fgaTuples...); err != nil {
+		return err
+	}
+	openfga.InvalidateForTuples(ctx, r.rdb, fgaTuples)
+	return nil
 }
 
 func (r *authzRepo) DeleteTuples(ctx context.Context, tuples ...biz.Tuple) error {
-	return r.fga.DeleteTuples(ctx, toFGATuples(tuples)...)
+	fgaTuples := toFGATuples(tuples)
+	if err := r.fga.DeleteTuples(ctx, fgaTuples...); err != nil {
+		return err
+	}
+	openfga.InvalidateForTuples(ctx, r.rdb, fgaTuples)
+	return nil
 }
 
 func (r *authzRepo) Check(ctx context.Context, userID, relation, objectType, objectID string) (bool, error) {
@@ -39,6 +49,10 @@ func (r *authzRepo) ListObjects(ctx context.Context, userID, relation, objectTyp
 
 func (r *authzRepo) CachedListObjects(ctx context.Context, ttl time.Duration, userID, relation, objectType string) ([]string, error) {
 	return r.fga.CachedListObjects(ctx, r.rdb, ttl, userID, relation, objectType)
+}
+
+func (r *authzRepo) InvalidateCheck(ctx context.Context, userID, relation, objectType, objectID string) {
+	openfga.InvalidateCheck(ctx, r.rdb, userID, relation, objectType, objectID)
 }
 
 func (r *authzRepo) InvalidateListObjects(ctx context.Context, userID, relation, objectType string) {

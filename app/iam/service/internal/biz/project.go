@@ -69,7 +69,6 @@ func (uc *ProjectUsecase) Create(ctx context.Context, p *entity.Project) (*entit
 			Tuple{User: "organization:" + p.OrganizationID, Relation: "organization", Object: "project:" + created.ID},
 			Tuple{User: "user:" + userID, Relation: "admin", Object: "project:" + created.ID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "project")
 	}
 
 	if _, err := uc.repo.AddMember(ctx, &entity.ProjectMember{
@@ -101,7 +100,6 @@ func (uc *ProjectUsecase) CreateDefault(ctx context.Context, userID, orgID, name
 			Tuple{User: "organization:" + orgID, Relation: "organization", Object: "project:" + created.ID},
 			Tuple{User: "user:" + userID, Relation: "admin", Object: "project:" + created.ID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "project")
 	}
 
 	if _, err := uc.repo.AddMember(ctx, &entity.ProjectMember{
@@ -268,7 +266,6 @@ func (uc *ProjectUsecase) AddMember(ctx context.Context, m *entity.ProjectMember
 		_ = uc.authz.WriteTuples(ctx,
 			Tuple{User: "user:" + m.UserID, Relation: m.Role, Object: "project:" + m.ProjectID},
 		)
-		uc.authz.InvalidateListObjects(ctx, m.UserID, "can_view", "project")
 	}
 	return created, nil
 }
@@ -288,7 +285,6 @@ func (uc *ProjectUsecase) RemoveMember(ctx context.Context, projID, userID strin
 		_ = uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: member.Role, Object: "project:" + projID},
 		)
-		uc.authz.InvalidateListObjects(ctx, userID, "can_view", "project")
 	}
 	return nil
 }

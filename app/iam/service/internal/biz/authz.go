@@ -16,11 +16,14 @@ type Tuple struct {
 
 // AuthZRepo defines the authorization capability interface.
 // Implementations live in the data layer (e.g. backed by OpenFGA + Redis cache).
+//
+// WriteTuples and DeleteTuples automatically invalidate affected cache entries.
 type AuthZRepo interface {
 	WriteTuples(ctx context.Context, tuples ...Tuple) error
 	DeleteTuples(ctx context.Context, tuples ...Tuple) error
 	Check(ctx context.Context, userID, relation, objectType, objectID string) (bool, error)
 	ListObjects(ctx context.Context, userID, relation, objectType string) ([]string, error)
 	CachedListObjects(ctx context.Context, ttl time.Duration, userID, relation, objectType string) ([]string, error)
+	InvalidateCheck(ctx context.Context, userID, relation, objectType, objectID string)
 	InvalidateListObjects(ctx context.Context, userID, relation, objectType string)
 }
