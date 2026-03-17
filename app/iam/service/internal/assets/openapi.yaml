@@ -846,6 +846,273 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/UpdateMemberRoleResponse'
+    /v1/tenants:
+        get:
+            tags:
+                - TenantService
+            operationId: TenantService_ListTenants
+            parameters:
+                - name: pagination.page.page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.page.pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.cursor.cursor
+                  in: query
+                  schema:
+                    type: string
+                - name: pagination.cursor.limit
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTenantsResponse'
+        post:
+            tags:
+                - TenantService
+            operationId: TenantService_CreateTenant
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateTenantRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateTenantResponse'
+    /v1/tenants/{id}:
+        get:
+            tags:
+                - TenantService
+            operationId: TenantService_GetTenant
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/GetTenantResponse'
+        put:
+            tags:
+                - TenantService
+            operationId: TenantService_UpdateTenant
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateTenantRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateTenantResponse'
+        delete:
+            tags:
+                - TenantService
+            operationId: TenantService_DeleteTenant
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteTenantResponse'
+    /v1/tenants/{tenantId}/invitations/accept:
+        post:
+            tags:
+                - TenantService
+            operationId: TenantService_AcceptInvitation
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AcceptTenantInvitationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AcceptTenantInvitationResponse'
+    /v1/tenants/{tenantId}/invitations/reject:
+        post:
+            tags:
+                - TenantService
+            operationId: TenantService_RejectInvitation
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RejectTenantInvitationRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RejectTenantInvitationResponse'
+    /v1/tenants/{tenantId}/members:
+        get:
+            tags:
+                - TenantService
+            operationId: TenantService_ListMembers
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: pagination.page.page
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.page.pageSize
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+                - name: pagination.cursor.cursor
+                  in: query
+                  schema:
+                    type: string
+                - name: pagination.cursor.limit
+                  in: query
+                  schema:
+                    type: integer
+                    format: int32
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListTenantMembersResponse'
+        post:
+            tags:
+                - TenantService
+            operationId: TenantService_InviteMember
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/InviteTenantMemberRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/InviteTenantMemberResponse'
+    /v1/tenants/{tenantId}/members/{userId}:
+        delete:
+            tags:
+                - TenantService
+            operationId: TenantService_RemoveMember
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RemoveTenantMemberResponse'
+    /v1/tenants/{tenantId}/members/{userId}/role:
+        put:
+            tags:
+                - TenantService
+            operationId: TenantService_UpdateMemberRole
+            parameters:
+                - name: tenantId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+                - name: userId
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/UpdateTenantMemberRoleRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/UpdateTenantMemberRoleResponse'
     /v1/test/Hello:
         post:
             tags:
@@ -1060,6 +1327,16 @@ paths:
                                 $ref: '#/components/schemas/GetUserResponse'
 components:
     schemas:
+        AcceptTenantInvitationRequest:
+            type: object
+            properties:
+                tenantId:
+                    type: string
+        AcceptTenantInvitationResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
         AddMemberRequest:
             type: object
             properties:
@@ -1183,6 +1460,22 @@ components:
             properties:
                 project:
                     $ref: '#/components/schemas/ProjectInfo'
+        CreateTenantRequest:
+            type: object
+            properties:
+                name:
+                    type: string
+                slug:
+                    type: string
+                kind:
+                    type: string
+                domain:
+                    type: string
+        CreateTenantResponse:
+            type: object
+            properties:
+                tenant:
+                    $ref: '#/components/schemas/TenantInfo'
         CurrentUserInfoResponse:
             type: object
             properties:
@@ -1216,6 +1509,11 @@ components:
             properties:
                 success:
                     type: boolean
+        DeleteTenantResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
         DeleteUserResponse:
             type: object
             properties:
@@ -1236,6 +1534,11 @@ components:
             properties:
                 project:
                     $ref: '#/components/schemas/ProjectInfo'
+        GetTenantResponse:
+            type: object
+            properties:
+                tenant:
+                    $ref: '#/components/schemas/TenantInfo'
         GetUserResponse:
             type: object
             properties:
@@ -1251,6 +1554,20 @@ components:
             properties:
                 rep:
                     type: string
+        InviteTenantMemberRequest:
+            type: object
+            properties:
+                tenantId:
+                    type: string
+                userId:
+                    type: string
+                role:
+                    type: string
+        InviteTenantMemberResponse:
+            type: object
+            properties:
+                member:
+                    $ref: '#/components/schemas/TenantMemberInfo'
         KratosError:
             type: object
             properties:
@@ -1302,6 +1619,24 @@ components:
                     type: array
                     items:
                         $ref: '#/components/schemas/ProjectInfo'
+                pagination:
+                    $ref: '#/components/schemas/PaginationResponse'
+        ListTenantMembersResponse:
+            type: object
+            properties:
+                members:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TenantMemberInfo'
+                pagination:
+                    $ref: '#/components/schemas/PaginationResponse'
+        ListTenantsResponse:
+            type: object
+            properties:
+                tenants:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/TenantInfo'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
         ListUsersResponse:
@@ -1466,7 +1801,22 @@ components:
             properties:
                 clientSecret:
                     type: string
+        RejectTenantInvitationRequest:
+            type: object
+            properties:
+                tenantId:
+                    type: string
+        RejectTenantInvitationResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
         RemoveMemberResponse:
+            type: object
+            properties:
+                success:
+                    type: boolean
+        RemoveTenantMemberResponse:
             type: object
             properties:
                 success:
@@ -1573,6 +1923,50 @@ components:
                     type: string
                 role:
                     type: string
+        TenantInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                slug:
+                    type: string
+                name:
+                    type: string
+                kind:
+                    type: string
+                domain:
+                    type: string
+                status:
+                    type: string
+                createdAt:
+                    type: string
+                    format: date-time
+                updatedAt:
+                    type: string
+                    format: date-time
+        TenantMemberInfo:
+            type: object
+            properties:
+                id:
+                    type: string
+                tenantId:
+                    type: string
+                userId:
+                    type: string
+                userName:
+                    type: string
+                userEmail:
+                    type: string
+                role:
+                    type: string
+                status:
+                    type: string
+                joinedAt:
+                    type: string
+                    format: date-time
+                createdAt:
+                    type: string
+                    format: date-time
         TestRequest:
             type: object
             properties: {}
@@ -1650,6 +2044,36 @@ components:
             properties:
                 project:
                     $ref: '#/components/schemas/ProjectInfo'
+        UpdateTenantMemberRoleRequest:
+            type: object
+            properties:
+                tenantId:
+                    type: string
+                userId:
+                    type: string
+                role:
+                    type: string
+        UpdateTenantMemberRoleResponse:
+            type: object
+            properties:
+                member:
+                    $ref: '#/components/schemas/TenantMemberInfo'
+        UpdateTenantRequest:
+            type: object
+            properties:
+                id:
+                    type: string
+                name:
+                    type: string
+                domain:
+                    type: string
+                status:
+                    type: string
+        UpdateTenantResponse:
+            type: object
+            properties:
+                tenant:
+                    $ref: '#/components/schemas/TenantInfo'
         UpdateUserRequest:
             type: object
             properties:
@@ -1703,5 +2127,6 @@ tags:
     - name: AuthnService
     - name: OrganizationService
     - name: ProjectService
+    - name: TenantService
     - name: TestService
     - name: UserService

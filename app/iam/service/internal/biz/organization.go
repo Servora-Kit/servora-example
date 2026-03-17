@@ -15,7 +15,7 @@ import (
 type OrganizationRepo interface {
 	Create(ctx context.Context, org *entity.Organization) (*entity.Organization, error)
 	GetByID(ctx context.Context, id string) (*entity.Organization, error)
-	GetByIDs(ctx context.Context, ids []string, page, pageSize int32) ([]*entity.Organization, int64, error)
+	GetByIDs(ctx context.Context, tenantID string, ids []string, page, pageSize int32) ([]*entity.Organization, int64, error)
 	GetBySlug(ctx context.Context, slug string) (*entity.Organization, error)
 	ListByUserID(ctx context.Context, userID, tenantID string, page, pageSize int32) ([]*entity.Organization, int64, error)
 	Update(ctx context.Context, org *entity.Organization) (*entity.Organization, error)
@@ -176,7 +176,7 @@ func (uc *OrganizationUsecase) List(ctx context.Context, page, pageSize int32) (
 			}
 			return orgs, total, nil
 		}
-		orgs, total, err := uc.repo.GetByIDs(ctx, ids, page, pageSize)
+		orgs, total, err := uc.repo.GetByIDs(ctx, tenantID, ids, page, pageSize)
 		if err != nil {
 			uc.log.Errorf("list organizations by ids failed: %v", err)
 			return nil, 0, errors.InternalServer("INTERNAL", "internal error")
@@ -387,6 +387,7 @@ func (uc *OrganizationUsecase) UpdateMemberRole(ctx context.Context, orgID, user
 			Tuple{User: "user:" + userID, Relation: newRole, Object: "organization:" + orgID},
 		); err != nil {
 			uc.log.Errorf("write new FGA tuple failed, rolling back role: %v", err)
+			// Best-effort restore old FGA tuple; caller already gets "failed to update authorization"
 			_ = uc.authz.WriteTuples(ctx,
 				Tuple{User: "user:" + userID, Relation: oldMember.Role, Object: "organization:" + orgID},
 			)
@@ -466,7 +467,15 @@ func (uc *OrganizationUsecase) RejectInvitation(ctx context.Context, orgID, user
 		if err := uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: member.Role, Object: "organization:" + orgID},
 		); err != nil {
-			uc.log.Warnf("delete FGA tuple on reject failed: %v", err)
+			uc.log.Errorf("delete FGA tuple on reject failed, rolling back: %v", err)
+			if _, rbErr := uc.repo.AddMember(ctx, &entity.OrganizationMember{
+				OrganizationID: orgID,
+				UserID:         userID,
+				Role:           member.Role,
+			}); rbErr != nil {
+				uc.log.Errorf("rollback re-add member failed: %v", rbErr)
+			}
+			return orgpb.ErrorOrganizationDeleteFailed("failed to delete authorization tuple")
 		}
 	}
 	return nil

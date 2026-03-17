@@ -2162,7 +2162,7 @@ func (x *App_Jwt) GetAudience() string {
 
 type App_Log struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Level         int32                  `protobuf:"varint,1,opt,name=level,proto3" json:"level,omitempty"`                             // 0:debug, 1:info, 2:warn, 3:error, 4:fatal
+	Level         int32                  `protobuf:"varint,1,opt,name=level,proto3" json:"level,omitempty"`                             // debug:0, info:1, warn:2, error:3, fatal:4
 	Filename      string                 `protobuf:"bytes,2,opt,name=filename,proto3" json:"filename,omitempty"`                        // 日志文件名
 	MaxSize       int32                  `protobuf:"varint,3,opt,name=max_size,json=maxSize,proto3" json:"max_size,omitempty"`          // 日志文件最大大小
 	MaxBackups    int32                  `protobuf:"varint,4,opt,name=max_backups,json=maxBackups,proto3" json:"max_backups,omitempty"` // 日志文件最大备份数

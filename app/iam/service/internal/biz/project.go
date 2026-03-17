@@ -368,6 +368,7 @@ func (uc *ProjectUsecase) UpdateMemberRole(ctx context.Context, projID, userID, 
 			Tuple{User: "user:" + userID, Relation: newRole, Object: "project:" + projID},
 		); err != nil {
 			uc.log.Errorf("write new FGA tuple failed, rolling back role: %v", err)
+			// Best-effort restore old FGA tuple; caller already gets "failed to update authorization"
 			_ = uc.authz.WriteTuples(ctx,
 				Tuple{User: "user:" + userID, Relation: oldMember.Role, Object: "project:" + projID},
 			)
@@ -443,7 +444,15 @@ func (uc *ProjectUsecase) RejectInvitation(ctx context.Context, projID, userID s
 		if err := uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: member.Role, Object: "project:" + projID},
 		); err != nil {
-			uc.log.Warnf("delete FGA tuple on reject failed: %v", err)
+			uc.log.Errorf("delete FGA tuple on reject failed, rolling back: %v", err)
+			if _, rbErr := uc.repo.AddMember(ctx, &entity.ProjectMember{
+				ProjectID: projID,
+				UserID:    userID,
+				Role:      member.Role,
+			}); rbErr != nil {
+				uc.log.Errorf("rollback re-add member failed: %v", rbErr)
+			}
+			return projectpb.ErrorProjectDeleteFailed("failed to delete authorization tuple")
 		}
 	}
 	return nil

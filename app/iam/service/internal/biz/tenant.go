@@ -130,6 +130,7 @@ func (uc *TenantUsecase) CreateWithDefaults(ctx context.Context, t *entity.Tenan
 
 func (uc *TenantUsecase) rollbackTenantCreate(ctx context.Context, tenantID, userID string) {
 	if uc.authz != nil {
+		// Best-effort delete FGA tuple during tenant rollback; DB already reverted
 		_ = uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: "owner", Object: "tenant:" + tenantID},
 		)
@@ -321,6 +322,7 @@ func (uc *TenantUsecase) UpdateMemberRole(ctx context.Context, tenantID, userID,
 			Tuple{User: "user:" + userID, Relation: newRole, Object: "tenant:" + tenantID},
 		); err != nil {
 			uc.log.Errorf("write new FGA tuple failed, rolling back: %v", err)
+			// Best-effort restore old FGA tuple; caller already gets "failed to update authorization"
 			_ = uc.authz.WriteTuples(ctx,
 				Tuple{User: "user:" + userID, Relation: oldMember.Role, Object: "tenant:" + tenantID},
 			)
@@ -414,7 +416,16 @@ func (uc *TenantUsecase) RejectInvitation(ctx context.Context, tenantID, userID 
 		if err := uc.authz.DeleteTuples(ctx,
 			Tuple{User: "user:" + userID, Relation: member.Role, Object: "tenant:" + tenantID},
 		); err != nil {
-			uc.log.Warnf("delete FGA tuple on reject failed: %v", err)
+			uc.log.Errorf("delete FGA tuple on reject failed, rolling back: %v", err)
+			if _, rbErr := uc.repo.AddMember(ctx, &entity.TenantMember{
+				TenantID: tenantID,
+				UserID:   userID,
+				Role:     member.Role,
+				Status:   member.Status,
+			}); rbErr != nil {
+				uc.log.Errorf("rollback re-add member failed: %v", rbErr)
+			}
+			return tenantpb.ErrorTenantDeleteFailed("failed to delete authorization tuple")
 		}
 	}
 	return nil
