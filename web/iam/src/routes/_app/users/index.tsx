@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useStore } from '@tanstack/react-store'
 import type { ColumnDef } from '@tanstack/react-table'
 import { iamClients } from '#/api'
@@ -20,33 +20,56 @@ import { Label } from '#/components/ui/label'
 import { Input } from '#/components/ui/input'
 import { UserPlus } from 'lucide-react'
 import { toast } from '#/lib/toast'
+import { Badge } from '#/components/ui/badge'
 
 export const Route = createFileRoute('/_app/users/')({
   component: UserListPage,
 })
 
 type User = NonNullable<Awaited<ReturnType<typeof iamClients.user.ListUsers>>['users']>[number]
+type Org = NonNullable<Awaited<ReturnType<typeof iamClients.organization.ListOrganizations>>['organizations']>[number]
 
-const columns: ColumnDef<User, unknown>[] = [
-  {
-    accessorKey: 'name',
-    header: '用户名',
-    cell: ({ row }) => (
-      <Link
-        to="/users/$userId"
-        params={{ userId: row.original.id ?? '' }}
-        className="font-medium text-foreground hover:underline"
-      >
-        {row.getValue('name')}
-      </Link>
-    ),
-  },
-  {
-    accessorKey: 'email',
-    header: '邮箱',
-    cell: ({ row }) => <span className="text-muted-foreground">{row.getValue('email')}</span>,
-  },
-]
+function buildColumns(orgMap: Map<string, string>): ColumnDef<User, unknown>[] {
+  return [
+    {
+      accessorKey: 'name',
+      header: '用户名',
+      cell: ({ row }) => (
+        <Link
+          to="/users/$userId"
+          params={{ userId: row.original.id ?? '' }}
+          className="font-medium text-foreground hover:underline"
+        >
+          {row.getValue('name')}
+        </Link>
+      ),
+    },
+    {
+      accessorKey: 'email',
+      header: '邮箱',
+      cell: ({ row }) => <span className="text-muted-foreground">{row.getValue('email')}</span>,
+    },
+    {
+      id: 'organizations',
+      header: '所属组织',
+      cell: ({ row }) => {
+        const orgIds = row.original.organizationIds ?? []
+        if (orgIds.length === 0) {
+          return <span className="text-xs text-muted-foreground">—</span>
+        }
+        return (
+          <div className="flex flex-wrap gap-1">
+            {orgIds.map((id) => (
+              <Badge key={id} variant="secondary" className="text-xs font-normal">
+                {orgMap.get(id) ?? id.slice(0, 8)}
+              </Badge>
+            ))}
+          </div>
+        )
+      },
+    },
+  ]
+}
 
 function UserListPage() {
   const [page, setPage] = useState(1)
@@ -71,6 +94,16 @@ function UserListPage() {
   })
 
   const organizations = orgsData?.organizations ?? []
+
+  const orgMap = useMemo(() => {
+    const m = new Map<string, string>()
+    for (const o of organizations as Org[]) {
+      if (o.id) m.set(o.id, o.displayName || o.name || o.id)
+    }
+    return m
+  }, [organizations])
+
+  const columns = useMemo(() => buildColumns(orgMap), [orgMap])
 
   const users = data?.users ?? []
   const total = data?.pagination?.page?.total ?? 0
