@@ -67,7 +67,7 @@ func (m *ApplicationInfo) validate(all bool) error {
 
 	// no validation rules for AccessTokenType
 
-	// no validation rules for OrganizationId
+	// no validation rules for TenantId
 
 	// no validation rules for IdTokenLifetime
 

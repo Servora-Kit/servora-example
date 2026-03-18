@@ -66,3 +66,17 @@ func IsSaveUserFailed(err error) bool {
 func ErrorSaveUserFailed(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorReason_SAVE_USER_FAILED.String(), fmt.Sprintf(format, args...))
 }
+
+// 创建用户失败
+func IsCreateUserFailed(err error) bool {
+	if err == nil {
+		return false
+	}
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_CREATE_USER_FAILED.String() && e.Code == 500
+}
+
+// 创建用户失败
+func ErrorCreateUserFailed(format string, args ...interface{}) *errors.Error {
+	return errors.New(500, ErrorReason_CREATE_USER_FAILED.String(), fmt.Sprintf(format, args...))
+}

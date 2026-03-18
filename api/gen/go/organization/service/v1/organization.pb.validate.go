@@ -2988,3 +2988,219 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = UpdateMemberRoleResponseValidationError{}
+
+// Validate checks the field values on TransferOrganizationOwnershipRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *TransferOrganizationOwnershipRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TransferOrganizationOwnershipRequest
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// TransferOrganizationOwnershipRequestMultiError, or nil if none found.
+func (m *TransferOrganizationOwnershipRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TransferOrganizationOwnershipRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for OrganizationId
+
+	// no validation rules for NewOwnerUserId
+
+	if len(errors) > 0 {
+		return TransferOrganizationOwnershipRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// TransferOrganizationOwnershipRequestMultiError is an error wrapping multiple
+// validation errors returned by
+// TransferOrganizationOwnershipRequest.ValidateAll() if the designated
+// constraints aren't met.
+type TransferOrganizationOwnershipRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TransferOrganizationOwnershipRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TransferOrganizationOwnershipRequestMultiError) AllErrors() []error { return m }
+
+// TransferOrganizationOwnershipRequestValidationError is the validation error
+// returned by TransferOrganizationOwnershipRequest.Validate if the designated
+// constraints aren't met.
+type TransferOrganizationOwnershipRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TransferOrganizationOwnershipRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TransferOrganizationOwnershipRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TransferOrganizationOwnershipRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TransferOrganizationOwnershipRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TransferOrganizationOwnershipRequestValidationError) ErrorName() string {
+	return "TransferOrganizationOwnershipRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e TransferOrganizationOwnershipRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTransferOrganizationOwnershipRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TransferOrganizationOwnershipRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TransferOrganizationOwnershipRequestValidationError{}
+
+// Validate checks the field values on TransferOrganizationOwnershipResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the first error encountered is returned, or nil if
+// there are no violations.
+func (m *TransferOrganizationOwnershipResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TransferOrganizationOwnershipResponse
+// with the rules defined in the proto definition for this message. If any
+// rules are violated, the result is a list of violation errors wrapped in
+// TransferOrganizationOwnershipResponseMultiError, or nil if none found.
+func (m *TransferOrganizationOwnershipResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TransferOrganizationOwnershipResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Success
+
+	if len(errors) > 0 {
+		return TransferOrganizationOwnershipResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// TransferOrganizationOwnershipResponseMultiError is an error wrapping
+// multiple validation errors returned by
+// TransferOrganizationOwnershipResponse.ValidateAll() if the designated
+// constraints aren't met.
+type TransferOrganizationOwnershipResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TransferOrganizationOwnershipResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TransferOrganizationOwnershipResponseMultiError) AllErrors() []error { return m }
+
+// TransferOrganizationOwnershipResponseValidationError is the validation error
+// returned by TransferOrganizationOwnershipResponse.Validate if the
+// designated constraints aren't met.
+type TransferOrganizationOwnershipResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TransferOrganizationOwnershipResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TransferOrganizationOwnershipResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TransferOrganizationOwnershipResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TransferOrganizationOwnershipResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TransferOrganizationOwnershipResponseValidationError) ErrorName() string {
+	return "TransferOrganizationOwnershipResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e TransferOrganizationOwnershipResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTransferOrganizationOwnershipResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TransferOrganizationOwnershipResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TransferOrganizationOwnershipResponseValidationError{}

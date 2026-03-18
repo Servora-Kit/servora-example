@@ -17,8 +17,9 @@ type AuthzRuleEntry struct {
 // AuthzRules maps each annotated RPC operation to its authorization rule.
 var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.ApplicationService/CreateApplication": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
-		Relation: v1.Relation_RELATION_CAN_MANAGE,
+		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE,
+		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.ApplicationService/DeleteApplication": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
@@ -27,8 +28,9 @@ var AuthzRules = map[string]AuthzRuleEntry{
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
 	},
 	"/iam.service.v1.ApplicationService/ListApplications": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
-		Relation: v1.Relation_RELATION_CAN_VIEW,
+		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
+		Relation:   v1.Relation_RELATION_CAN_VIEW,
+		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.ApplicationService/RegenerateClientSecret": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
@@ -107,6 +109,11 @@ var AuthzRules = map[string]AuthzRuleEntry{
 		Relation:   v1.Relation_RELATION_ADMIN,
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
+	"/iam.service.v1.OrganizationService/TransferOwnership": {
+		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
+		Relation: v1.Relation_RELATION_CAN_MANAGE_MEMBERS,
+		IDField:  "organization_id",
+	},
 	"/iam.service.v1.OrganizationService/UpdateMemberRole": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_MANAGE_MEMBERS,
@@ -115,59 +122,6 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.OrganizationService/UpdateOrganization": {
 		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
 		Relation: v1.Relation_RELATION_CAN_MANAGE,
-		IDField:  "id",
-	},
-	"/iam.service.v1.ProjectService/AddMember": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_ADMIN,
-		IDField:  "project_id",
-	},
-	"/iam.service.v1.ProjectService/CreateProject": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
-		Relation: v1.Relation_RELATION_CAN_MANAGE,
-	},
-	"/iam.service.v1.ProjectService/DeleteProject": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_ADMIN,
-		IDField:  "id",
-	},
-	"/iam.service.v1.ProjectService/GetProject": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_VIEW,
-		IDField:  "id",
-	},
-	"/iam.service.v1.ProjectService/ListMembers": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_VIEW,
-		IDField:  "project_id",
-	},
-	"/iam.service.v1.ProjectService/ListProjects": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_ORGANIZATION,
-		Relation: v1.Relation_RELATION_CAN_VIEW,
-	},
-	"/iam.service.v1.ProjectService/PurgeProject": {
-		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
-		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
-	},
-	"/iam.service.v1.ProjectService/RemoveMember": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_ADMIN,
-		IDField:  "project_id",
-	},
-	"/iam.service.v1.ProjectService/RestoreProject": {
-		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
-		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
-	},
-	"/iam.service.v1.ProjectService/UpdateMemberRole": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_ADMIN,
-		IDField:  "project_id",
-	},
-	"/iam.service.v1.ProjectService/UpdateProject": {
-		Mode:     v1.AuthzMode_AUTHZ_MODE_PROJECT,
-		Relation: v1.Relation_RELATION_CAN_EDIT,
 		IDField:  "id",
 	},
 	"/iam.service.v1.TenantService/AcceptInvitation": {
@@ -212,6 +166,12 @@ var AuthzRules = map[string]AuthzRuleEntry{
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 		IDField:    "tenant_id",
 	},
+	"/iam.service.v1.TenantService/TransferOwnership": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE_MEMBERS,
+		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
+		IDField:    "tenant_id",
+	},
 	"/iam.service.v1.TenantService/UpdateMemberRole": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
 		Relation:   v1.Relation_RELATION_CAN_MANAGE_MEMBERS,
@@ -233,35 +193,37 @@ var AuthzRules = map[string]AuthzRuleEntry{
 	"/iam.service.v1.TestService/Test": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
 	},
+	"/iam.service.v1.UserService/CreateUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE_MEMBERS,
+		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
+	},
 	"/iam.service.v1.UserService/CurrentUserInfo": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
 	},
 	"/iam.service.v1.UserService/DeleteUser": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE,
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.UserService/GetUser": {
-		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
+		Relation:   v1.Relation_RELATION_CAN_VIEW,
+		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.UserService/ListUsers": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
+		Relation:   v1.Relation_RELATION_CAN_VIEW,
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.UserService/PurgeUser": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE,
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.UserService/RestoreUser": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
-		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
-	},
-	"/iam.service.v1.UserService/SaveUser": {
-		Mode:       v1.AuthzMode_AUTHZ_MODE_OBJECT,
-		Relation:   v1.Relation_RELATION_ADMIN,
+		Relation:   v1.Relation_RELATION_CAN_MANAGE,
 		ObjectType: v1.ObjectType_OBJECT_TYPE_TENANT,
 	},
 	"/iam.service.v1.UserService/UpdateUser": {

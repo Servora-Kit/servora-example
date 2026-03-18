@@ -20,8 +20,6 @@ enum AuthzMode {
   AUTHZ_MODE_NONE = 1;
   // 从请求中解析 organization_id，并校验 organization:{id} 上的关系。
   AUTHZ_MODE_ORGANIZATION = 2;
-  // 从请求中解析 project_id，并校验 project:{id} 上的关系。
-  AUTHZ_MODE_PROJECT = 3;
   // 从请求中解析 object_type 和 object_id，并校验 {type}:{id} 上的关系。
   AUTHZ_MODE_OBJECT = 4;
 }
@@ -34,8 +32,6 @@ enum ObjectType {
   OBJECT_TYPE_TENANT = 1;
   // 组织
   OBJECT_TYPE_ORGANIZATION = 2;
-  // 项目
-  OBJECT_TYPE_PROJECT = 3;
 }
 
 // Relation 枚举了 OpenFGA 模型中所有可分配的角色和计算所得的权限。

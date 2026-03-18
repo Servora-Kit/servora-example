@@ -20,17 +20,18 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	TenantService_CreateTenant_FullMethodName     = "/iam.service.v1.TenantService/CreateTenant"
-	TenantService_GetTenant_FullMethodName        = "/iam.service.v1.TenantService/GetTenant"
-	TenantService_ListTenants_FullMethodName      = "/iam.service.v1.TenantService/ListTenants"
-	TenantService_UpdateTenant_FullMethodName     = "/iam.service.v1.TenantService/UpdateTenant"
-	TenantService_DeleteTenant_FullMethodName     = "/iam.service.v1.TenantService/DeleteTenant"
-	TenantService_InviteMember_FullMethodName     = "/iam.service.v1.TenantService/InviteMember"
-	TenantService_AcceptInvitation_FullMethodName = "/iam.service.v1.TenantService/AcceptInvitation"
-	TenantService_RejectInvitation_FullMethodName = "/iam.service.v1.TenantService/RejectInvitation"
-	TenantService_ListMembers_FullMethodName      = "/iam.service.v1.TenantService/ListMembers"
-	TenantService_UpdateMemberRole_FullMethodName = "/iam.service.v1.TenantService/UpdateMemberRole"
-	TenantService_RemoveMember_FullMethodName     = "/iam.service.v1.TenantService/RemoveMember"
+	TenantService_CreateTenant_FullMethodName      = "/iam.service.v1.TenantService/CreateTenant"
+	TenantService_GetTenant_FullMethodName         = "/iam.service.v1.TenantService/GetTenant"
+	TenantService_ListTenants_FullMethodName       = "/iam.service.v1.TenantService/ListTenants"
+	TenantService_UpdateTenant_FullMethodName      = "/iam.service.v1.TenantService/UpdateTenant"
+	TenantService_DeleteTenant_FullMethodName      = "/iam.service.v1.TenantService/DeleteTenant"
+	TenantService_InviteMember_FullMethodName      = "/iam.service.v1.TenantService/InviteMember"
+	TenantService_AcceptInvitation_FullMethodName  = "/iam.service.v1.TenantService/AcceptInvitation"
+	TenantService_RejectInvitation_FullMethodName  = "/iam.service.v1.TenantService/RejectInvitation"
+	TenantService_ListMembers_FullMethodName       = "/iam.service.v1.TenantService/ListMembers"
+	TenantService_UpdateMemberRole_FullMethodName  = "/iam.service.v1.TenantService/UpdateMemberRole"
+	TenantService_RemoveMember_FullMethodName      = "/iam.service.v1.TenantService/RemoveMember"
+	TenantService_TransferOwnership_FullMethodName = "/iam.service.v1.TenantService/TransferOwnership"
 )
 
 // TenantServiceClient is the client API for TenantService service.
@@ -48,6 +49,7 @@ type TenantServiceClient interface {
 	ListMembers(ctx context.Context, in *v1.ListTenantMembersRequest, opts ...grpc.CallOption) (*v1.ListTenantMembersResponse, error)
 	UpdateMemberRole(ctx context.Context, in *v1.UpdateTenantMemberRoleRequest, opts ...grpc.CallOption) (*v1.UpdateTenantMemberRoleResponse, error)
 	RemoveMember(ctx context.Context, in *v1.RemoveTenantMemberRequest, opts ...grpc.CallOption) (*v1.RemoveTenantMemberResponse, error)
+	TransferOwnership(ctx context.Context, in *v1.TransferTenantOwnershipRequest, opts ...grpc.CallOption) (*v1.TransferTenantOwnershipResponse, error)
 }
 
 type tenantServiceClient struct {
@@ -168,6 +170,16 @@ func (c *tenantServiceClient) RemoveMember(ctx context.Context, in *v1.RemoveTen
 	return out, nil
 }
 
+func (c *tenantServiceClient) TransferOwnership(ctx context.Context, in *v1.TransferTenantOwnershipRequest, opts ...grpc.CallOption) (*v1.TransferTenantOwnershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v1.TransferTenantOwnershipResponse)
+	err := c.cc.Invoke(ctx, TenantService_TransferOwnership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TenantServiceServer is the server API for TenantService service.
 // All implementations must embed UnimplementedTenantServiceServer
 // for forward compatibility.
@@ -183,6 +195,7 @@ type TenantServiceServer interface {
 	ListMembers(context.Context, *v1.ListTenantMembersRequest) (*v1.ListTenantMembersResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateTenantMemberRoleRequest) (*v1.UpdateTenantMemberRoleResponse, error)
 	RemoveMember(context.Context, *v1.RemoveTenantMemberRequest) (*v1.RemoveTenantMemberResponse, error)
+	TransferOwnership(context.Context, *v1.TransferTenantOwnershipRequest) (*v1.TransferTenantOwnershipResponse, error)
 	mustEmbedUnimplementedTenantServiceServer()
 }
 
@@ -225,6 +238,9 @@ func (UnimplementedTenantServiceServer) UpdateMemberRole(context.Context, *v1.Up
 }
 func (UnimplementedTenantServiceServer) RemoveMember(context.Context, *v1.RemoveTenantMemberRequest) (*v1.RemoveTenantMemberResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method RemoveMember not implemented")
+}
+func (UnimplementedTenantServiceServer) TransferOwnership(context.Context, *v1.TransferTenantOwnershipRequest) (*v1.TransferTenantOwnershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TransferOwnership not implemented")
 }
 func (UnimplementedTenantServiceServer) mustEmbedUnimplementedTenantServiceServer() {}
 func (UnimplementedTenantServiceServer) testEmbeddedByValue()                       {}
@@ -445,6 +461,24 @@ func _TenantService_RemoveMember_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _TenantService_TransferOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.TransferTenantOwnershipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TenantServiceServer).TransferOwnership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: TenantService_TransferOwnership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TenantServiceServer).TransferOwnership(ctx, req.(*v1.TransferTenantOwnershipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // TenantService_ServiceDesc is the grpc.ServiceDesc for TenantService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -495,6 +529,10 @@ var TenantService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RemoveMember",
 			Handler:    _TenantService_RemoveMember_Handler,
+		},
+		{
+			MethodName: "TransferOwnership",
+			Handler:    _TenantService_TransferOwnership_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

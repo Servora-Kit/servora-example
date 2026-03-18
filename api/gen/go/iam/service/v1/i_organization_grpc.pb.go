@@ -31,6 +31,7 @@ const (
 	OrganizationService_RemoveMember_FullMethodName        = "/iam.service.v1.OrganizationService/RemoveMember"
 	OrganizationService_ListMembers_FullMethodName         = "/iam.service.v1.OrganizationService/ListMembers"
 	OrganizationService_UpdateMemberRole_FullMethodName    = "/iam.service.v1.OrganizationService/UpdateMemberRole"
+	OrganizationService_TransferOwnership_FullMethodName   = "/iam.service.v1.OrganizationService/TransferOwnership"
 )
 
 // OrganizationServiceClient is the client API for OrganizationService service.
@@ -48,6 +49,7 @@ type OrganizationServiceClient interface {
 	RemoveMember(ctx context.Context, in *v1.RemoveMemberRequest, opts ...grpc.CallOption) (*v1.RemoveMemberResponse, error)
 	ListMembers(ctx context.Context, in *v1.ListMembersRequest, opts ...grpc.CallOption) (*v1.ListMembersResponse, error)
 	UpdateMemberRole(ctx context.Context, in *v1.UpdateMemberRoleRequest, opts ...grpc.CallOption) (*v1.UpdateMemberRoleResponse, error)
+	TransferOwnership(ctx context.Context, in *v1.TransferOrganizationOwnershipRequest, opts ...grpc.CallOption) (*v1.TransferOrganizationOwnershipResponse, error)
 }
 
 type organizationServiceClient struct {
@@ -168,6 +170,16 @@ func (c *organizationServiceClient) UpdateMemberRole(ctx context.Context, in *v1
 	return out, nil
 }
 
+func (c *organizationServiceClient) TransferOwnership(ctx context.Context, in *v1.TransferOrganizationOwnershipRequest, opts ...grpc.CallOption) (*v1.TransferOrganizationOwnershipResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(v1.TransferOrganizationOwnershipResponse)
+	err := c.cc.Invoke(ctx, OrganizationService_TransferOwnership_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // OrganizationServiceServer is the server API for OrganizationService service.
 // All implementations must embed UnimplementedOrganizationServiceServer
 // for forward compatibility.
@@ -183,6 +195,7 @@ type OrganizationServiceServer interface {
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 	ListMembers(context.Context, *v1.ListMembersRequest) (*v1.ListMembersResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
+	TransferOwnership(context.Context, *v1.TransferOrganizationOwnershipRequest) (*v1.TransferOrganizationOwnershipResponse, error)
 	mustEmbedUnimplementedOrganizationServiceServer()
 }
 
@@ -225,6 +238,9 @@ func (UnimplementedOrganizationServiceServer) ListMembers(context.Context, *v1.L
 }
 func (UnimplementedOrganizationServiceServer) UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method UpdateMemberRole not implemented")
+}
+func (UnimplementedOrganizationServiceServer) TransferOwnership(context.Context, *v1.TransferOrganizationOwnershipRequest) (*v1.TransferOrganizationOwnershipResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method TransferOwnership not implemented")
 }
 func (UnimplementedOrganizationServiceServer) mustEmbedUnimplementedOrganizationServiceServer() {}
 func (UnimplementedOrganizationServiceServer) testEmbeddedByValue()                             {}
@@ -445,6 +461,24 @@ func _OrganizationService_UpdateMemberRole_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _OrganizationService_TransferOwnership_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(v1.TransferOrganizationOwnershipRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(OrganizationServiceServer).TransferOwnership(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: OrganizationService_TransferOwnership_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(OrganizationServiceServer).TransferOwnership(ctx, req.(*v1.TransferOrganizationOwnershipRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // OrganizationService_ServiceDesc is the grpc.ServiceDesc for OrganizationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -495,6 +529,10 @@ var OrganizationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateMemberRole",
 			Handler:    _OrganizationService_UpdateMemberRole_Handler,
+		},
+		{
+			MethodName: "TransferOwnership",
+			Handler:    _OrganizationService_TransferOwnership_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

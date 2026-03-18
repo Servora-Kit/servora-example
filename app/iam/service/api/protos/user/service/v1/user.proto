@@ -23,6 +23,8 @@ enum ErrorReason {
   UPDATE_USER_FAILED = 2 [(errors.code) = 500];
   // 保存用户信息失败
   SAVE_USER_FAILED = 3 [(errors.code) = 500];
+  // 创建用户失败
+  CREATE_USER_FAILED = 4 [(errors.code) = 500];
 }
 
 // User gRPC 服务 - 纯 gRPC 接口
@@ -31,7 +33,7 @@ service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
   rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
-  rpc SaveUser(SaveUserRequest) returns (SaveUserResponse);
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
   rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
   rpc PurgeUser(PurgeUserRequest) returns (PurgeUserResponse);
   rpc RestoreUser(RestoreUserRequest) returns (RestoreUserResponse);
@@ -100,22 +102,22 @@ message UpdateUserRequest {
   string name = 2;
   string email = 3;
   string password = 4;
-  string role = 5;
 }
 
 message UpdateUserResponse {
   UserInfo user = 1;
 }
 
-message SaveUserRequest {
-  string name = 1 [(buf.validate.field).string.min_len = 5];
+message CreateUserRequest {
+  string name = 1 [(buf.validate.field).string.min_len = 2];
   string email = 2 [(buf.validate.field).string.email = true];
   string password = 3 [(buf.validate.field).string = {
     min_len: 5
-    max_len: 10
+    max_len: 64
   }];
-  string role = 4;
+  string organization_id = 4 [(buf.validate.field).string.uuid = true];
 }
-message SaveUserResponse {
+
+message CreateUserResponse {
   string id = 1;
 }

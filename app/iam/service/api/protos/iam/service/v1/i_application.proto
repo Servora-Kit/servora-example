@@ -15,8 +15,9 @@ service ApplicationService {
       body: "*"
     };
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_ORGANIZATION
+      mode: AUTHZ_MODE_OBJECT
       relation: RELATION_CAN_MANAGE
+      object_type: OBJECT_TYPE_TENANT
     };
   }
 
@@ -30,8 +31,9 @@ service ApplicationService {
   rpc ListApplications(application.service.v1.ListApplicationsRequest) returns (application.service.v1.ListApplicationsResponse) {
     option (google.api.http) = {get: "/v1/applications"};
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_ORGANIZATION
+      mode: AUTHZ_MODE_OBJECT
       relation: RELATION_CAN_VIEW
+      object_type: OBJECT_TYPE_TENANT
     };
   }
 

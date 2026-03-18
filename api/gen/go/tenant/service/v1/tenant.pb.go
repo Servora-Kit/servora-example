@@ -96,6 +96,7 @@ type TenantInfo struct {
 	Status        string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,7,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt     *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,9,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -184,6 +185,13 @@ func (x *TenantInfo) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *TenantInfo) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
+	}
+	return ""
 }
 
 type TenantMemberInfo struct {
@@ -300,6 +308,7 @@ type CreateTenantRequest struct {
 	Slug          string                 `protobuf:"bytes,2,opt,name=slug,proto3" json:"slug,omitempty"`
 	Kind          string                 `protobuf:"bytes,3,opt,name=kind,proto3" json:"kind,omitempty"`
 	Domain        string                 `protobuf:"bytes,4,opt,name=domain,proto3" json:"domain,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,5,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -358,6 +367,13 @@ func (x *CreateTenantRequest) GetKind() string {
 func (x *CreateTenantRequest) GetDomain() string {
 	if x != nil {
 		return x.Domain
+	}
+	return ""
+}
+
+func (x *CreateTenantRequest) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
 	}
 	return ""
 }
@@ -596,6 +612,7 @@ type UpdateTenantRequest struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Domain        string                 `protobuf:"bytes,3,opt,name=domain,proto3" json:"domain,omitempty"`
 	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`
+	DisplayName   string                 `protobuf:"bytes,5,opt,name=display_name,json=displayName,proto3" json:"display_name,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -654,6 +671,13 @@ func (x *UpdateTenantRequest) GetDomain() string {
 func (x *UpdateTenantRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
+	}
+	return ""
+}
+
+func (x *UpdateTenantRequest) GetDisplayName() string {
+	if x != nil {
+		return x.DisplayName
 	}
 	return ""
 }
@@ -1374,11 +1398,107 @@ func (x *RemoveTenantMemberResponse) GetSuccess() bool {
 	return false
 }
 
+type TransferTenantOwnershipRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	TenantId       string                 `protobuf:"bytes,1,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
+	NewOwnerUserId string                 `protobuf:"bytes,2,opt,name=new_owner_user_id,json=newOwnerUserId,proto3" json:"new_owner_user_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TransferTenantOwnershipRequest) Reset() {
+	*x = TransferTenantOwnershipRequest{}
+	mi := &file_tenant_service_v1_tenant_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferTenantOwnershipRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferTenantOwnershipRequest) ProtoMessage() {}
+
+func (x *TransferTenantOwnershipRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_tenant_service_v1_tenant_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferTenantOwnershipRequest.ProtoReflect.Descriptor instead.
+func (*TransferTenantOwnershipRequest) Descriptor() ([]byte, []int) {
+	return file_tenant_service_v1_tenant_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *TransferTenantOwnershipRequest) GetTenantId() string {
+	if x != nil {
+		return x.TenantId
+	}
+	return ""
+}
+
+func (x *TransferTenantOwnershipRequest) GetNewOwnerUserId() string {
+	if x != nil {
+		return x.NewOwnerUserId
+	}
+	return ""
+}
+
+type TransferTenantOwnershipResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferTenantOwnershipResponse) Reset() {
+	*x = TransferTenantOwnershipResponse{}
+	mi := &file_tenant_service_v1_tenant_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferTenantOwnershipResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferTenantOwnershipResponse) ProtoMessage() {}
+
+func (x *TransferTenantOwnershipResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_tenant_service_v1_tenant_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferTenantOwnershipResponse.ProtoReflect.Descriptor instead.
+func (*TransferTenantOwnershipResponse) Descriptor() ([]byte, []int) {
+	return file_tenant_service_v1_tenant_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *TransferTenantOwnershipResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_tenant_service_v1_tenant_proto protoreflect.FileDescriptor
 
 const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\n" +
-	"\x1etenant/service/v1/tenant.proto\x12\x11tenant.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xfe\x01\n" +
+	"\x1etenant/service/v1/tenant.proto\x12\x11tenant.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xa1\x02\n" +
 	"\n" +
 	"TenantInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
@@ -1390,7 +1510,8 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\n" +
 	"created_at\x18\a \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\xb4\x02\n" +
+	"updated_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12!\n" +
+	"\fdisplay_name\x18\t \x01(\tR\vdisplayName\"\xb4\x02\n" +
 	"\x10TenantMemberInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\ttenant_id\x18\x02 \x01(\tR\btenantId\x12\x17\n" +
@@ -1402,13 +1523,14 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\x06status\x18\a \x01(\tR\x06status\x127\n" +
 	"\tjoined_at\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\bjoinedAt\x129\n" +
 	"\n" +
-	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xb9\x01\n" +
+	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xdd\x01\n" +
 	"\x13CreateTenantRequest\x12\x1e\n" +
 	"\x04name\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x02\x18\x80\x01R\x04name\x12;\n" +
-	"\x04slug\x18\x02 \x01(\tB'\xbaH$r\"\x10\x02\x18@2\x1c^[a-z0-9][a-z0-9-]*[a-z0-9]$R\x04slug\x12-\n" +
+	"\xbaH\ar\x05\x10\x02\x18\x80\x01R\x04name\x12<\n" +
+	"\x04slug\x18\x02 \x01(\tB(\xbaH%r#\x18@2\x1f^$|^[a-z0-9][a-z0-9-]*[a-z0-9]$R\x04slug\x12-\n" +
 	"\x04kind\x18\x03 \x01(\tB\x19\xbaH\x16r\x14R\bbusinessR\bpersonalR\x04kind\x12\x16\n" +
-	"\x06domain\x18\x04 \x01(\tR\x06domain\"M\n" +
+	"\x06domain\x18\x04 \x01(\tR\x06domain\x12!\n" +
+	"\fdisplay_name\x18\x05 \x01(\tR\vdisplayName\"M\n" +
 	"\x14CreateTenantResponse\x125\n" +
 	"\x06tenant\x18\x01 \x01(\v2\x1d.tenant.service.v1.TenantInfoR\x06tenant\",\n" +
 	"\x10GetTenantRequest\x12\x18\n" +
@@ -1423,22 +1545,23 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\atenants\x18\x01 \x03(\v2\x1d.tenant.service.v1.TenantInfoR\atenants\x12A\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
-	"pagination\"s\n" +
+	"pagination\"\x96\x01\n" +
 	"\x13UpdateTenantRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x16\n" +
 	"\x06domain\x18\x03 \x01(\tR\x06domain\x12\x16\n" +
-	"\x06status\x18\x04 \x01(\tR\x06status\"M\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12!\n" +
+	"\fdisplay_name\x18\x05 \x01(\tR\vdisplayName\"M\n" +
 	"\x14UpdateTenantResponse\x125\n" +
 	"\x06tenant\x18\x01 \x01(\v2\x1d.tenant.service.v1.TenantInfoR\x06tenant\"/\n" +
 	"\x13DeleteTenantRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"0\n" +
 	"\x14DeleteTenantResponse\x12\x18\n" +
-	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x96\x01\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"\x8f\x01\n" +
 	"\x19InviteTenantMemberRequest\x12%\n" +
 	"\ttenant_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\btenantId\x12!\n" +
-	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12/\n" +
-	"\x04role\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\x05ownerR\x05adminR\x06memberR\x04role\"Y\n" +
+	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12(\n" +
+	"\x04role\x18\x03 \x01(\tB\x14\xbaH\x11r\x0fR\x05adminR\x06memberR\x04role\"Y\n" +
 	"\x1aInviteTenantMemberResponse\x12;\n" +
 	"\x06member\x18\x01 \x01(\v2#.tenant.service.v1.TenantMemberInfoR\x06member\"F\n" +
 	"\x1dAcceptTenantInvitationRequest\x12%\n" +
@@ -1458,17 +1581,22 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\amembers\x18\x01 \x03(\v2#.tenant.service.v1.TenantMemberInfoR\amembers\x12A\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
-	"pagination\"\x9a\x01\n" +
+	"pagination\"\x93\x01\n" +
 	"\x1dUpdateTenantMemberRoleRequest\x12%\n" +
 	"\ttenant_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\btenantId\x12!\n" +
-	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12/\n" +
-	"\x04role\x18\x03 \x01(\tB\x1b\xbaH\x18r\x16R\x05ownerR\x05adminR\x06memberR\x04role\"]\n" +
+	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x12(\n" +
+	"\x04role\x18\x03 \x01(\tB\x14\xbaH\x11r\x0fR\x05adminR\x06memberR\x04role\"]\n" +
 	"\x1eUpdateTenantMemberRoleResponse\x12;\n" +
 	"\x06member\x18\x01 \x01(\v2#.tenant.service.v1.TenantMemberInfoR\x06member\"e\n" +
 	"\x19RemoveTenantMemberRequest\x12%\n" +
 	"\ttenant_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\btenantId\x12!\n" +
 	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\"6\n" +
 	"\x1aRemoveTenantMemberResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess\"|\n" +
+	"\x1eTransferTenantOwnershipRequest\x12%\n" +
+	"\ttenant_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\btenantId\x123\n" +
+	"\x11new_owner_user_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0enewOwnerUserId\";\n" +
+	"\x1fTransferTenantOwnershipResponse\x12\x18\n" +
 	"\asuccess\x18\x01 \x01(\bR\asuccess*\xfb\x01\n" +
 	"\vErrorReason\x12\x1a\n" +
 	"\x10TENANT_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12\x1f\n" +
@@ -1477,7 +1605,8 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\x1cTENANT_MEMBER_ALREADY_EXISTS\x10\x03\x1a\x04\xa8E\x99\x03\x12\x1e\n" +
 	"\x14TENANT_CREATE_FAILED\x10\x04\x1a\x04\xa8E\xf4\x03\x12\x1e\n" +
 	"\x14TENANT_UPDATE_FAILED\x10\x05\x1a\x04\xa8E\xf4\x03\x12\x1e\n" +
-	"\x14TENANT_DELETE_FAILED\x10\x06\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\x97\t\n" +
+	"\x14TENANT_DELETE_FAILED\x10\x06\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\x93\n" +
+	"\n" +
 	"\rTenantService\x12_\n" +
 	"\fCreateTenant\x12&.tenant.service.v1.CreateTenantRequest\x1a'.tenant.service.v1.CreateTenantResponse\x12V\n" +
 	"\tGetTenant\x12#.tenant.service.v1.GetTenantRequest\x1a$.tenant.service.v1.GetTenantResponse\x12\\\n" +
@@ -1489,7 +1618,8 @@ const file_tenant_service_v1_tenant_proto_rawDesc = "" +
 	"\x10RejectInvitation\x120.tenant.service.v1.RejectTenantInvitationRequest\x1a1.tenant.service.v1.RejectTenantInvitationResponse\x12h\n" +
 	"\vListMembers\x12+.tenant.service.v1.ListTenantMembersRequest\x1a,.tenant.service.v1.ListTenantMembersResponse\x12w\n" +
 	"\x10UpdateMemberRole\x120.tenant.service.v1.UpdateTenantMemberRoleRequest\x1a1.tenant.service.v1.UpdateTenantMemberRoleResponse\x12k\n" +
-	"\fRemoveMember\x12,.tenant.service.v1.RemoveTenantMemberRequest\x1a-.tenant.service.v1.RemoveTenantMemberResponseB\xd0\x01\n" +
+	"\fRemoveMember\x12,.tenant.service.v1.RemoveTenantMemberRequest\x1a-.tenant.service.v1.RemoveTenantMemberResponse\x12z\n" +
+	"\x11TransferOwnership\x121.tenant.service.v1.TransferTenantOwnershipRequest\x1a2.tenant.service.v1.TransferTenantOwnershipResponseB\xd0\x01\n" +
 	"\x15com.tenant.service.v1B\vTenantProtoP\x01ZDgithub.com/Servora-Kit/servora/api/gen/go/tenant/service/v1;tenantpb\xa2\x02\x03TSX\xaa\x02\x11Tenant.Service.V1\xca\x02\x11Tenant\\Service\\V1\xe2\x02\x1dTenant\\Service\\V1\\GPBMetadata\xea\x02\x13Tenant::Service::V1b\x06proto3"
 
 var (
@@ -1505,52 +1635,54 @@ func file_tenant_service_v1_tenant_proto_rawDescGZIP() []byte {
 }
 
 var file_tenant_service_v1_tenant_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_tenant_service_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_tenant_service_v1_tenant_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_tenant_service_v1_tenant_proto_goTypes = []any{
-	(ErrorReason)(0),                       // 0: tenant.service.v1.ErrorReason
-	(*TenantInfo)(nil),                     // 1: tenant.service.v1.TenantInfo
-	(*TenantMemberInfo)(nil),               // 2: tenant.service.v1.TenantMemberInfo
-	(*CreateTenantRequest)(nil),            // 3: tenant.service.v1.CreateTenantRequest
-	(*CreateTenantResponse)(nil),           // 4: tenant.service.v1.CreateTenantResponse
-	(*GetTenantRequest)(nil),               // 5: tenant.service.v1.GetTenantRequest
-	(*GetTenantResponse)(nil),              // 6: tenant.service.v1.GetTenantResponse
-	(*ListTenantsRequest)(nil),             // 7: tenant.service.v1.ListTenantsRequest
-	(*ListTenantsResponse)(nil),            // 8: tenant.service.v1.ListTenantsResponse
-	(*UpdateTenantRequest)(nil),            // 9: tenant.service.v1.UpdateTenantRequest
-	(*UpdateTenantResponse)(nil),           // 10: tenant.service.v1.UpdateTenantResponse
-	(*DeleteTenantRequest)(nil),            // 11: tenant.service.v1.DeleteTenantRequest
-	(*DeleteTenantResponse)(nil),           // 12: tenant.service.v1.DeleteTenantResponse
-	(*InviteTenantMemberRequest)(nil),      // 13: tenant.service.v1.InviteTenantMemberRequest
-	(*InviteTenantMemberResponse)(nil),     // 14: tenant.service.v1.InviteTenantMemberResponse
-	(*AcceptTenantInvitationRequest)(nil),  // 15: tenant.service.v1.AcceptTenantInvitationRequest
-	(*AcceptTenantInvitationResponse)(nil), // 16: tenant.service.v1.AcceptTenantInvitationResponse
-	(*RejectTenantInvitationRequest)(nil),  // 17: tenant.service.v1.RejectTenantInvitationRequest
-	(*RejectTenantInvitationResponse)(nil), // 18: tenant.service.v1.RejectTenantInvitationResponse
-	(*ListTenantMembersRequest)(nil),       // 19: tenant.service.v1.ListTenantMembersRequest
-	(*ListTenantMembersResponse)(nil),      // 20: tenant.service.v1.ListTenantMembersResponse
-	(*UpdateTenantMemberRoleRequest)(nil),  // 21: tenant.service.v1.UpdateTenantMemberRoleRequest
-	(*UpdateTenantMemberRoleResponse)(nil), // 22: tenant.service.v1.UpdateTenantMemberRoleResponse
-	(*RemoveTenantMemberRequest)(nil),      // 23: tenant.service.v1.RemoveTenantMemberRequest
-	(*RemoveTenantMemberResponse)(nil),     // 24: tenant.service.v1.RemoveTenantMemberResponse
-	(*timestamppb.Timestamp)(nil),          // 25: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),           // 26: pagination.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),          // 27: pagination.v1.PaginationResponse
+	(ErrorReason)(0),                        // 0: tenant.service.v1.ErrorReason
+	(*TenantInfo)(nil),                      // 1: tenant.service.v1.TenantInfo
+	(*TenantMemberInfo)(nil),                // 2: tenant.service.v1.TenantMemberInfo
+	(*CreateTenantRequest)(nil),             // 3: tenant.service.v1.CreateTenantRequest
+	(*CreateTenantResponse)(nil),            // 4: tenant.service.v1.CreateTenantResponse
+	(*GetTenantRequest)(nil),                // 5: tenant.service.v1.GetTenantRequest
+	(*GetTenantResponse)(nil),               // 6: tenant.service.v1.GetTenantResponse
+	(*ListTenantsRequest)(nil),              // 7: tenant.service.v1.ListTenantsRequest
+	(*ListTenantsResponse)(nil),             // 8: tenant.service.v1.ListTenantsResponse
+	(*UpdateTenantRequest)(nil),             // 9: tenant.service.v1.UpdateTenantRequest
+	(*UpdateTenantResponse)(nil),            // 10: tenant.service.v1.UpdateTenantResponse
+	(*DeleteTenantRequest)(nil),             // 11: tenant.service.v1.DeleteTenantRequest
+	(*DeleteTenantResponse)(nil),            // 12: tenant.service.v1.DeleteTenantResponse
+	(*InviteTenantMemberRequest)(nil),       // 13: tenant.service.v1.InviteTenantMemberRequest
+	(*InviteTenantMemberResponse)(nil),      // 14: tenant.service.v1.InviteTenantMemberResponse
+	(*AcceptTenantInvitationRequest)(nil),   // 15: tenant.service.v1.AcceptTenantInvitationRequest
+	(*AcceptTenantInvitationResponse)(nil),  // 16: tenant.service.v1.AcceptTenantInvitationResponse
+	(*RejectTenantInvitationRequest)(nil),   // 17: tenant.service.v1.RejectTenantInvitationRequest
+	(*RejectTenantInvitationResponse)(nil),  // 18: tenant.service.v1.RejectTenantInvitationResponse
+	(*ListTenantMembersRequest)(nil),        // 19: tenant.service.v1.ListTenantMembersRequest
+	(*ListTenantMembersResponse)(nil),       // 20: tenant.service.v1.ListTenantMembersResponse
+	(*UpdateTenantMemberRoleRequest)(nil),   // 21: tenant.service.v1.UpdateTenantMemberRoleRequest
+	(*UpdateTenantMemberRoleResponse)(nil),  // 22: tenant.service.v1.UpdateTenantMemberRoleResponse
+	(*RemoveTenantMemberRequest)(nil),       // 23: tenant.service.v1.RemoveTenantMemberRequest
+	(*RemoveTenantMemberResponse)(nil),      // 24: tenant.service.v1.RemoveTenantMemberResponse
+	(*TransferTenantOwnershipRequest)(nil),  // 25: tenant.service.v1.TransferTenantOwnershipRequest
+	(*TransferTenantOwnershipResponse)(nil), // 26: tenant.service.v1.TransferTenantOwnershipResponse
+	(*timestamppb.Timestamp)(nil),           // 27: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),            // 28: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),           // 29: pagination.v1.PaginationResponse
 }
 var file_tenant_service_v1_tenant_proto_depIdxs = []int32{
-	25, // 0: tenant.service.v1.TenantInfo.created_at:type_name -> google.protobuf.Timestamp
-	25, // 1: tenant.service.v1.TenantInfo.updated_at:type_name -> google.protobuf.Timestamp
-	25, // 2: tenant.service.v1.TenantMemberInfo.joined_at:type_name -> google.protobuf.Timestamp
-	25, // 3: tenant.service.v1.TenantMemberInfo.created_at:type_name -> google.protobuf.Timestamp
+	27, // 0: tenant.service.v1.TenantInfo.created_at:type_name -> google.protobuf.Timestamp
+	27, // 1: tenant.service.v1.TenantInfo.updated_at:type_name -> google.protobuf.Timestamp
+	27, // 2: tenant.service.v1.TenantMemberInfo.joined_at:type_name -> google.protobuf.Timestamp
+	27, // 3: tenant.service.v1.TenantMemberInfo.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 4: tenant.service.v1.CreateTenantResponse.tenant:type_name -> tenant.service.v1.TenantInfo
 	1,  // 5: tenant.service.v1.GetTenantResponse.tenant:type_name -> tenant.service.v1.TenantInfo
-	26, // 6: tenant.service.v1.ListTenantsRequest.pagination:type_name -> pagination.v1.PaginationRequest
+	28, // 6: tenant.service.v1.ListTenantsRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 7: tenant.service.v1.ListTenantsResponse.tenants:type_name -> tenant.service.v1.TenantInfo
-	27, // 8: tenant.service.v1.ListTenantsResponse.pagination:type_name -> pagination.v1.PaginationResponse
+	29, // 8: tenant.service.v1.ListTenantsResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 9: tenant.service.v1.UpdateTenantResponse.tenant:type_name -> tenant.service.v1.TenantInfo
 	2,  // 10: tenant.service.v1.InviteTenantMemberResponse.member:type_name -> tenant.service.v1.TenantMemberInfo
-	26, // 11: tenant.service.v1.ListTenantMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
+	28, // 11: tenant.service.v1.ListTenantMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	2,  // 12: tenant.service.v1.ListTenantMembersResponse.members:type_name -> tenant.service.v1.TenantMemberInfo
-	27, // 13: tenant.service.v1.ListTenantMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
+	29, // 13: tenant.service.v1.ListTenantMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	2,  // 14: tenant.service.v1.UpdateTenantMemberRoleResponse.member:type_name -> tenant.service.v1.TenantMemberInfo
 	3,  // 15: tenant.service.v1.TenantService.CreateTenant:input_type -> tenant.service.v1.CreateTenantRequest
 	5,  // 16: tenant.service.v1.TenantService.GetTenant:input_type -> tenant.service.v1.GetTenantRequest
@@ -1563,19 +1695,21 @@ var file_tenant_service_v1_tenant_proto_depIdxs = []int32{
 	19, // 23: tenant.service.v1.TenantService.ListMembers:input_type -> tenant.service.v1.ListTenantMembersRequest
 	21, // 24: tenant.service.v1.TenantService.UpdateMemberRole:input_type -> tenant.service.v1.UpdateTenantMemberRoleRequest
 	23, // 25: tenant.service.v1.TenantService.RemoveMember:input_type -> tenant.service.v1.RemoveTenantMemberRequest
-	4,  // 26: tenant.service.v1.TenantService.CreateTenant:output_type -> tenant.service.v1.CreateTenantResponse
-	6,  // 27: tenant.service.v1.TenantService.GetTenant:output_type -> tenant.service.v1.GetTenantResponse
-	8,  // 28: tenant.service.v1.TenantService.ListTenants:output_type -> tenant.service.v1.ListTenantsResponse
-	10, // 29: tenant.service.v1.TenantService.UpdateTenant:output_type -> tenant.service.v1.UpdateTenantResponse
-	12, // 30: tenant.service.v1.TenantService.DeleteTenant:output_type -> tenant.service.v1.DeleteTenantResponse
-	14, // 31: tenant.service.v1.TenantService.InviteMember:output_type -> tenant.service.v1.InviteTenantMemberResponse
-	16, // 32: tenant.service.v1.TenantService.AcceptInvitation:output_type -> tenant.service.v1.AcceptTenantInvitationResponse
-	18, // 33: tenant.service.v1.TenantService.RejectInvitation:output_type -> tenant.service.v1.RejectTenantInvitationResponse
-	20, // 34: tenant.service.v1.TenantService.ListMembers:output_type -> tenant.service.v1.ListTenantMembersResponse
-	22, // 35: tenant.service.v1.TenantService.UpdateMemberRole:output_type -> tenant.service.v1.UpdateTenantMemberRoleResponse
-	24, // 36: tenant.service.v1.TenantService.RemoveMember:output_type -> tenant.service.v1.RemoveTenantMemberResponse
-	26, // [26:37] is the sub-list for method output_type
-	15, // [15:26] is the sub-list for method input_type
+	25, // 26: tenant.service.v1.TenantService.TransferOwnership:input_type -> tenant.service.v1.TransferTenantOwnershipRequest
+	4,  // 27: tenant.service.v1.TenantService.CreateTenant:output_type -> tenant.service.v1.CreateTenantResponse
+	6,  // 28: tenant.service.v1.TenantService.GetTenant:output_type -> tenant.service.v1.GetTenantResponse
+	8,  // 29: tenant.service.v1.TenantService.ListTenants:output_type -> tenant.service.v1.ListTenantsResponse
+	10, // 30: tenant.service.v1.TenantService.UpdateTenant:output_type -> tenant.service.v1.UpdateTenantResponse
+	12, // 31: tenant.service.v1.TenantService.DeleteTenant:output_type -> tenant.service.v1.DeleteTenantResponse
+	14, // 32: tenant.service.v1.TenantService.InviteMember:output_type -> tenant.service.v1.InviteTenantMemberResponse
+	16, // 33: tenant.service.v1.TenantService.AcceptInvitation:output_type -> tenant.service.v1.AcceptTenantInvitationResponse
+	18, // 34: tenant.service.v1.TenantService.RejectInvitation:output_type -> tenant.service.v1.RejectTenantInvitationResponse
+	20, // 35: tenant.service.v1.TenantService.ListMembers:output_type -> tenant.service.v1.ListTenantMembersResponse
+	22, // 36: tenant.service.v1.TenantService.UpdateMemberRole:output_type -> tenant.service.v1.UpdateTenantMemberRoleResponse
+	24, // 37: tenant.service.v1.TenantService.RemoveMember:output_type -> tenant.service.v1.RemoveTenantMemberResponse
+	26, // 38: tenant.service.v1.TenantService.TransferOwnership:output_type -> tenant.service.v1.TransferTenantOwnershipResponse
+	27, // [27:39] is the sub-list for method output_type
+	15, // [15:27] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
 	15, // [15:15] is the sub-list for extension extendee
 	0,  // [0:15] is the sub-list for field type_name
@@ -1592,7 +1726,7 @@ func file_tenant_service_v1_tenant_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_tenant_service_v1_tenant_proto_rawDesc), len(file_tenant_service_v1_tenant_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

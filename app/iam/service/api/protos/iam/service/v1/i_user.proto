@@ -19,7 +19,9 @@ service UserService {
   rpc GetUser(user.service.v1.GetUserRequest) returns (user.service.v1.GetUserResponse) {
     option (google.api.http) = {get: "/v1/users/{id}"};
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_NONE
+      mode: AUTHZ_MODE_OBJECT
+      object_type: OBJECT_TYPE_TENANT
+      relation: RELATION_CAN_VIEW
     };
   }
 
@@ -28,7 +30,7 @@ service UserService {
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_ADMIN
+      relation: RELATION_CAN_VIEW
     };
   }
 
@@ -42,45 +44,45 @@ service UserService {
     };
   }
 
-  rpc SaveUser(user.service.v1.SaveUserRequest) returns (user.service.v1.SaveUserResponse) {
+  rpc CreateUser(user.service.v1.CreateUserRequest) returns (user.service.v1.CreateUserResponse) {
     option (google.api.http) = {
-      post: "/v1/user/save"
+      post: "/v1/users"
       body: "*"
     };
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_ADMIN
+      relation: RELATION_CAN_MANAGE_MEMBERS
     };
   }
 
   rpc DeleteUser(user.service.v1.DeleteUserRequest) returns (user.service.v1.DeleteUserResponse) {
-    option (google.api.http) = {delete: "/v1/user/delete/{id}"};
+    option (google.api.http) = {delete: "/v1/users/{id}"};
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_ADMIN
+      relation: RELATION_CAN_MANAGE
     };
   }
 
   rpc PurgeUser(user.service.v1.PurgeUserRequest) returns (user.service.v1.PurgeUserResponse) {
-    option (google.api.http) = {delete: "/v1/user/purge/{id}"};
+    option (google.api.http) = {delete: "/v1/users/{id}/purge"};
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_ADMIN
+      relation: RELATION_CAN_MANAGE
     };
   }
 
   rpc RestoreUser(user.service.v1.RestoreUserRequest) returns (user.service.v1.RestoreUserResponse) {
     option (google.api.http) = {
-      post: "/v1/user/restore/{id}"
+      post: "/v1/users/{id}/restore"
       body: "*"
     };
     option (authz.service.v1.rule) = {
       mode: AUTHZ_MODE_OBJECT
       object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_ADMIN
+      relation: RELATION_CAN_MANAGE
     };
   }
 }

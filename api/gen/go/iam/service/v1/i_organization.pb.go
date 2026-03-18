@@ -27,7 +27,7 @@ var File_iam_service_v1_i_organization_proto protoreflect.FileDescriptor
 
 const file_iam_service_v1_i_organization_proto_rawDesc = "" +
 	"\n" +
-	"#iam/service/v1/i_organization.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a*organization/service/v1/organization.proto\x1a\x1cauthz/service/v1/authz.proto2\xc9\x0f\n" +
+	"#iam/service/v1/i_organization.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a*organization/service/v1/organization.proto\x1a\x1cauthz/service/v1/authz.proto2\xba\x11\n" +
 	"\x13OrganizationService\x12\xa1\x01\n" +
 	"\x12CreateOrganization\x122.organization.service.v1.CreateOrganizationRequest\x1a3.organization.service.v1.CreateOrganizationResponse\"\"\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x16:\x01*\"\x11/v1/organizations\x12\xa0\x01\n" +
 	"\x0fGetOrganization\x12/.organization.service.v1.GetOrganizationRequest\x1a0.organization.service.v1.GetOrganizationResponse\"*\xa2\xbb\x18\b\b\x02\x10\n" +
@@ -41,32 +41,35 @@ const file_iam_service_v1_i_organization_proto_rawDesc = "" +
 	"\fRemoveMember\x12,.organization.service.v1.RemoveMemberRequest\x1a-.organization.service.v1.RemoveMemberResponse\"V\xa2\xbb\x18\x15\b\x02\x10\x0e\"\x0forganization_id\x82\xd3\xe4\x93\x027*5/v1/organizations/{organization_id}/members/{user_id}\x12\xb6\x01\n" +
 	"\vListMembers\x12+.organization.service.v1.ListMembersRequest\x1a,.organization.service.v1.ListMembersResponse\"L\xa2\xbb\x18\x15\b\x02\x10\n" +
 	"\"\x0forganization_id\x82\xd3\xe4\x93\x02-\x12+/v1/organizations/{organization_id}/members\x12\xd7\x01\n" +
-	"\x10UpdateMemberRole\x120.organization.service.v1.UpdateMemberRoleRequest\x1a1.organization.service.v1.UpdateMemberRoleResponse\"^\xa2\xbb\x18\x15\b\x02\x10\x0e\"\x0forganization_id\x82\xd3\xe4\x93\x02?:\x01*\x1a:/v1/organizations/{organization_id}/members/{user_id}/roleB\xc2\x01\n" +
+	"\x10UpdateMemberRole\x120.organization.service.v1.UpdateMemberRoleRequest\x1a1.organization.service.v1.UpdateMemberRoleResponse\"^\xa2\xbb\x18\x15\b\x02\x10\x0e\"\x0forganization_id\x82\xd3\xe4\x93\x02?:\x01*\x1a:/v1/organizations/{organization_id}/members/{user_id}/role\x12\xee\x01\n" +
+	"\x11TransferOwnership\x12=.organization.service.v1.TransferOrganizationOwnershipRequest\x1a>.organization.service.v1.TransferOrganizationOwnershipResponse\"Z\xa2\xbb\x18\x15\b\x02\x10\x0e\"\x0forganization_id\x82\xd3\xe4\x93\x02;:\x01*\"6/v1/organizations/{organization_id}/transfer-ownershipB\xc2\x01\n" +
 	"\x12com.iam.service.v1B\x12IOrganizationProtoP\x01Z>github.com/Servora-Kit/servora/api/gen/go/iam/service/v1;iampb\xa2\x02\x03ISX\xaa\x02\x0eIam.Service.V1\xca\x02\x0eIam\\Service\\V1\xe2\x02\x1aIam\\Service\\V1\\GPBMetadata\xea\x02\x10Iam::Service::V1b\x06proto3"
 
 var file_iam_service_v1_i_organization_proto_goTypes = []any{
-	(*v1.CreateOrganizationRequest)(nil),   // 0: organization.service.v1.CreateOrganizationRequest
-	(*v1.GetOrganizationRequest)(nil),      // 1: organization.service.v1.GetOrganizationRequest
-	(*v1.ListOrganizationsRequest)(nil),    // 2: organization.service.v1.ListOrganizationsRequest
-	(*v1.UpdateOrganizationRequest)(nil),   // 3: organization.service.v1.UpdateOrganizationRequest
-	(*v1.DeleteOrganizationRequest)(nil),   // 4: organization.service.v1.DeleteOrganizationRequest
-	(*v1.PurgeOrganizationRequest)(nil),    // 5: organization.service.v1.PurgeOrganizationRequest
-	(*v1.RestoreOrganizationRequest)(nil),  // 6: organization.service.v1.RestoreOrganizationRequest
-	(*v1.AddMemberRequest)(nil),            // 7: organization.service.v1.AddMemberRequest
-	(*v1.RemoveMemberRequest)(nil),         // 8: organization.service.v1.RemoveMemberRequest
-	(*v1.ListMembersRequest)(nil),          // 9: organization.service.v1.ListMembersRequest
-	(*v1.UpdateMemberRoleRequest)(nil),     // 10: organization.service.v1.UpdateMemberRoleRequest
-	(*v1.CreateOrganizationResponse)(nil),  // 11: organization.service.v1.CreateOrganizationResponse
-	(*v1.GetOrganizationResponse)(nil),     // 12: organization.service.v1.GetOrganizationResponse
-	(*v1.ListOrganizationsResponse)(nil),   // 13: organization.service.v1.ListOrganizationsResponse
-	(*v1.UpdateOrganizationResponse)(nil),  // 14: organization.service.v1.UpdateOrganizationResponse
-	(*v1.DeleteOrganizationResponse)(nil),  // 15: organization.service.v1.DeleteOrganizationResponse
-	(*v1.PurgeOrganizationResponse)(nil),   // 16: organization.service.v1.PurgeOrganizationResponse
-	(*v1.RestoreOrganizationResponse)(nil), // 17: organization.service.v1.RestoreOrganizationResponse
-	(*v1.AddMemberResponse)(nil),           // 18: organization.service.v1.AddMemberResponse
-	(*v1.RemoveMemberResponse)(nil),        // 19: organization.service.v1.RemoveMemberResponse
-	(*v1.ListMembersResponse)(nil),         // 20: organization.service.v1.ListMembersResponse
-	(*v1.UpdateMemberRoleResponse)(nil),    // 21: organization.service.v1.UpdateMemberRoleResponse
+	(*v1.CreateOrganizationRequest)(nil),             // 0: organization.service.v1.CreateOrganizationRequest
+	(*v1.GetOrganizationRequest)(nil),                // 1: organization.service.v1.GetOrganizationRequest
+	(*v1.ListOrganizationsRequest)(nil),              // 2: organization.service.v1.ListOrganizationsRequest
+	(*v1.UpdateOrganizationRequest)(nil),             // 3: organization.service.v1.UpdateOrganizationRequest
+	(*v1.DeleteOrganizationRequest)(nil),             // 4: organization.service.v1.DeleteOrganizationRequest
+	(*v1.PurgeOrganizationRequest)(nil),              // 5: organization.service.v1.PurgeOrganizationRequest
+	(*v1.RestoreOrganizationRequest)(nil),            // 6: organization.service.v1.RestoreOrganizationRequest
+	(*v1.AddMemberRequest)(nil),                      // 7: organization.service.v1.AddMemberRequest
+	(*v1.RemoveMemberRequest)(nil),                   // 8: organization.service.v1.RemoveMemberRequest
+	(*v1.ListMembersRequest)(nil),                    // 9: organization.service.v1.ListMembersRequest
+	(*v1.UpdateMemberRoleRequest)(nil),               // 10: organization.service.v1.UpdateMemberRoleRequest
+	(*v1.TransferOrganizationOwnershipRequest)(nil),  // 11: organization.service.v1.TransferOrganizationOwnershipRequest
+	(*v1.CreateOrganizationResponse)(nil),            // 12: organization.service.v1.CreateOrganizationResponse
+	(*v1.GetOrganizationResponse)(nil),               // 13: organization.service.v1.GetOrganizationResponse
+	(*v1.ListOrganizationsResponse)(nil),             // 14: organization.service.v1.ListOrganizationsResponse
+	(*v1.UpdateOrganizationResponse)(nil),            // 15: organization.service.v1.UpdateOrganizationResponse
+	(*v1.DeleteOrganizationResponse)(nil),            // 16: organization.service.v1.DeleteOrganizationResponse
+	(*v1.PurgeOrganizationResponse)(nil),             // 17: organization.service.v1.PurgeOrganizationResponse
+	(*v1.RestoreOrganizationResponse)(nil),           // 18: organization.service.v1.RestoreOrganizationResponse
+	(*v1.AddMemberResponse)(nil),                     // 19: organization.service.v1.AddMemberResponse
+	(*v1.RemoveMemberResponse)(nil),                  // 20: organization.service.v1.RemoveMemberResponse
+	(*v1.ListMembersResponse)(nil),                   // 21: organization.service.v1.ListMembersResponse
+	(*v1.UpdateMemberRoleResponse)(nil),              // 22: organization.service.v1.UpdateMemberRoleResponse
+	(*v1.TransferOrganizationOwnershipResponse)(nil), // 23: organization.service.v1.TransferOrganizationOwnershipResponse
 }
 var file_iam_service_v1_i_organization_proto_depIdxs = []int32{
 	0,  // 0: iam.service.v1.OrganizationService.CreateOrganization:input_type -> organization.service.v1.CreateOrganizationRequest
@@ -80,19 +83,21 @@ var file_iam_service_v1_i_organization_proto_depIdxs = []int32{
 	8,  // 8: iam.service.v1.OrganizationService.RemoveMember:input_type -> organization.service.v1.RemoveMemberRequest
 	9,  // 9: iam.service.v1.OrganizationService.ListMembers:input_type -> organization.service.v1.ListMembersRequest
 	10, // 10: iam.service.v1.OrganizationService.UpdateMemberRole:input_type -> organization.service.v1.UpdateMemberRoleRequest
-	11, // 11: iam.service.v1.OrganizationService.CreateOrganization:output_type -> organization.service.v1.CreateOrganizationResponse
-	12, // 12: iam.service.v1.OrganizationService.GetOrganization:output_type -> organization.service.v1.GetOrganizationResponse
-	13, // 13: iam.service.v1.OrganizationService.ListOrganizations:output_type -> organization.service.v1.ListOrganizationsResponse
-	14, // 14: iam.service.v1.OrganizationService.UpdateOrganization:output_type -> organization.service.v1.UpdateOrganizationResponse
-	15, // 15: iam.service.v1.OrganizationService.DeleteOrganization:output_type -> organization.service.v1.DeleteOrganizationResponse
-	16, // 16: iam.service.v1.OrganizationService.PurgeOrganization:output_type -> organization.service.v1.PurgeOrganizationResponse
-	17, // 17: iam.service.v1.OrganizationService.RestoreOrganization:output_type -> organization.service.v1.RestoreOrganizationResponse
-	18, // 18: iam.service.v1.OrganizationService.AddMember:output_type -> organization.service.v1.AddMemberResponse
-	19, // 19: iam.service.v1.OrganizationService.RemoveMember:output_type -> organization.service.v1.RemoveMemberResponse
-	20, // 20: iam.service.v1.OrganizationService.ListMembers:output_type -> organization.service.v1.ListMembersResponse
-	21, // 21: iam.service.v1.OrganizationService.UpdateMemberRole:output_type -> organization.service.v1.UpdateMemberRoleResponse
-	11, // [11:22] is the sub-list for method output_type
-	0,  // [0:11] is the sub-list for method input_type
+	11, // 11: iam.service.v1.OrganizationService.TransferOwnership:input_type -> organization.service.v1.TransferOrganizationOwnershipRequest
+	12, // 12: iam.service.v1.OrganizationService.CreateOrganization:output_type -> organization.service.v1.CreateOrganizationResponse
+	13, // 13: iam.service.v1.OrganizationService.GetOrganization:output_type -> organization.service.v1.GetOrganizationResponse
+	14, // 14: iam.service.v1.OrganizationService.ListOrganizations:output_type -> organization.service.v1.ListOrganizationsResponse
+	15, // 15: iam.service.v1.OrganizationService.UpdateOrganization:output_type -> organization.service.v1.UpdateOrganizationResponse
+	16, // 16: iam.service.v1.OrganizationService.DeleteOrganization:output_type -> organization.service.v1.DeleteOrganizationResponse
+	17, // 17: iam.service.v1.OrganizationService.PurgeOrganization:output_type -> organization.service.v1.PurgeOrganizationResponse
+	18, // 18: iam.service.v1.OrganizationService.RestoreOrganization:output_type -> organization.service.v1.RestoreOrganizationResponse
+	19, // 19: iam.service.v1.OrganizationService.AddMember:output_type -> organization.service.v1.AddMemberResponse
+	20, // 20: iam.service.v1.OrganizationService.RemoveMember:output_type -> organization.service.v1.RemoveMemberResponse
+	21, // 21: iam.service.v1.OrganizationService.ListMembers:output_type -> organization.service.v1.ListMembersResponse
+	22, // 22: iam.service.v1.OrganizationService.UpdateMemberRole:output_type -> organization.service.v1.UpdateMemberRoleResponse
+	23, // 23: iam.service.v1.OrganizationService.TransferOwnership:output_type -> organization.service.v1.TransferOrganizationOwnershipResponse
+	12, // [12:24] is the sub-list for method output_type
+	0,  // [0:12] is the sub-list for method input_type
 	0,  // [0:0] is the sub-list for extension type_name
 	0,  // [0:0] is the sub-list for extension extendee
 	0,  // [0:0] is the sub-list for field type_name

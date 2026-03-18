@@ -27,18 +27,21 @@ var File_iam_service_v1_i_user_proto protoreflect.FileDescriptor
 
 const file_iam_service_v1_i_user_proto_rawDesc = "" +
 	"\n" +
-	"\x1biam/service/v1/i_user.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1cauthz/service/v1/authz.proto\x1a\x1auser/service/v1/user.proto2\xdd\a\n" +
+	"\x1biam/service/v1/i_user.proto\x12\x0eiam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1cauthz/service/v1/authz.proto\x1a\x1auser/service/v1/user.proto2\xdf\a\n" +
 	"\vUserService\x12\x81\x01\n" +
-	"\x0fCurrentUserInfo\x12'.user.service.v1.CurrentUserInfoRequest\x1a(.user.service.v1.CurrentUserInfoResponse\"\x1b\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x0f\x12\r/v1/user/info\x12j\n" +
-	"\aGetUser\x12\x1f.user.service.v1.GetUserRequest\x1a .user.service.v1.GetUserResponse\"\x1c\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12o\n" +
-	"\tListUsers\x12!.user.service.v1.ListUsersRequest\x1a\".user.service.v1.ListUsersResponse\"\x1b\xa2\xbb\x18\x06\b\x04\x10\x02\x18\x01\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12w\n" +
+	"\x0fCurrentUserInfo\x12'.user.service.v1.CurrentUserInfoRequest\x1a(.user.service.v1.CurrentUserInfoResponse\"\x1b\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x0f\x12\r/v1/user/info\x12n\n" +
+	"\aGetUser\x12\x1f.user.service.v1.GetUserRequest\x1a .user.service.v1.GetUserResponse\" \xa2\xbb\x18\x06\b\x04\x10\n" +
+	"\x18\x01\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12o\n" +
+	"\tListUsers\x12!.user.service.v1.ListUsersRequest\x1a\".user.service.v1.ListUsersResponse\"\x1b\xa2\xbb\x18\x06\b\x04\x10\n" +
+	"\x18\x01\x82\xd3\xe4\x93\x02\v\x12\t/v1/users\x12w\n" +
 	"\n" +
-	"UpdateUser\x12\".user.service.v1.UpdateUserRequest\x1a#.user.service.v1.UpdateUserResponse\" \xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/user/update\x12s\n" +
-	"\bSaveUser\x12 .user.service.v1.SaveUserRequest\x1a!.user.service.v1.SaveUserResponse\"\"\xa2\xbb\x18\x06\b\x04\x10\x02\x18\x01\x82\xd3\xe4\x93\x02\x12:\x01*\"\r/v1/user/save\x12}\n" +
+	"UpdateUser\x12\".user.service.v1.UpdateUserRequest\x1a#.user.service.v1.UpdateUserResponse\" \xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x14:\x01*\"\x0f/v1/user/update\x12u\n" +
 	"\n" +
-	"DeleteUser\x12\".user.service.v1.DeleteUserRequest\x1a#.user.service.v1.DeleteUserResponse\"&\xa2\xbb\x18\x06\b\x04\x10\x02\x18\x01\x82\xd3\xe4\x93\x02\x16*\x14/v1/user/delete/{id}\x12y\n" +
-	"\tPurgeUser\x12!.user.service.v1.PurgeUserRequest\x1a\".user.service.v1.PurgeUserResponse\"%\xa2\xbb\x18\x06\b\x04\x10\x02\x18\x01\x82\xd3\xe4\x93\x02\x15*\x13/v1/user/purge/{id}\x12\x84\x01\n" +
-	"\vRestoreUser\x12#.user.service.v1.RestoreUserRequest\x1a$.user.service.v1.RestoreUserResponse\"*\xa2\xbb\x18\x06\b\x04\x10\x02\x18\x01\x82\xd3\xe4\x93\x02\x1a:\x01*\"\x15/v1/user/restore/{id}B\xba\x01\n" +
+	"CreateUser\x12\".user.service.v1.CreateUserRequest\x1a#.user.service.v1.CreateUserResponse\"\x1e\xa2\xbb\x18\x06\b\x04\x10\x0e\x18\x01\x82\xd3\xe4\x93\x02\x0e:\x01*\"\t/v1/users\x12w\n" +
+	"\n" +
+	"DeleteUser\x12\".user.service.v1.DeleteUserRequest\x1a#.user.service.v1.DeleteUserResponse\" \xa2\xbb\x18\x06\b\x04\x10\r\x18\x01\x82\xd3\xe4\x93\x02\x10*\x0e/v1/users/{id}\x12z\n" +
+	"\tPurgeUser\x12!.user.service.v1.PurgeUserRequest\x1a\".user.service.v1.PurgeUserResponse\"&\xa2\xbb\x18\x06\b\x04\x10\r\x18\x01\x82\xd3\xe4\x93\x02\x16*\x14/v1/users/{id}/purge\x12\x85\x01\n" +
+	"\vRestoreUser\x12#.user.service.v1.RestoreUserRequest\x1a$.user.service.v1.RestoreUserResponse\"+\xa2\xbb\x18\x06\b\x04\x10\r\x18\x01\x82\xd3\xe4\x93\x02\x1b:\x01*\"\x16/v1/users/{id}/restoreB\xba\x01\n" +
 	"\x12com.iam.service.v1B\n" +
 	"IUserProtoP\x01Z>github.com/Servora-Kit/servora/api/gen/go/iam/service/v1;iampb\xa2\x02\x03ISX\xaa\x02\x0eIam.Service.V1\xca\x02\x0eIam\\Service\\V1\xe2\x02\x1aIam\\Service\\V1\\GPBMetadata\xea\x02\x10Iam::Service::V1b\x06proto3"
 
@@ -47,7 +50,7 @@ var file_iam_service_v1_i_user_proto_goTypes = []any{
 	(*v1.GetUserRequest)(nil),          // 1: user.service.v1.GetUserRequest
 	(*v1.ListUsersRequest)(nil),        // 2: user.service.v1.ListUsersRequest
 	(*v1.UpdateUserRequest)(nil),       // 3: user.service.v1.UpdateUserRequest
-	(*v1.SaveUserRequest)(nil),         // 4: user.service.v1.SaveUserRequest
+	(*v1.CreateUserRequest)(nil),       // 4: user.service.v1.CreateUserRequest
 	(*v1.DeleteUserRequest)(nil),       // 5: user.service.v1.DeleteUserRequest
 	(*v1.PurgeUserRequest)(nil),        // 6: user.service.v1.PurgeUserRequest
 	(*v1.RestoreUserRequest)(nil),      // 7: user.service.v1.RestoreUserRequest
@@ -55,7 +58,7 @@ var file_iam_service_v1_i_user_proto_goTypes = []any{
 	(*v1.GetUserResponse)(nil),         // 9: user.service.v1.GetUserResponse
 	(*v1.ListUsersResponse)(nil),       // 10: user.service.v1.ListUsersResponse
 	(*v1.UpdateUserResponse)(nil),      // 11: user.service.v1.UpdateUserResponse
-	(*v1.SaveUserResponse)(nil),        // 12: user.service.v1.SaveUserResponse
+	(*v1.CreateUserResponse)(nil),      // 12: user.service.v1.CreateUserResponse
 	(*v1.DeleteUserResponse)(nil),      // 13: user.service.v1.DeleteUserResponse
 	(*v1.PurgeUserResponse)(nil),       // 14: user.service.v1.PurgeUserResponse
 	(*v1.RestoreUserResponse)(nil),     // 15: user.service.v1.RestoreUserResponse
@@ -65,7 +68,7 @@ var file_iam_service_v1_i_user_proto_depIdxs = []int32{
 	1,  // 1: iam.service.v1.UserService.GetUser:input_type -> user.service.v1.GetUserRequest
 	2,  // 2: iam.service.v1.UserService.ListUsers:input_type -> user.service.v1.ListUsersRequest
 	3,  // 3: iam.service.v1.UserService.UpdateUser:input_type -> user.service.v1.UpdateUserRequest
-	4,  // 4: iam.service.v1.UserService.SaveUser:input_type -> user.service.v1.SaveUserRequest
+	4,  // 4: iam.service.v1.UserService.CreateUser:input_type -> user.service.v1.CreateUserRequest
 	5,  // 5: iam.service.v1.UserService.DeleteUser:input_type -> user.service.v1.DeleteUserRequest
 	6,  // 6: iam.service.v1.UserService.PurgeUser:input_type -> user.service.v1.PurgeUserRequest
 	7,  // 7: iam.service.v1.UserService.RestoreUser:input_type -> user.service.v1.RestoreUserRequest
@@ -73,7 +76,7 @@ var file_iam_service_v1_i_user_proto_depIdxs = []int32{
 	9,  // 9: iam.service.v1.UserService.GetUser:output_type -> user.service.v1.GetUserResponse
 	10, // 10: iam.service.v1.UserService.ListUsers:output_type -> user.service.v1.ListUsersResponse
 	11, // 11: iam.service.v1.UserService.UpdateUser:output_type -> user.service.v1.UpdateUserResponse
-	12, // 12: iam.service.v1.UserService.SaveUser:output_type -> user.service.v1.SaveUserResponse
+	12, // 12: iam.service.v1.UserService.CreateUser:output_type -> user.service.v1.CreateUserResponse
 	13, // 13: iam.service.v1.UserService.DeleteUser:output_type -> user.service.v1.DeleteUserResponse
 	14, // 14: iam.service.v1.UserService.PurgeUser:output_type -> user.service.v1.PurgeUserResponse
 	15, // 15: iam.service.v1.UserService.RestoreUser:output_type -> user.service.v1.RestoreUserResponse

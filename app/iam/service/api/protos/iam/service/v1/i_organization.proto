@@ -118,4 +118,16 @@ service OrganizationService {
       id_field: "organization_id"
     };
   }
+
+  rpc TransferOwnership(organization.service.v1.TransferOrganizationOwnershipRequest) returns (organization.service.v1.TransferOrganizationOwnershipResponse) {
+    option (google.api.http) = {
+      post: "/v1/organizations/{organization_id}/transfer-ownership"
+      body: "*"
+    };
+    option (authz.service.v1.rule) = {
+      mode: AUTHZ_MODE_ORGANIZATION
+      relation: RELATION_CAN_MANAGE_MEMBERS
+      id_field: "organization_id"
+    };
+  }
 }

@@ -29,6 +29,7 @@ const OperationTenantServiceListMembers = "/iam.service.v1.TenantService/ListMem
 const OperationTenantServiceListTenants = "/iam.service.v1.TenantService/ListTenants"
 const OperationTenantServiceRejectInvitation = "/iam.service.v1.TenantService/RejectInvitation"
 const OperationTenantServiceRemoveMember = "/iam.service.v1.TenantService/RemoveMember"
+const OperationTenantServiceTransferOwnership = "/iam.service.v1.TenantService/TransferOwnership"
 const OperationTenantServiceUpdateMemberRole = "/iam.service.v1.TenantService/UpdateMemberRole"
 const OperationTenantServiceUpdateTenant = "/iam.service.v1.TenantService/UpdateTenant"
 
@@ -42,6 +43,7 @@ type TenantServiceHTTPServer interface {
 	ListTenants(context.Context, *v1.ListTenantsRequest) (*v1.ListTenantsResponse, error)
 	RejectInvitation(context.Context, *v1.RejectTenantInvitationRequest) (*v1.RejectTenantInvitationResponse, error)
 	RemoveMember(context.Context, *v1.RemoveTenantMemberRequest) (*v1.RemoveTenantMemberResponse, error)
+	TransferOwnership(context.Context, *v1.TransferTenantOwnershipRequest) (*v1.TransferTenantOwnershipResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateTenantMemberRoleRequest) (*v1.UpdateTenantMemberRoleResponse, error)
 	UpdateTenant(context.Context, *v1.UpdateTenantRequest) (*v1.UpdateTenantResponse, error)
 }
@@ -56,9 +58,10 @@ func RegisterTenantServiceHTTPServer(s *http.Server, srv TenantServiceHTTPServer
 	r.POST("/v1/tenants/{tenant_id}/members", _TenantService_InviteMember0_HTTP_Handler(srv))
 	r.POST("/v1/tenants/{tenant_id}/invitations/accept", _TenantService_AcceptInvitation0_HTTP_Handler(srv))
 	r.POST("/v1/tenants/{tenant_id}/invitations/reject", _TenantService_RejectInvitation0_HTTP_Handler(srv))
-	r.GET("/v1/tenants/{tenant_id}/members", _TenantService_ListMembers2_HTTP_Handler(srv))
-	r.PUT("/v1/tenants/{tenant_id}/members/{user_id}/role", _TenantService_UpdateMemberRole2_HTTP_Handler(srv))
-	r.DELETE("/v1/tenants/{tenant_id}/members/{user_id}", _TenantService_RemoveMember2_HTTP_Handler(srv))
+	r.GET("/v1/tenants/{tenant_id}/members", _TenantService_ListMembers1_HTTP_Handler(srv))
+	r.PUT("/v1/tenants/{tenant_id}/members/{user_id}/role", _TenantService_UpdateMemberRole1_HTTP_Handler(srv))
+	r.DELETE("/v1/tenants/{tenant_id}/members/{user_id}", _TenantService_RemoveMember1_HTTP_Handler(srv))
+	r.POST("/v1/tenants/{tenant_id}/transfer-ownership", _TenantService_TransferOwnership1_HTTP_Handler(srv))
 }
 
 func _TenantService_CreateTenant0_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
@@ -246,7 +249,7 @@ func _TenantService_RejectInvitation0_HTTP_Handler(srv TenantServiceHTTPServer) 
 	}
 }
 
-func _TenantService_ListMembers2_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
+func _TenantService_ListMembers1_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.ListTenantMembersRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -268,7 +271,7 @@ func _TenantService_ListMembers2_HTTP_Handler(srv TenantServiceHTTPServer) func(
 	}
 }
 
-func _TenantService_UpdateMemberRole2_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
+func _TenantService_UpdateMemberRole1_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.UpdateTenantMemberRoleRequest
 		if err := ctx.Bind(&in); err != nil {
@@ -293,7 +296,7 @@ func _TenantService_UpdateMemberRole2_HTTP_Handler(srv TenantServiceHTTPServer) 
 	}
 }
 
-func _TenantService_RemoveMember2_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
+func _TenantService_RemoveMember1_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
 		var in v1.RemoveTenantMemberRequest
 		if err := ctx.BindQuery(&in); err != nil {
@@ -315,6 +318,31 @@ func _TenantService_RemoveMember2_HTTP_Handler(srv TenantServiceHTTPServer) func
 	}
 }
 
+func _TenantService_TransferOwnership1_HTTP_Handler(srv TenantServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.TransferTenantOwnershipRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationTenantServiceTransferOwnership)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.TransferOwnership(ctx, req.(*v1.TransferTenantOwnershipRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v1.TransferTenantOwnershipResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type TenantServiceHTTPClient interface {
 	AcceptInvitation(ctx context.Context, req *v1.AcceptTenantInvitationRequest, opts ...http.CallOption) (rsp *v1.AcceptTenantInvitationResponse, err error)
 	CreateTenant(ctx context.Context, req *v1.CreateTenantRequest, opts ...http.CallOption) (rsp *v1.CreateTenantResponse, err error)
@@ -325,6 +353,7 @@ type TenantServiceHTTPClient interface {
 	ListTenants(ctx context.Context, req *v1.ListTenantsRequest, opts ...http.CallOption) (rsp *v1.ListTenantsResponse, err error)
 	RejectInvitation(ctx context.Context, req *v1.RejectTenantInvitationRequest, opts ...http.CallOption) (rsp *v1.RejectTenantInvitationResponse, err error)
 	RemoveMember(ctx context.Context, req *v1.RemoveTenantMemberRequest, opts ...http.CallOption) (rsp *v1.RemoveTenantMemberResponse, err error)
+	TransferOwnership(ctx context.Context, req *v1.TransferTenantOwnershipRequest, opts ...http.CallOption) (rsp *v1.TransferTenantOwnershipResponse, err error)
 	UpdateMemberRole(ctx context.Context, req *v1.UpdateTenantMemberRoleRequest, opts ...http.CallOption) (rsp *v1.UpdateTenantMemberRoleResponse, err error)
 	UpdateTenant(ctx context.Context, req *v1.UpdateTenantRequest, opts ...http.CallOption) (rsp *v1.UpdateTenantResponse, err error)
 }
@@ -448,6 +477,19 @@ func (c *TenantServiceHTTPClientImpl) RemoveMember(ctx context.Context, in *v1.R
 	opts = append(opts, http.Operation(OperationTenantServiceRemoveMember))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "DELETE", path, nil, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *TenantServiceHTTPClientImpl) TransferOwnership(ctx context.Context, in *v1.TransferTenantOwnershipRequest, opts ...http.CallOption) (*v1.TransferTenantOwnershipResponse, error) {
+	var out v1.TransferTenantOwnershipResponse
+	pattern := "/v1/tenants/{tenant_id}/transfer-ownership"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationTenantServiceTransferOwnership))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {
 		return nil, err
 	}

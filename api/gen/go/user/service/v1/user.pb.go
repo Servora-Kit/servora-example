@@ -36,6 +36,8 @@ const (
 	ErrorReason_UPDATE_USER_FAILED ErrorReason = 2
 	// 保存用户信息失败
 	ErrorReason_SAVE_USER_FAILED ErrorReason = 3
+	// 创建用户失败
+	ErrorReason_CREATE_USER_FAILED ErrorReason = 4
 )
 
 // Enum value maps for ErrorReason.
@@ -45,12 +47,14 @@ var (
 		1: "DELETE_USER_FAILED",
 		2: "UPDATE_USER_FAILED",
 		3: "SAVE_USER_FAILED",
+		4: "CREATE_USER_FAILED",
 	}
 	ErrorReason_value = map[string]int32{
 		"USER_NOT_FOUND":     0,
 		"DELETE_USER_FAILED": 1,
 		"UPDATE_USER_FAILED": 2,
 		"SAVE_USER_FAILED":   3,
+		"CREATE_USER_FAILED": 4,
 	}
 )
 
@@ -715,7 +719,6 @@ type UpdateUserRequest struct {
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
 	Email         string                 `protobuf:"bytes,3,opt,name=email,proto3" json:"email,omitempty"`
 	Password      string                 `protobuf:"bytes,4,opt,name=password,proto3" json:"password,omitempty"`
-	Role          string                 `protobuf:"bytes,5,opt,name=role,proto3" json:"role,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -778,13 +781,6 @@ func (x *UpdateUserRequest) GetPassword() string {
 	return ""
 }
 
-func (x *UpdateUserRequest) GetRole() string {
-	if x != nil {
-		return x.Role
-	}
-	return ""
-}
-
 type UpdateUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	User          *UserInfo              `protobuf:"bytes,1,opt,name=user,proto3" json:"user,omitempty"`
@@ -829,30 +825,30 @@ func (x *UpdateUserResponse) GetUser() *UserInfo {
 	return nil
 }
 
-type SaveUserRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
-	Password      string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
-	Role          string                 `protobuf:"bytes,4,opt,name=role,proto3" json:"role,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+type CreateUserRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Name           string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Email          string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Password       string                 `protobuf:"bytes,3,opt,name=password,proto3" json:"password,omitempty"`
+	OrganizationId string                 `protobuf:"bytes,4,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
-func (x *SaveUserRequest) Reset() {
-	*x = SaveUserRequest{}
+func (x *CreateUserRequest) Reset() {
+	*x = CreateUserRequest{}
 	mi := &file_user_service_v1_user_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SaveUserRequest) String() string {
+func (x *CreateUserRequest) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SaveUserRequest) ProtoMessage() {}
+func (*CreateUserRequest) ProtoMessage() {}
 
-func (x *SaveUserRequest) ProtoReflect() protoreflect.Message {
+func (x *CreateUserRequest) ProtoReflect() protoreflect.Message {
 	mi := &file_user_service_v1_user_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -864,60 +860,60 @@ func (x *SaveUserRequest) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SaveUserRequest.ProtoReflect.Descriptor instead.
-func (*SaveUserRequest) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateUserRequest.ProtoReflect.Descriptor instead.
+func (*CreateUserRequest) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{15}
 }
 
-func (x *SaveUserRequest) GetName() string {
+func (x *CreateUserRequest) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *SaveUserRequest) GetEmail() string {
+func (x *CreateUserRequest) GetEmail() string {
 	if x != nil {
 		return x.Email
 	}
 	return ""
 }
 
-func (x *SaveUserRequest) GetPassword() string {
+func (x *CreateUserRequest) GetPassword() string {
 	if x != nil {
 		return x.Password
 	}
 	return ""
 }
 
-func (x *SaveUserRequest) GetRole() string {
+func (x *CreateUserRequest) GetOrganizationId() string {
 	if x != nil {
-		return x.Role
+		return x.OrganizationId
 	}
 	return ""
 }
 
-type SaveUserResponse struct {
+type CreateUserResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
-func (x *SaveUserResponse) Reset() {
-	*x = SaveUserResponse{}
+func (x *CreateUserResponse) Reset() {
+	*x = CreateUserResponse{}
 	mi := &file_user_service_v1_user_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *SaveUserResponse) String() string {
+func (x *CreateUserResponse) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*SaveUserResponse) ProtoMessage() {}
+func (*CreateUserResponse) ProtoMessage() {}
 
-func (x *SaveUserResponse) ProtoReflect() protoreflect.Message {
+func (x *CreateUserResponse) ProtoReflect() protoreflect.Message {
 	mi := &file_user_service_v1_user_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -929,12 +925,12 @@ func (x *SaveUserResponse) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use SaveUserResponse.ProtoReflect.Descriptor instead.
-func (*SaveUserResponse) Descriptor() ([]byte, []int) {
+// Deprecated: Use CreateUserResponse.ProtoReflect.Descriptor instead.
+func (*CreateUserResponse) Descriptor() ([]byte, []int) {
 	return file_user_service_v1_user_proto_rawDescGZIP(), []int{16}
 }
 
-func (x *SaveUserResponse) GetId() string {
+func (x *CreateUserResponse) GetId() string {
 	if x != nil {
 		return x.Id
 	}
@@ -982,35 +978,35 @@ const file_user_service_v1_user_proto_rawDesc = "" +
 	"\x12RestoreUserRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"D\n" +
 	"\x13RestoreUserResponse\x12-\n" +
-	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"}\n" +
+	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"i\n" +
 	"\x11UpdateUserRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x14\n" +
 	"\x05email\x18\x03 \x01(\tR\x05email\x12\x1a\n" +
-	"\bpassword\x18\x04 \x01(\tR\bpassword\x12\x12\n" +
-	"\x04role\x18\x05 \x01(\tR\x04role\"C\n" +
+	"\bpassword\x18\x04 \x01(\tR\bpassword\"C\n" +
 	"\x12UpdateUserResponse\x12-\n" +
-	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"\x88\x01\n" +
-	"\x0fSaveUserRequest\x12\x1b\n" +
-	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x05R\x04name\x12\x1d\n" +
+	"\x04user\x18\x01 \x01(\v2\x19.user.service.v1.UserInfoR\x04user\"\xa9\x01\n" +
+	"\x11CreateUserRequest\x12\x1b\n" +
+	"\x04name\x18\x01 \x01(\tB\a\xbaH\x04r\x02\x10\x02R\x04name\x12\x1d\n" +
 	"\x05email\x18\x02 \x01(\tB\a\xbaH\x04r\x02`\x01R\x05email\x12%\n" +
-	"\bpassword\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x05\x18\n" +
-	"R\bpassword\x12\x12\n" +
-	"\x04role\x18\x04 \x01(\tR\x04role\"\"\n" +
-	"\x10SaveUserResponse\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id*\x85\x01\n" +
+	"\bpassword\x18\x03 \x01(\tB\t\xbaH\x06r\x04\x10\x05\x18@R\bpassword\x121\n" +
+	"\x0forganization_id\x18\x04 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\"$\n" +
+	"\x12CreateUserResponse\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id*\xa3\x01\n" +
 	"\vErrorReason\x12\x18\n" +
 	"\x0eUSER_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12\x1c\n" +
 	"\x12DELETE_USER_FAILED\x10\x01\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
 	"\x12UPDATE_USER_FAILED\x10\x02\x1a\x04\xa8E\xf4\x03\x12\x1a\n" +
-	"\x10SAVE_USER_FAILED\x10\x03\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\xc2\x05\n" +
+	"\x10SAVE_USER_FAILED\x10\x03\x1a\x04\xa8E\xf4\x03\x12\x1c\n" +
+	"\x12CREATE_USER_FAILED\x10\x04\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\xc8\x05\n" +
 	"\vUserService\x12d\n" +
 	"\x0fCurrentUserInfo\x12'.user.service.v1.CurrentUserInfoRequest\x1a(.user.service.v1.CurrentUserInfoResponse\x12L\n" +
 	"\aGetUser\x12\x1f.user.service.v1.GetUserRequest\x1a .user.service.v1.GetUserResponse\x12R\n" +
 	"\tListUsers\x12!.user.service.v1.ListUsersRequest\x1a\".user.service.v1.ListUsersResponse\x12U\n" +
 	"\n" +
-	"UpdateUser\x12\".user.service.v1.UpdateUserRequest\x1a#.user.service.v1.UpdateUserResponse\x12O\n" +
-	"\bSaveUser\x12 .user.service.v1.SaveUserRequest\x1a!.user.service.v1.SaveUserResponse\x12U\n" +
+	"UpdateUser\x12\".user.service.v1.UpdateUserRequest\x1a#.user.service.v1.UpdateUserResponse\x12U\n" +
+	"\n" +
+	"CreateUser\x12\".user.service.v1.CreateUserRequest\x1a#.user.service.v1.CreateUserResponse\x12U\n" +
 	"\n" +
 	"DeleteUser\x12\".user.service.v1.DeleteUserRequest\x1a#.user.service.v1.DeleteUserResponse\x12R\n" +
 	"\tPurgeUser\x12!.user.service.v1.PurgeUserRequest\x1a\".user.service.v1.PurgeUserResponse\x12X\n" +
@@ -1048,8 +1044,8 @@ var file_user_service_v1_user_proto_goTypes = []any{
 	(*RestoreUserResponse)(nil),     // 13: user.service.v1.RestoreUserResponse
 	(*UpdateUserRequest)(nil),       // 14: user.service.v1.UpdateUserRequest
 	(*UpdateUserResponse)(nil),      // 15: user.service.v1.UpdateUserResponse
-	(*SaveUserRequest)(nil),         // 16: user.service.v1.SaveUserRequest
-	(*SaveUserResponse)(nil),        // 17: user.service.v1.SaveUserResponse
+	(*CreateUserRequest)(nil),       // 16: user.service.v1.CreateUserRequest
+	(*CreateUserResponse)(nil),      // 17: user.service.v1.CreateUserResponse
 	(*v1.PaginationRequest)(nil),    // 18: pagination.v1.PaginationRequest
 	(*v1.PaginationResponse)(nil),   // 19: pagination.v1.PaginationResponse
 }
@@ -1064,7 +1060,7 @@ var file_user_service_v1_user_proto_depIdxs = []int32{
 	4,  // 7: user.service.v1.UserService.GetUser:input_type -> user.service.v1.GetUserRequest
 	6,  // 8: user.service.v1.UserService.ListUsers:input_type -> user.service.v1.ListUsersRequest
 	14, // 9: user.service.v1.UserService.UpdateUser:input_type -> user.service.v1.UpdateUserRequest
-	16, // 10: user.service.v1.UserService.SaveUser:input_type -> user.service.v1.SaveUserRequest
+	16, // 10: user.service.v1.UserService.CreateUser:input_type -> user.service.v1.CreateUserRequest
 	8,  // 11: user.service.v1.UserService.DeleteUser:input_type -> user.service.v1.DeleteUserRequest
 	10, // 12: user.service.v1.UserService.PurgeUser:input_type -> user.service.v1.PurgeUserRequest
 	12, // 13: user.service.v1.UserService.RestoreUser:input_type -> user.service.v1.RestoreUserRequest
@@ -1072,7 +1068,7 @@ var file_user_service_v1_user_proto_depIdxs = []int32{
 	5,  // 15: user.service.v1.UserService.GetUser:output_type -> user.service.v1.GetUserResponse
 	7,  // 16: user.service.v1.UserService.ListUsers:output_type -> user.service.v1.ListUsersResponse
 	15, // 17: user.service.v1.UserService.UpdateUser:output_type -> user.service.v1.UpdateUserResponse
-	17, // 18: user.service.v1.UserService.SaveUser:output_type -> user.service.v1.SaveUserResponse
+	17, // 18: user.service.v1.UserService.CreateUser:output_type -> user.service.v1.CreateUserResponse
 	9,  // 19: user.service.v1.UserService.DeleteUser:output_type -> user.service.v1.DeleteUserResponse
 	11, // 20: user.service.v1.UserService.PurgeUser:output_type -> user.service.v1.PurgeUserResponse
 	13, // 21: user.service.v1.UserService.RestoreUser:output_type -> user.service.v1.RestoreUserResponse

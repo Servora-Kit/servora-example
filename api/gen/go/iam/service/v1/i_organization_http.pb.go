@@ -29,6 +29,7 @@ const OperationOrganizationServiceListOrganizations = "/iam.service.v1.Organizat
 const OperationOrganizationServicePurgeOrganization = "/iam.service.v1.OrganizationService/PurgeOrganization"
 const OperationOrganizationServiceRemoveMember = "/iam.service.v1.OrganizationService/RemoveMember"
 const OperationOrganizationServiceRestoreOrganization = "/iam.service.v1.OrganizationService/RestoreOrganization"
+const OperationOrganizationServiceTransferOwnership = "/iam.service.v1.OrganizationService/TransferOwnership"
 const OperationOrganizationServiceUpdateMemberRole = "/iam.service.v1.OrganizationService/UpdateMemberRole"
 const OperationOrganizationServiceUpdateOrganization = "/iam.service.v1.OrganizationService/UpdateOrganization"
 
@@ -42,6 +43,7 @@ type OrganizationServiceHTTPServer interface {
 	PurgeOrganization(context.Context, *v1.PurgeOrganizationRequest) (*v1.PurgeOrganizationResponse, error)
 	RemoveMember(context.Context, *v1.RemoveMemberRequest) (*v1.RemoveMemberResponse, error)
 	RestoreOrganization(context.Context, *v1.RestoreOrganizationRequest) (*v1.RestoreOrganizationResponse, error)
+	TransferOwnership(context.Context, *v1.TransferOrganizationOwnershipRequest) (*v1.TransferOrganizationOwnershipResponse, error)
 	UpdateMemberRole(context.Context, *v1.UpdateMemberRoleRequest) (*v1.UpdateMemberRoleResponse, error)
 	UpdateOrganization(context.Context, *v1.UpdateOrganizationRequest) (*v1.UpdateOrganizationResponse, error)
 }
@@ -59,6 +61,7 @@ func RegisterOrganizationServiceHTTPServer(s *http.Server, srv OrganizationServi
 	r.DELETE("/v1/organizations/{organization_id}/members/{user_id}", _OrganizationService_RemoveMember0_HTTP_Handler(srv))
 	r.GET("/v1/organizations/{organization_id}/members", _OrganizationService_ListMembers0_HTTP_Handler(srv))
 	r.PUT("/v1/organizations/{organization_id}/members/{user_id}/role", _OrganizationService_UpdateMemberRole0_HTTP_Handler(srv))
+	r.POST("/v1/organizations/{organization_id}/transfer-ownership", _OrganizationService_TransferOwnership0_HTTP_Handler(srv))
 }
 
 func _OrganizationService_CreateOrganization0_HTTP_Handler(srv OrganizationServiceHTTPServer) func(ctx http.Context) error {
@@ -312,6 +315,31 @@ func _OrganizationService_UpdateMemberRole0_HTTP_Handler(srv OrganizationService
 	}
 }
 
+func _OrganizationService_TransferOwnership0_HTTP_Handler(srv OrganizationServiceHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in v1.TransferOrganizationOwnershipRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindVars(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationOrganizationServiceTransferOwnership)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.TransferOwnership(ctx, req.(*v1.TransferOrganizationOwnershipRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*v1.TransferOrganizationOwnershipResponse)
+		return ctx.Result(200, reply)
+	}
+}
+
 type OrganizationServiceHTTPClient interface {
 	AddMember(ctx context.Context, req *v1.AddMemberRequest, opts ...http.CallOption) (rsp *v1.AddMemberResponse, err error)
 	CreateOrganization(ctx context.Context, req *v1.CreateOrganizationRequest, opts ...http.CallOption) (rsp *v1.CreateOrganizationResponse, err error)
@@ -322,6 +350,7 @@ type OrganizationServiceHTTPClient interface {
 	PurgeOrganization(ctx context.Context, req *v1.PurgeOrganizationRequest, opts ...http.CallOption) (rsp *v1.PurgeOrganizationResponse, err error)
 	RemoveMember(ctx context.Context, req *v1.RemoveMemberRequest, opts ...http.CallOption) (rsp *v1.RemoveMemberResponse, err error)
 	RestoreOrganization(ctx context.Context, req *v1.RestoreOrganizationRequest, opts ...http.CallOption) (rsp *v1.RestoreOrganizationResponse, err error)
+	TransferOwnership(ctx context.Context, req *v1.TransferOrganizationOwnershipRequest, opts ...http.CallOption) (rsp *v1.TransferOrganizationOwnershipResponse, err error)
 	UpdateMemberRole(ctx context.Context, req *v1.UpdateMemberRoleRequest, opts ...http.CallOption) (rsp *v1.UpdateMemberRoleResponse, err error)
 	UpdateOrganization(ctx context.Context, req *v1.UpdateOrganizationRequest, opts ...http.CallOption) (rsp *v1.UpdateOrganizationResponse, err error)
 }
@@ -443,6 +472,19 @@ func (c *OrganizationServiceHTTPClientImpl) RestoreOrganization(ctx context.Cont
 	pattern := "/v1/organizations/{id}/restore"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationOrganizationServiceRestoreOrganization))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *OrganizationServiceHTTPClientImpl) TransferOwnership(ctx context.Context, in *v1.TransferOrganizationOwnershipRequest, opts ...http.CallOption) (*v1.TransferOrganizationOwnershipResponse, error) {
+	var out v1.TransferOrganizationOwnershipResponse
+	pattern := "/v1/organizations/{organization_id}/transfer-ownership"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationOrganizationServiceTransferOwnership))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

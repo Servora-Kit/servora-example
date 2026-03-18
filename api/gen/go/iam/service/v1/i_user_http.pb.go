@@ -20,23 +20,23 @@ var _ = binding.EncodeURL
 
 const _ = http.SupportPackageIsVersion1
 
+const OperationUserServiceCreateUser = "/iam.service.v1.UserService/CreateUser"
 const OperationUserServiceCurrentUserInfo = "/iam.service.v1.UserService/CurrentUserInfo"
 const OperationUserServiceDeleteUser = "/iam.service.v1.UserService/DeleteUser"
 const OperationUserServiceGetUser = "/iam.service.v1.UserService/GetUser"
 const OperationUserServiceListUsers = "/iam.service.v1.UserService/ListUsers"
 const OperationUserServicePurgeUser = "/iam.service.v1.UserService/PurgeUser"
 const OperationUserServiceRestoreUser = "/iam.service.v1.UserService/RestoreUser"
-const OperationUserServiceSaveUser = "/iam.service.v1.UserService/SaveUser"
 const OperationUserServiceUpdateUser = "/iam.service.v1.UserService/UpdateUser"
 
 type UserServiceHTTPServer interface {
+	CreateUser(context.Context, *v1.CreateUserRequest) (*v1.CreateUserResponse, error)
 	CurrentUserInfo(context.Context, *v1.CurrentUserInfoRequest) (*v1.CurrentUserInfoResponse, error)
 	DeleteUser(context.Context, *v1.DeleteUserRequest) (*v1.DeleteUserResponse, error)
 	GetUser(context.Context, *v1.GetUserRequest) (*v1.GetUserResponse, error)
 	ListUsers(context.Context, *v1.ListUsersRequest) (*v1.ListUsersResponse, error)
 	PurgeUser(context.Context, *v1.PurgeUserRequest) (*v1.PurgeUserResponse, error)
 	RestoreUser(context.Context, *v1.RestoreUserRequest) (*v1.RestoreUserResponse, error)
-	SaveUser(context.Context, *v1.SaveUserRequest) (*v1.SaveUserResponse, error)
 	UpdateUser(context.Context, *v1.UpdateUserRequest) (*v1.UpdateUserResponse, error)
 }
 
@@ -46,10 +46,10 @@ func RegisterUserServiceHTTPServer(s *http.Server, srv UserServiceHTTPServer) {
 	r.GET("/v1/users/{id}", _UserService_GetUser0_HTTP_Handler(srv))
 	r.GET("/v1/users", _UserService_ListUsers0_HTTP_Handler(srv))
 	r.POST("/v1/user/update", _UserService_UpdateUser0_HTTP_Handler(srv))
-	r.POST("/v1/user/save", _UserService_SaveUser0_HTTP_Handler(srv))
-	r.DELETE("/v1/user/delete/{id}", _UserService_DeleteUser0_HTTP_Handler(srv))
-	r.DELETE("/v1/user/purge/{id}", _UserService_PurgeUser0_HTTP_Handler(srv))
-	r.POST("/v1/user/restore/{id}", _UserService_RestoreUser0_HTTP_Handler(srv))
+	r.POST("/v1/users", _UserService_CreateUser0_HTTP_Handler(srv))
+	r.DELETE("/v1/users/{id}", _UserService_DeleteUser0_HTTP_Handler(srv))
+	r.DELETE("/v1/users/{id}/purge", _UserService_PurgeUser0_HTTP_Handler(srv))
+	r.POST("/v1/users/{id}/restore", _UserService_RestoreUser0_HTTP_Handler(srv))
 }
 
 func _UserService_CurrentUserInfo0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
@@ -134,24 +134,24 @@ func _UserService_UpdateUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx h
 	}
 }
 
-func _UserService_SaveUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
+func _UserService_CreateUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in v1.SaveUserRequest
+		var in v1.CreateUserRequest
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
 		if err := ctx.BindQuery(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, OperationUserServiceSaveUser)
+		http.SetOperation(ctx, OperationUserServiceCreateUser)
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.SaveUser(ctx, req.(*v1.SaveUserRequest))
+			return srv.CreateUser(ctx, req.(*v1.CreateUserRequest))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*v1.SaveUserResponse)
+		reply := out.(*v1.CreateUserResponse)
 		return ctx.Result(200, reply)
 	}
 }
@@ -226,13 +226,13 @@ func _UserService_RestoreUser0_HTTP_Handler(srv UserServiceHTTPServer) func(ctx 
 }
 
 type UserServiceHTTPClient interface {
+	CreateUser(ctx context.Context, req *v1.CreateUserRequest, opts ...http.CallOption) (rsp *v1.CreateUserResponse, err error)
 	CurrentUserInfo(ctx context.Context, req *v1.CurrentUserInfoRequest, opts ...http.CallOption) (rsp *v1.CurrentUserInfoResponse, err error)
 	DeleteUser(ctx context.Context, req *v1.DeleteUserRequest, opts ...http.CallOption) (rsp *v1.DeleteUserResponse, err error)
 	GetUser(ctx context.Context, req *v1.GetUserRequest, opts ...http.CallOption) (rsp *v1.GetUserResponse, err error)
 	ListUsers(ctx context.Context, req *v1.ListUsersRequest, opts ...http.CallOption) (rsp *v1.ListUsersResponse, err error)
 	PurgeUser(ctx context.Context, req *v1.PurgeUserRequest, opts ...http.CallOption) (rsp *v1.PurgeUserResponse, err error)
 	RestoreUser(ctx context.Context, req *v1.RestoreUserRequest, opts ...http.CallOption) (rsp *v1.RestoreUserResponse, err error)
-	SaveUser(ctx context.Context, req *v1.SaveUserRequest, opts ...http.CallOption) (rsp *v1.SaveUserResponse, err error)
 	UpdateUser(ctx context.Context, req *v1.UpdateUserRequest, opts ...http.CallOption) (rsp *v1.UpdateUserResponse, err error)
 }
 
@@ -242,6 +242,19 @@ type UserServiceHTTPClientImpl struct {
 
 func NewUserServiceHTTPClient(client *http.Client) UserServiceHTTPClient {
 	return &UserServiceHTTPClientImpl{client}
+}
+
+func (c *UserServiceHTTPClientImpl) CreateUser(ctx context.Context, in *v1.CreateUserRequest, opts ...http.CallOption) (*v1.CreateUserResponse, error) {
+	var out v1.CreateUserResponse
+	pattern := "/v1/users"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationUserServiceCreateUser))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
 }
 
 func (c *UserServiceHTTPClientImpl) CurrentUserInfo(ctx context.Context, in *v1.CurrentUserInfoRequest, opts ...http.CallOption) (*v1.CurrentUserInfoResponse, error) {
@@ -259,7 +272,7 @@ func (c *UserServiceHTTPClientImpl) CurrentUserInfo(ctx context.Context, in *v1.
 
 func (c *UserServiceHTTPClientImpl) DeleteUser(ctx context.Context, in *v1.DeleteUserRequest, opts ...http.CallOption) (*v1.DeleteUserResponse, error) {
 	var out v1.DeleteUserResponse
-	pattern := "/v1/user/delete/{id}"
+	pattern := "/v1/users/{id}"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServiceDeleteUser))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -298,7 +311,7 @@ func (c *UserServiceHTTPClientImpl) ListUsers(ctx context.Context, in *v1.ListUs
 
 func (c *UserServiceHTTPClientImpl) PurgeUser(ctx context.Context, in *v1.PurgeUserRequest, opts ...http.CallOption) (*v1.PurgeUserResponse, error) {
 	var out v1.PurgeUserResponse
-	pattern := "/v1/user/purge/{id}"
+	pattern := "/v1/users/{id}/purge"
 	path := binding.EncodeURL(pattern, in, true)
 	opts = append(opts, http.Operation(OperationUserServicePurgeUser))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -311,22 +324,9 @@ func (c *UserServiceHTTPClientImpl) PurgeUser(ctx context.Context, in *v1.PurgeU
 
 func (c *UserServiceHTTPClientImpl) RestoreUser(ctx context.Context, in *v1.RestoreUserRequest, opts ...http.CallOption) (*v1.RestoreUserResponse, error) {
 	var out v1.RestoreUserResponse
-	pattern := "/v1/user/restore/{id}"
+	pattern := "/v1/users/{id}/restore"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationUserServiceRestoreUser))
-	opts = append(opts, http.PathTemplate(pattern))
-	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return &out, nil
-}
-
-func (c *UserServiceHTTPClientImpl) SaveUser(ctx context.Context, in *v1.SaveUserRequest, opts ...http.CallOption) (*v1.SaveUserResponse, error) {
-	var out v1.SaveUserResponse
-	pattern := "/v1/user/save"
-	path := binding.EncodeURL(pattern, in, false)
-	opts = append(opts, http.Operation(OperationUserServiceSaveUser))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

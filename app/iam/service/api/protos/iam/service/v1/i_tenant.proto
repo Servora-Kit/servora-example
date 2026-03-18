@@ -124,4 +124,17 @@ service TenantService {
       id_field: "tenant_id"
     };
   }
+
+  rpc TransferOwnership(tenant.service.v1.TransferTenantOwnershipRequest) returns (tenant.service.v1.TransferTenantOwnershipResponse) {
+    option (google.api.http) = {
+      post: "/v1/tenants/{tenant_id}/transfer-ownership"
+      body: "*"
+    };
+    option (authz.service.v1.rule) = {
+      mode: AUTHZ_MODE_OBJECT
+      object_type: OBJECT_TYPE_TENANT
+      relation: RELATION_CAN_MANAGE_MEMBERS
+      id_field: "tenant_id"
+    };
+  }
 }

@@ -175,7 +175,7 @@ export type applicationservicev1_ApplicationInfo = {
   grantTypes: string[] | undefined;
   applicationType: string | undefined;
   accessTokenType: string | undefined;
-  organizationId: string | undefined;
+  tenantId: string | undefined;
   idTokenLifetime: number | undefined;
   createdAt: wellKnownTimestamp | undefined;
   updatedAt: wellKnownTimestamp | undefined;
@@ -558,6 +558,7 @@ export interface OrganizationService {
   RemoveMember(request: organizationservicev1_RemoveMemberRequest): Promise<organizationservicev1_RemoveMemberResponse>;
   ListMembers(request: organizationservicev1_ListMembersRequest): Promise<organizationservicev1_ListMembersResponse>;
   UpdateMemberRole(request: organizationservicev1_UpdateMemberRoleRequest): Promise<organizationservicev1_UpdateMemberRoleResponse>;
+  TransferOwnership(request: organizationservicev1_TransferOrganizationOwnershipRequest): Promise<organizationservicev1_TransferOrganizationOwnershipResponse>;
 }
 
 export function createOrganizationServiceClient(
@@ -808,6 +809,26 @@ export function createOrganizationServiceClient(
         method: "UpdateMemberRole",
       }) as Promise<organizationservicev1_UpdateMemberRoleResponse>;
     },
+    TransferOwnership(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.organizationId) {
+        throw new Error("missing required field request.organization_id");
+      }
+      const path = `v1/organizations/${request.organizationId}/transfer-ownership`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "OrganizationService",
+        method: "TransferOwnership",
+      }) as Promise<organizationservicev1_TransferOrganizationOwnershipResponse>;
+    },
   };
 }
 export type organizationservicev1_CreateOrganizationRequest = {
@@ -929,388 +950,13 @@ export type organizationservicev1_UpdateMemberRoleResponse = {
   member: organizationservicev1_OrganizationMemberInfo | undefined;
 };
 
-export interface ProjectService {
-  CreateProject(request: projectservicev1_CreateProjectRequest): Promise<projectservicev1_CreateProjectResponse>;
-  GetProject(request: projectservicev1_GetProjectRequest): Promise<projectservicev1_GetProjectResponse>;
-  ListProjects(request: projectservicev1_ListProjectsRequest): Promise<projectservicev1_ListProjectsResponse>;
-  UpdateProject(request: projectservicev1_UpdateProjectRequest): Promise<projectservicev1_UpdateProjectResponse>;
-  DeleteProject(request: projectservicev1_DeleteProjectRequest): Promise<projectservicev1_DeleteProjectResponse>;
-  PurgeProject(request: projectservicev1_PurgeProjectRequest): Promise<projectservicev1_PurgeProjectResponse>;
-  RestoreProject(request: projectservicev1_RestoreProjectRequest): Promise<projectservicev1_RestoreProjectResponse>;
-  AddMember(request: projectservicev1_AddMemberRequest): Promise<projectservicev1_AddMemberResponse>;
-  RemoveMember(request: projectservicev1_RemoveMemberRequest): Promise<projectservicev1_RemoveMemberResponse>;
-  ListMembers(request: projectservicev1_ListMembersRequest): Promise<projectservicev1_ListMembersResponse>;
-  UpdateMemberRole(request: projectservicev1_UpdateMemberRoleRequest): Promise<projectservicev1_UpdateMemberRoleResponse>;
-}
-
-export function createProjectServiceClient(
-  handler: RequestHandler
-): ProjectService {
-  return {
-    CreateProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `v1/projects`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "CreateProject",
-      }) as Promise<projectservicev1_CreateProjectResponse>;
-    },
-    GetProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.id) {
-        throw new Error("missing required field request.id");
-      }
-      const path = `v1/projects/${request.id}`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "GetProject",
-      }) as Promise<projectservicev1_GetProjectResponse>;
-    },
-    ListProjects(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `v1/projects`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      if (request.pagination?.page?.page) {
-        queryParams.push(`pagination.page.page=${encodeURIComponent(request.pagination.page.page.toString())}`)
-      }
-      if (request.pagination?.page?.pageSize) {
-        queryParams.push(`pagination.page.pageSize=${encodeURIComponent(request.pagination.page.pageSize.toString())}`)
-      }
-      if (request.pagination?.cursor?.cursor) {
-        queryParams.push(`pagination.cursor.cursor=${encodeURIComponent(request.pagination.cursor.cursor.toString())}`)
-      }
-      if (request.pagination?.cursor?.limit) {
-        queryParams.push(`pagination.cursor.limit=${encodeURIComponent(request.pagination.cursor.limit.toString())}`)
-      }
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "ListProjects",
-      }) as Promise<projectservicev1_ListProjectsResponse>;
-    },
-    UpdateProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.id) {
-        throw new Error("missing required field request.id");
-      }
-      const path = `v1/projects/${request.id}`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "PUT",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "UpdateProject",
-      }) as Promise<projectservicev1_UpdateProjectResponse>;
-    },
-    DeleteProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.id) {
-        throw new Error("missing required field request.id");
-      }
-      const path = `v1/projects/${request.id}`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "DELETE",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "DeleteProject",
-      }) as Promise<projectservicev1_DeleteProjectResponse>;
-    },
-    PurgeProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.id) {
-        throw new Error("missing required field request.id");
-      }
-      const path = `v1/projects/${request.id}/purge`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "DELETE",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "PurgeProject",
-      }) as Promise<projectservicev1_PurgeProjectResponse>;
-    },
-    RestoreProject(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.id) {
-        throw new Error("missing required field request.id");
-      }
-      const path = `v1/projects/${request.id}/restore`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "RestoreProject",
-      }) as Promise<projectservicev1_RestoreProjectResponse>;
-    },
-    AddMember(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.projectId) {
-        throw new Error("missing required field request.project_id");
-      }
-      const path = `v1/projects/${request.projectId}/members`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "POST",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "AddMember",
-      }) as Promise<projectservicev1_AddMemberResponse>;
-    },
-    RemoveMember(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.projectId) {
-        throw new Error("missing required field request.project_id");
-      }
-      if (!request.userId) {
-        throw new Error("missing required field request.user_id");
-      }
-      const path = `v1/projects/${request.projectId}/members/${request.userId}`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "DELETE",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "RemoveMember",
-      }) as Promise<projectservicev1_RemoveMemberResponse>;
-    },
-    ListMembers(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.projectId) {
-        throw new Error("missing required field request.project_id");
-      }
-      const path = `v1/projects/${request.projectId}/members`; // eslint-disable-line quotes
-      const body = null;
-      const queryParams: string[] = [];
-      if (request.pagination?.page?.page) {
-        queryParams.push(`pagination.page.page=${encodeURIComponent(request.pagination.page.page.toString())}`)
-      }
-      if (request.pagination?.page?.pageSize) {
-        queryParams.push(`pagination.page.pageSize=${encodeURIComponent(request.pagination.page.pageSize.toString())}`)
-      }
-      if (request.pagination?.cursor?.cursor) {
-        queryParams.push(`pagination.cursor.cursor=${encodeURIComponent(request.pagination.cursor.cursor.toString())}`)
-      }
-      if (request.pagination?.cursor?.limit) {
-        queryParams.push(`pagination.cursor.limit=${encodeURIComponent(request.pagination.cursor.limit.toString())}`)
-      }
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "GET",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "ListMembers",
-      }) as Promise<projectservicev1_ListMembersResponse>;
-    },
-    UpdateMemberRole(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      if (!request.projectId) {
-        throw new Error("missing required field request.project_id");
-      }
-      if (!request.userId) {
-        throw new Error("missing required field request.user_id");
-      }
-      const path = `v1/projects/${request.projectId}/members/${request.userId}/role`; // eslint-disable-line quotes
-      const body = JSON.stringify(request);
-      const queryParams: string[] = [];
-      let uri = path;
-      if (queryParams.length > 0) {
-        uri += `?${queryParams.join("&")}`
-      }
-      return handler({
-        path: uri,
-        method: "PUT",
-        body,
-      }, {
-        service: "ProjectService",
-        method: "UpdateMemberRole",
-      }) as Promise<projectservicev1_UpdateMemberRoleResponse>;
-    },
-  };
-}
-export type projectservicev1_CreateProjectRequest = {
-  name: string | undefined;
-  slug: string | undefined;
-  description: string | undefined;
-};
-
-export type projectservicev1_CreateProjectResponse = {
-  project: projectservicev1_ProjectInfo | undefined;
-};
-
-export type projectservicev1_ProjectInfo = {
-  id: string | undefined;
+export type organizationservicev1_TransferOrganizationOwnershipRequest = {
   organizationId: string | undefined;
-  name: string | undefined;
-  slug: string | undefined;
-  description: string | undefined;
-  createdAt: wellKnownTimestamp | undefined;
-  updatedAt: wellKnownTimestamp | undefined;
+  newOwnerUserId: string | undefined;
 };
 
-export type projectservicev1_GetProjectRequest = {
-  id: string | undefined;
-};
-
-export type projectservicev1_GetProjectResponse = {
-  project: projectservicev1_ProjectInfo | undefined;
-};
-
-export type projectservicev1_ListProjectsRequest = {
-  pagination: paginationv1_PaginationRequest | undefined;
-};
-
-export type projectservicev1_ListProjectsResponse = {
-  projects: projectservicev1_ProjectInfo[] | undefined;
-  pagination: paginationv1_PaginationResponse | undefined;
-};
-
-export type projectservicev1_UpdateProjectRequest = {
-  id: string | undefined;
-  name: string | undefined;
-  description: string | undefined;
-};
-
-export type projectservicev1_UpdateProjectResponse = {
-  project: projectservicev1_ProjectInfo | undefined;
-};
-
-export type projectservicev1_DeleteProjectRequest = {
-  id: string | undefined;
-};
-
-export type projectservicev1_DeleteProjectResponse = {
+export type organizationservicev1_TransferOrganizationOwnershipResponse = {
   success: boolean | undefined;
-};
-
-export type projectservicev1_PurgeProjectRequest = {
-  id: string | undefined;
-};
-
-export type projectservicev1_PurgeProjectResponse = {
-  success: boolean | undefined;
-};
-
-export type projectservicev1_RestoreProjectRequest = {
-  id: string | undefined;
-};
-
-export type projectservicev1_RestoreProjectResponse = {
-  project: projectservicev1_ProjectInfo | undefined;
-};
-
-export type projectservicev1_AddMemberRequest = {
-  projectId: string | undefined;
-  userId: string | undefined;
-  role: string | undefined;
-};
-
-export type projectservicev1_AddMemberResponse = {
-  member: projectservicev1_ProjectMemberInfo | undefined;
-};
-
-export type projectservicev1_ProjectMemberInfo = {
-  id: string | undefined;
-  projectId: string | undefined;
-  userId: string | undefined;
-  userName: string | undefined;
-  userEmail: string | undefined;
-  role: string | undefined;
-  createdAt: wellKnownTimestamp | undefined;
-};
-
-export type projectservicev1_RemoveMemberRequest = {
-  projectId: string | undefined;
-  userId: string | undefined;
-};
-
-export type projectservicev1_RemoveMemberResponse = {
-  success: boolean | undefined;
-};
-
-export type projectservicev1_ListMembersRequest = {
-  projectId: string | undefined;
-  pagination: paginationv1_PaginationRequest | undefined;
-};
-
-export type projectservicev1_ListMembersResponse = {
-  members: projectservicev1_ProjectMemberInfo[] | undefined;
-  pagination: paginationv1_PaginationResponse | undefined;
-};
-
-export type projectservicev1_UpdateMemberRoleRequest = {
-  projectId: string | undefined;
-  userId: string | undefined;
-  role: string | undefined;
-};
-
-export type projectservicev1_UpdateMemberRoleResponse = {
-  member: projectservicev1_ProjectMemberInfo | undefined;
 };
 
 export interface TenantService {
@@ -1325,6 +971,7 @@ export interface TenantService {
   ListMembers(request: tenantservicev1_ListTenantMembersRequest): Promise<tenantservicev1_ListTenantMembersResponse>;
   UpdateMemberRole(request: tenantservicev1_UpdateTenantMemberRoleRequest): Promise<tenantservicev1_UpdateTenantMemberRoleResponse>;
   RemoveMember(request: tenantservicev1_RemoveTenantMemberRequest): Promise<tenantservicev1_RemoveTenantMemberResponse>;
+  TransferOwnership(request: tenantservicev1_TransferTenantOwnershipRequest): Promise<tenantservicev1_TransferTenantOwnershipResponse>;
 }
 
 export function createTenantServiceClient(
@@ -1575,6 +1222,26 @@ export function createTenantServiceClient(
         method: "RemoveMember",
       }) as Promise<tenantservicev1_RemoveTenantMemberResponse>;
     },
+    TransferOwnership(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      if (!request.tenantId) {
+        throw new Error("missing required field request.tenant_id");
+      }
+      const path = `v1/tenants/${request.tenantId}/transfer-ownership`; // eslint-disable-line quotes
+      const body = JSON.stringify(request);
+      const queryParams: string[] = [];
+      let uri = path;
+      if (queryParams.length > 0) {
+        uri += `?${queryParams.join("&")}`
+      }
+      return handler({
+        path: uri,
+        method: "POST",
+        body,
+      }, {
+        service: "TenantService",
+        method: "TransferOwnership",
+      }) as Promise<tenantservicev1_TransferTenantOwnershipResponse>;
+    },
   };
 }
 export type tenantservicev1_CreateTenantRequest = {
@@ -1582,6 +1249,7 @@ export type tenantservicev1_CreateTenantRequest = {
   slug: string | undefined;
   kind: string | undefined;
   domain: string | undefined;
+  displayName: string | undefined;
 };
 
 export type tenantservicev1_CreateTenantResponse = {
@@ -1597,6 +1265,7 @@ export type tenantservicev1_TenantInfo = {
   status: string | undefined;
   createdAt: wellKnownTimestamp | undefined;
   updatedAt: wellKnownTimestamp | undefined;
+  displayName: string | undefined;
 };
 
 export type tenantservicev1_GetTenantRequest = {
@@ -1621,6 +1290,7 @@ export type tenantservicev1_UpdateTenantRequest = {
   name: string | undefined;
   domain: string | undefined;
   status: string | undefined;
+  displayName: string | undefined;
 };
 
 export type tenantservicev1_UpdateTenantResponse = {
@@ -1699,6 +1369,15 @@ export type tenantservicev1_RemoveTenantMemberRequest = {
 };
 
 export type tenantservicev1_RemoveTenantMemberResponse = {
+  success: boolean | undefined;
+};
+
+export type tenantservicev1_TransferTenantOwnershipRequest = {
+  tenantId: string | undefined;
+  newOwnerUserId: string | undefined;
+};
+
+export type tenantservicev1_TransferTenantOwnershipResponse = {
   success: boolean | undefined;
 };
 
@@ -1792,7 +1471,7 @@ export interface UserService {
   GetUser(request: userservicev1_GetUserRequest): Promise<userservicev1_GetUserResponse>;
   ListUsers(request: userservicev1_ListUsersRequest): Promise<userservicev1_ListUsersResponse>;
   UpdateUser(request: userservicev1_UpdateUserRequest): Promise<userservicev1_UpdateUserResponse>;
-  SaveUser(request: userservicev1_SaveUserRequest): Promise<userservicev1_SaveUserResponse>;
+  CreateUser(request: userservicev1_CreateUserRequest): Promise<userservicev1_CreateUserResponse>;
   DeleteUser(request: userservicev1_DeleteUserRequest): Promise<userservicev1_DeleteUserResponse>;
   PurgeUser(request: userservicev1_PurgeUserRequest): Promise<userservicev1_PurgeUserResponse>;
   RestoreUser(request: userservicev1_RestoreUserRequest): Promise<userservicev1_RestoreUserResponse>;
@@ -1885,8 +1564,8 @@ export function createUserServiceClient(
         method: "UpdateUser",
       }) as Promise<userservicev1_UpdateUserResponse>;
     },
-    SaveUser(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
-      const path = `v1/user/save`; // eslint-disable-line quotes
+    CreateUser(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      const path = `v1/users`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
@@ -1899,14 +1578,14 @@ export function createUserServiceClient(
         body,
       }, {
         service: "UserService",
-        method: "SaveUser",
-      }) as Promise<userservicev1_SaveUserResponse>;
+        method: "CreateUser",
+      }) as Promise<userservicev1_CreateUserResponse>;
     },
     DeleteUser(request) { // eslint-disable-line @typescript-eslint/no-unused-vars
       if (!request.id) {
         throw new Error("missing required field request.id");
       }
-      const path = `v1/user/delete/${request.id}`; // eslint-disable-line quotes
+      const path = `v1/users/${request.id}`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
@@ -1926,7 +1605,7 @@ export function createUserServiceClient(
       if (!request.id) {
         throw new Error("missing required field request.id");
       }
-      const path = `v1/user/purge/${request.id}`; // eslint-disable-line quotes
+      const path = `v1/users/${request.id}/purge`; // eslint-disable-line quotes
       const body = null;
       const queryParams: string[] = [];
       let uri = path;
@@ -1946,7 +1625,7 @@ export function createUserServiceClient(
       if (!request.id) {
         throw new Error("missing required field request.id");
       }
-      const path = `v1/user/restore/${request.id}`; // eslint-disable-line quotes
+      const path = `v1/users/${request.id}/restore`; // eslint-disable-line quotes
       const body = JSON.stringify(request);
       const queryParams: string[] = [];
       let uri = path;
@@ -2004,21 +1683,20 @@ export type userservicev1_UpdateUserRequest = {
   name: string | undefined;
   email: string | undefined;
   password: string | undefined;
-  role: string | undefined;
 };
 
 export type userservicev1_UpdateUserResponse = {
   user: userservicev1_UserInfo | undefined;
 };
 
-export type userservicev1_SaveUserRequest = {
+export type userservicev1_CreateUserRequest = {
   name: string | undefined;
   email: string | undefined;
   password: string | undefined;
-  role: string | undefined;
+  organizationId: string | undefined;
 };
 
-export type userservicev1_SaveUserResponse = {
+export type userservicev1_CreateUserResponse = {
   id: string | undefined;
 };
 

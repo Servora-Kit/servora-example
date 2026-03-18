@@ -40,7 +40,7 @@ message ApplicationInfo {
   repeated string grant_types = 6;
   string application_type = 7;
   string access_token_type = 8;
-  string organization_id = 9;
+  string tenant_id = 9;
   int32 id_token_lifetime = 10;
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;

@@ -1326,6 +1326,102 @@ func (x *UpdateMemberRoleResponse) GetMember() *OrganizationMemberInfo {
 	return nil
 }
 
+type TransferOrganizationOwnershipRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	NewOwnerUserId string                 `protobuf:"bytes,2,opt,name=new_owner_user_id,json=newOwnerUserId,proto3" json:"new_owner_user_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *TransferOrganizationOwnershipRequest) Reset() {
+	*x = TransferOrganizationOwnershipRequest{}
+	mi := &file_organization_service_v1_organization_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferOrganizationOwnershipRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferOrganizationOwnershipRequest) ProtoMessage() {}
+
+func (x *TransferOrganizationOwnershipRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_organization_service_v1_organization_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferOrganizationOwnershipRequest.ProtoReflect.Descriptor instead.
+func (*TransferOrganizationOwnershipRequest) Descriptor() ([]byte, []int) {
+	return file_organization_service_v1_organization_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *TransferOrganizationOwnershipRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *TransferOrganizationOwnershipRequest) GetNewOwnerUserId() string {
+	if x != nil {
+		return x.NewOwnerUserId
+	}
+	return ""
+}
+
+type TransferOrganizationOwnershipResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Success       bool                   `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *TransferOrganizationOwnershipResponse) Reset() {
+	*x = TransferOrganizationOwnershipResponse{}
+	mi := &file_organization_service_v1_organization_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *TransferOrganizationOwnershipResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TransferOrganizationOwnershipResponse) ProtoMessage() {}
+
+func (x *TransferOrganizationOwnershipResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_organization_service_v1_organization_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TransferOrganizationOwnershipResponse.ProtoReflect.Descriptor instead.
+func (*TransferOrganizationOwnershipResponse) Descriptor() ([]byte, []int) {
+	return file_organization_service_v1_organization_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *TransferOrganizationOwnershipResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_organization_service_v1_organization_proto protoreflect.FileDescriptor
 
 const file_organization_service_v1_organization_proto_rawDesc = "" +
@@ -1387,11 +1483,11 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\x1aRestoreOrganizationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"l\n" +
 	"\x1bRestoreOrganizationResponse\x12M\n" +
-	"\forganization\x18\x01 \x01(\v2).organization.service.v1.OrganizationInfoR\forganization\"\xa1\x01\n" +
+	"\forganization\x18\x01 \x01(\v2).organization.service.v1.OrganizationInfoR\forganization\"\x9a\x01\n" +
 	"\x10AddMemberRequest\x121\n" +
 	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12!\n" +
-	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x127\n" +
-	"\x04role\x18\x03 \x01(\tB#\xbaH r\x1eR\x05ownerR\x05adminR\x06memberR\x06viewerR\x04role\"\\\n" +
+	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x120\n" +
+	"\x04role\x18\x03 \x01(\tB\x1c\xbaH\x19r\x17R\x05adminR\x06memberR\x06viewerR\x04role\"\\\n" +
 	"\x11AddMemberResponse\x12G\n" +
 	"\x06member\x18\x01 \x01(\v2/.organization.service.v1.OrganizationMemberInfoR\x06member\"k\n" +
 	"\x13RemoveMemberRequest\x121\n" +
@@ -1408,13 +1504,18 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\amembers\x18\x01 \x03(\v2/.organization.service.v1.OrganizationMemberInfoR\amembers\x12A\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
-	"pagination\"\xa8\x01\n" +
+	"pagination\"\xa1\x01\n" +
 	"\x17UpdateMemberRoleRequest\x121\n" +
 	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x12!\n" +
-	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x127\n" +
-	"\x04role\x18\x03 \x01(\tB#\xbaH r\x1eR\x05ownerR\x05adminR\x06memberR\x06viewerR\x04role\"c\n" +
+	"\auser_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x06userId\x120\n" +
+	"\x04role\x18\x03 \x01(\tB\x1c\xbaH\x19r\x17R\x05adminR\x06memberR\x06viewerR\x04role\"c\n" +
 	"\x18UpdateMemberRoleResponse\x12G\n" +
-	"\x06member\x18\x01 \x01(\v2/.organization.service.v1.OrganizationMemberInfoR\x06member*\xa5\x02\n" +
+	"\x06member\x18\x01 \x01(\v2/.organization.service.v1.OrganizationMemberInfoR\x06member\"\x8e\x01\n" +
+	"$TransferOrganizationOwnershipRequest\x121\n" +
+	"\x0forganization_id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0eorganizationId\x123\n" +
+	"\x11new_owner_user_id\x18\x02 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x0enewOwnerUserId\"A\n" +
+	"%TransferOrganizationOwnershipResponse\x12\x18\n" +
+	"\asuccess\x18\x01 \x01(\bR\asuccess*\xa5\x02\n" +
 	"\vErrorReason\x12 \n" +
 	"\x16ORGANIZATION_NOT_FOUND\x10\x00\x1a\x04\xa8E\x94\x03\x12%\n" +
 	"\x1bORGANIZATION_ALREADY_EXISTS\x10\x01\x1a\x04\xa8E\x99\x03\x12'\n" +
@@ -1422,8 +1523,7 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\"ORGANIZATION_MEMBER_ALREADY_EXISTS\x10\x03\x1a\x04\xa8E\x99\x03\x12$\n" +
 	"\x1aORGANIZATION_CREATE_FAILED\x10\x04\x1a\x04\xa8E\xf4\x03\x12$\n" +
 	"\x1aORGANIZATION_UPDATE_FAILED\x10\x05\x1a\x04\xa8E\xf4\x03\x12$\n" +
-	"\x1aORGANIZATION_DELETE_FAILED\x10\x06\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\xb7\n" +
-	"\n" +
+	"\x1aORGANIZATION_DELETE_FAILED\x10\x06\x1a\x04\xa8E\xf4\x03\x1a\x04\xa0E\xf4\x032\xcc\v\n" +
 	"\x13OrganizationService\x12}\n" +
 	"\x12CreateOrganization\x122.organization.service.v1.CreateOrganizationRequest\x1a3.organization.service.v1.CreateOrganizationResponse\x12t\n" +
 	"\x0fGetOrganization\x12/.organization.service.v1.GetOrganizationRequest\x1a0.organization.service.v1.GetOrganizationResponse\x12z\n" +
@@ -1435,7 +1535,8 @@ const file_organization_service_v1_organization_proto_rawDesc = "" +
 	"\tAddMember\x12).organization.service.v1.AddMemberRequest\x1a*.organization.service.v1.AddMemberResponse\x12k\n" +
 	"\fRemoveMember\x12,.organization.service.v1.RemoveMemberRequest\x1a-.organization.service.v1.RemoveMemberResponse\x12h\n" +
 	"\vListMembers\x12+.organization.service.v1.ListMembersRequest\x1a,.organization.service.v1.ListMembersResponse\x12w\n" +
-	"\x10UpdateMemberRole\x120.organization.service.v1.UpdateMemberRoleRequest\x1a1.organization.service.v1.UpdateMemberRoleResponseB\xf7\x01\n" +
+	"\x10UpdateMemberRole\x120.organization.service.v1.UpdateMemberRoleRequest\x1a1.organization.service.v1.UpdateMemberRoleResponse\x12\x92\x01\n" +
+	"\x11TransferOwnership\x12=.organization.service.v1.TransferOrganizationOwnershipRequest\x1a>.organization.service.v1.TransferOrganizationOwnershipResponseB\xf7\x01\n" +
 	"\x1bcom.organization.service.v1B\x11OrganizationProtoP\x01ZGgithub.com/Servora-Kit/servora/api/gen/go/organization/service/v1;orgpb\xa2\x02\x03OSX\xaa\x02\x17Organization.Service.V1\xca\x02\x17Organization\\Service\\V1\xe2\x02#Organization\\Service\\V1\\GPBMetadata\xea\x02\x19Organization::Service::V1b\x06proto3"
 
 var (
@@ -1451,52 +1552,54 @@ func file_organization_service_v1_organization_proto_rawDescGZIP() []byte {
 }
 
 var file_organization_service_v1_organization_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_organization_service_v1_organization_proto_msgTypes = make([]protoimpl.MessageInfo, 24)
+var file_organization_service_v1_organization_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_organization_service_v1_organization_proto_goTypes = []any{
-	(ErrorReason)(0),                    // 0: organization.service.v1.ErrorReason
-	(*OrganizationInfo)(nil),            // 1: organization.service.v1.OrganizationInfo
-	(*OrganizationMemberInfo)(nil),      // 2: organization.service.v1.OrganizationMemberInfo
-	(*CreateOrganizationRequest)(nil),   // 3: organization.service.v1.CreateOrganizationRequest
-	(*CreateOrganizationResponse)(nil),  // 4: organization.service.v1.CreateOrganizationResponse
-	(*GetOrganizationRequest)(nil),      // 5: organization.service.v1.GetOrganizationRequest
-	(*GetOrganizationResponse)(nil),     // 6: organization.service.v1.GetOrganizationResponse
-	(*ListOrganizationsRequest)(nil),    // 7: organization.service.v1.ListOrganizationsRequest
-	(*ListOrganizationsResponse)(nil),   // 8: organization.service.v1.ListOrganizationsResponse
-	(*UpdateOrganizationRequest)(nil),   // 9: organization.service.v1.UpdateOrganizationRequest
-	(*UpdateOrganizationResponse)(nil),  // 10: organization.service.v1.UpdateOrganizationResponse
-	(*DeleteOrganizationRequest)(nil),   // 11: organization.service.v1.DeleteOrganizationRequest
-	(*DeleteOrganizationResponse)(nil),  // 12: organization.service.v1.DeleteOrganizationResponse
-	(*PurgeOrganizationRequest)(nil),    // 13: organization.service.v1.PurgeOrganizationRequest
-	(*PurgeOrganizationResponse)(nil),   // 14: organization.service.v1.PurgeOrganizationResponse
-	(*RestoreOrganizationRequest)(nil),  // 15: organization.service.v1.RestoreOrganizationRequest
-	(*RestoreOrganizationResponse)(nil), // 16: organization.service.v1.RestoreOrganizationResponse
-	(*AddMemberRequest)(nil),            // 17: organization.service.v1.AddMemberRequest
-	(*AddMemberResponse)(nil),           // 18: organization.service.v1.AddMemberResponse
-	(*RemoveMemberRequest)(nil),         // 19: organization.service.v1.RemoveMemberRequest
-	(*RemoveMemberResponse)(nil),        // 20: organization.service.v1.RemoveMemberResponse
-	(*ListMembersRequest)(nil),          // 21: organization.service.v1.ListMembersRequest
-	(*ListMembersResponse)(nil),         // 22: organization.service.v1.ListMembersResponse
-	(*UpdateMemberRoleRequest)(nil),     // 23: organization.service.v1.UpdateMemberRoleRequest
-	(*UpdateMemberRoleResponse)(nil),    // 24: organization.service.v1.UpdateMemberRoleResponse
-	(*timestamppb.Timestamp)(nil),       // 25: google.protobuf.Timestamp
-	(*v1.PaginationRequest)(nil),        // 26: pagination.v1.PaginationRequest
-	(*v1.PaginationResponse)(nil),       // 27: pagination.v1.PaginationResponse
+	(ErrorReason)(0),                              // 0: organization.service.v1.ErrorReason
+	(*OrganizationInfo)(nil),                      // 1: organization.service.v1.OrganizationInfo
+	(*OrganizationMemberInfo)(nil),                // 2: organization.service.v1.OrganizationMemberInfo
+	(*CreateOrganizationRequest)(nil),             // 3: organization.service.v1.CreateOrganizationRequest
+	(*CreateOrganizationResponse)(nil),            // 4: organization.service.v1.CreateOrganizationResponse
+	(*GetOrganizationRequest)(nil),                // 5: organization.service.v1.GetOrganizationRequest
+	(*GetOrganizationResponse)(nil),               // 6: organization.service.v1.GetOrganizationResponse
+	(*ListOrganizationsRequest)(nil),              // 7: organization.service.v1.ListOrganizationsRequest
+	(*ListOrganizationsResponse)(nil),             // 8: organization.service.v1.ListOrganizationsResponse
+	(*UpdateOrganizationRequest)(nil),             // 9: organization.service.v1.UpdateOrganizationRequest
+	(*UpdateOrganizationResponse)(nil),            // 10: organization.service.v1.UpdateOrganizationResponse
+	(*DeleteOrganizationRequest)(nil),             // 11: organization.service.v1.DeleteOrganizationRequest
+	(*DeleteOrganizationResponse)(nil),            // 12: organization.service.v1.DeleteOrganizationResponse
+	(*PurgeOrganizationRequest)(nil),              // 13: organization.service.v1.PurgeOrganizationRequest
+	(*PurgeOrganizationResponse)(nil),             // 14: organization.service.v1.PurgeOrganizationResponse
+	(*RestoreOrganizationRequest)(nil),            // 15: organization.service.v1.RestoreOrganizationRequest
+	(*RestoreOrganizationResponse)(nil),           // 16: organization.service.v1.RestoreOrganizationResponse
+	(*AddMemberRequest)(nil),                      // 17: organization.service.v1.AddMemberRequest
+	(*AddMemberResponse)(nil),                     // 18: organization.service.v1.AddMemberResponse
+	(*RemoveMemberRequest)(nil),                   // 19: organization.service.v1.RemoveMemberRequest
+	(*RemoveMemberResponse)(nil),                  // 20: organization.service.v1.RemoveMemberResponse
+	(*ListMembersRequest)(nil),                    // 21: organization.service.v1.ListMembersRequest
+	(*ListMembersResponse)(nil),                   // 22: organization.service.v1.ListMembersResponse
+	(*UpdateMemberRoleRequest)(nil),               // 23: organization.service.v1.UpdateMemberRoleRequest
+	(*UpdateMemberRoleResponse)(nil),              // 24: organization.service.v1.UpdateMemberRoleResponse
+	(*TransferOrganizationOwnershipRequest)(nil),  // 25: organization.service.v1.TransferOrganizationOwnershipRequest
+	(*TransferOrganizationOwnershipResponse)(nil), // 26: organization.service.v1.TransferOrganizationOwnershipResponse
+	(*timestamppb.Timestamp)(nil),                 // 27: google.protobuf.Timestamp
+	(*v1.PaginationRequest)(nil),                  // 28: pagination.v1.PaginationRequest
+	(*v1.PaginationResponse)(nil),                 // 29: pagination.v1.PaginationResponse
 }
 var file_organization_service_v1_organization_proto_depIdxs = []int32{
-	25, // 0: organization.service.v1.OrganizationInfo.created_at:type_name -> google.protobuf.Timestamp
-	25, // 1: organization.service.v1.OrganizationInfo.updated_at:type_name -> google.protobuf.Timestamp
-	25, // 2: organization.service.v1.OrganizationMemberInfo.created_at:type_name -> google.protobuf.Timestamp
+	27, // 0: organization.service.v1.OrganizationInfo.created_at:type_name -> google.protobuf.Timestamp
+	27, // 1: organization.service.v1.OrganizationInfo.updated_at:type_name -> google.protobuf.Timestamp
+	27, // 2: organization.service.v1.OrganizationMemberInfo.created_at:type_name -> google.protobuf.Timestamp
 	1,  // 3: organization.service.v1.CreateOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	1,  // 4: organization.service.v1.GetOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
-	26, // 5: organization.service.v1.ListOrganizationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
+	28, // 5: organization.service.v1.ListOrganizationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	1,  // 6: organization.service.v1.ListOrganizationsResponse.organizations:type_name -> organization.service.v1.OrganizationInfo
-	27, // 7: organization.service.v1.ListOrganizationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
+	29, // 7: organization.service.v1.ListOrganizationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	1,  // 8: organization.service.v1.UpdateOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	1,  // 9: organization.service.v1.RestoreOrganizationResponse.organization:type_name -> organization.service.v1.OrganizationInfo
 	2,  // 10: organization.service.v1.AddMemberResponse.member:type_name -> organization.service.v1.OrganizationMemberInfo
-	26, // 11: organization.service.v1.ListMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
+	28, // 11: organization.service.v1.ListMembersRequest.pagination:type_name -> pagination.v1.PaginationRequest
 	2,  // 12: organization.service.v1.ListMembersResponse.members:type_name -> organization.service.v1.OrganizationMemberInfo
-	27, // 13: organization.service.v1.ListMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
+	29, // 13: organization.service.v1.ListMembersResponse.pagination:type_name -> pagination.v1.PaginationResponse
 	2,  // 14: organization.service.v1.UpdateMemberRoleResponse.member:type_name -> organization.service.v1.OrganizationMemberInfo
 	3,  // 15: organization.service.v1.OrganizationService.CreateOrganization:input_type -> organization.service.v1.CreateOrganizationRequest
 	5,  // 16: organization.service.v1.OrganizationService.GetOrganization:input_type -> organization.service.v1.GetOrganizationRequest
@@ -1509,19 +1612,21 @@ var file_organization_service_v1_organization_proto_depIdxs = []int32{
 	19, // 23: organization.service.v1.OrganizationService.RemoveMember:input_type -> organization.service.v1.RemoveMemberRequest
 	21, // 24: organization.service.v1.OrganizationService.ListMembers:input_type -> organization.service.v1.ListMembersRequest
 	23, // 25: organization.service.v1.OrganizationService.UpdateMemberRole:input_type -> organization.service.v1.UpdateMemberRoleRequest
-	4,  // 26: organization.service.v1.OrganizationService.CreateOrganization:output_type -> organization.service.v1.CreateOrganizationResponse
-	6,  // 27: organization.service.v1.OrganizationService.GetOrganization:output_type -> organization.service.v1.GetOrganizationResponse
-	8,  // 28: organization.service.v1.OrganizationService.ListOrganizations:output_type -> organization.service.v1.ListOrganizationsResponse
-	10, // 29: organization.service.v1.OrganizationService.UpdateOrganization:output_type -> organization.service.v1.UpdateOrganizationResponse
-	12, // 30: organization.service.v1.OrganizationService.DeleteOrganization:output_type -> organization.service.v1.DeleteOrganizationResponse
-	14, // 31: organization.service.v1.OrganizationService.PurgeOrganization:output_type -> organization.service.v1.PurgeOrganizationResponse
-	16, // 32: organization.service.v1.OrganizationService.RestoreOrganization:output_type -> organization.service.v1.RestoreOrganizationResponse
-	18, // 33: organization.service.v1.OrganizationService.AddMember:output_type -> organization.service.v1.AddMemberResponse
-	20, // 34: organization.service.v1.OrganizationService.RemoveMember:output_type -> organization.service.v1.RemoveMemberResponse
-	22, // 35: organization.service.v1.OrganizationService.ListMembers:output_type -> organization.service.v1.ListMembersResponse
-	24, // 36: organization.service.v1.OrganizationService.UpdateMemberRole:output_type -> organization.service.v1.UpdateMemberRoleResponse
-	26, // [26:37] is the sub-list for method output_type
-	15, // [15:26] is the sub-list for method input_type
+	25, // 26: organization.service.v1.OrganizationService.TransferOwnership:input_type -> organization.service.v1.TransferOrganizationOwnershipRequest
+	4,  // 27: organization.service.v1.OrganizationService.CreateOrganization:output_type -> organization.service.v1.CreateOrganizationResponse
+	6,  // 28: organization.service.v1.OrganizationService.GetOrganization:output_type -> organization.service.v1.GetOrganizationResponse
+	8,  // 29: organization.service.v1.OrganizationService.ListOrganizations:output_type -> organization.service.v1.ListOrganizationsResponse
+	10, // 30: organization.service.v1.OrganizationService.UpdateOrganization:output_type -> organization.service.v1.UpdateOrganizationResponse
+	12, // 31: organization.service.v1.OrganizationService.DeleteOrganization:output_type -> organization.service.v1.DeleteOrganizationResponse
+	14, // 32: organization.service.v1.OrganizationService.PurgeOrganization:output_type -> organization.service.v1.PurgeOrganizationResponse
+	16, // 33: organization.service.v1.OrganizationService.RestoreOrganization:output_type -> organization.service.v1.RestoreOrganizationResponse
+	18, // 34: organization.service.v1.OrganizationService.AddMember:output_type -> organization.service.v1.AddMemberResponse
+	20, // 35: organization.service.v1.OrganizationService.RemoveMember:output_type -> organization.service.v1.RemoveMemberResponse
+	22, // 36: organization.service.v1.OrganizationService.ListMembers:output_type -> organization.service.v1.ListMembersResponse
+	24, // 37: organization.service.v1.OrganizationService.UpdateMemberRole:output_type -> organization.service.v1.UpdateMemberRoleResponse
+	26, // 38: organization.service.v1.OrganizationService.TransferOwnership:output_type -> organization.service.v1.TransferOrganizationOwnershipResponse
+	27, // [27:39] is the sub-list for method output_type
+	15, // [15:27] is the sub-list for method input_type
 	15, // [15:15] is the sub-list for extension type_name
 	15, // [15:15] is the sub-list for extension extendee
 	0,  // [0:15] is the sub-list for field type_name
@@ -1538,7 +1643,7 @@ func file_organization_service_v1_organization_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_organization_service_v1_organization_proto_rawDesc), len(file_organization_service_v1_organization_proto_rawDesc)),
 			NumEnums:      1,
-			NumMessages:   24,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

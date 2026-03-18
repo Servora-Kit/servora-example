@@ -165,6 +165,15 @@ export type UpdateMemberRoleResponse = {
   member: OrganizationMemberInfo | undefined;
 };
 
+export type TransferOrganizationOwnershipRequest = {
+  organizationId: string | undefined;
+  newOwnerUserId: string | undefined;
+};
+
+export type TransferOrganizationOwnershipResponse = {
+  success: boolean | undefined;
+};
+
 export interface OrganizationService {
 }
 

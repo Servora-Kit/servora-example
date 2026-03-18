@@ -18,7 +18,7 @@ export type ApplicationInfo = {
   grantTypes: string[] | undefined;
   applicationType: string | undefined;
   accessTokenType: string | undefined;
-  organizationId: string | undefined;
+  tenantId: string | undefined;
   idTokenLifetime: number | undefined;
   createdAt: wellKnownTimestamp | undefined;
   updatedAt: wellKnownTimestamp | undefined;

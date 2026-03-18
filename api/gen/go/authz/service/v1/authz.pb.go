@@ -76,8 +76,6 @@ const (
 	AuthzMode_AUTHZ_MODE_NONE AuthzMode = 1
 	// 从请求中解析 organization_id，并校验 organization:{id} 上的关系。
 	AuthzMode_AUTHZ_MODE_ORGANIZATION AuthzMode = 2
-	// 从请求中解析 project_id，并校验 project:{id} 上的关系。
-	AuthzMode_AUTHZ_MODE_PROJECT AuthzMode = 3
 	// 从请求中解析 object_type 和 object_id，并校验 {type}:{id} 上的关系。
 	AuthzMode_AUTHZ_MODE_OBJECT AuthzMode = 4
 )
@@ -88,14 +86,12 @@ var (
 		0: "AUTHZ_MODE_UNSPECIFIED",
 		1: "AUTHZ_MODE_NONE",
 		2: "AUTHZ_MODE_ORGANIZATION",
-		3: "AUTHZ_MODE_PROJECT",
 		4: "AUTHZ_MODE_OBJECT",
 	}
 	AuthzMode_value = map[string]int32{
 		"AUTHZ_MODE_UNSPECIFIED":  0,
 		"AUTHZ_MODE_NONE":         1,
 		"AUTHZ_MODE_ORGANIZATION": 2,
-		"AUTHZ_MODE_PROJECT":      3,
 		"AUTHZ_MODE_OBJECT":       4,
 	}
 )
@@ -137,8 +133,6 @@ const (
 	ObjectType_OBJECT_TYPE_TENANT ObjectType = 1
 	// 组织
 	ObjectType_OBJECT_TYPE_ORGANIZATION ObjectType = 2
-	// 项目
-	ObjectType_OBJECT_TYPE_PROJECT ObjectType = 3
 )
 
 // Enum value maps for ObjectType.
@@ -147,13 +141,11 @@ var (
 		0: "OBJECT_TYPE_UNSPECIFIED",
 		1: "OBJECT_TYPE_TENANT",
 		2: "OBJECT_TYPE_ORGANIZATION",
-		3: "OBJECT_TYPE_PROJECT",
 	}
 	ObjectType_value = map[string]int32{
 		"OBJECT_TYPE_UNSPECIFIED":  0,
 		"OBJECT_TYPE_TENANT":       1,
 		"OBJECT_TYPE_ORGANIZATION": 2,
-		"OBJECT_TYPE_PROJECT":      3,
 	}
 )
 
@@ -481,19 +473,17 @@ const file_authz_service_v1_authz_proto_rawDesc = "" +
 	"\x17CheckPermissionResponse\x12\x18\n" +
 	"\aallowed\x18\x01 \x01(\bR\aallowed*0\n" +
 	"\vErrorReason\x12\x1b\n" +
-	"\x11PERMISSION_DENIED\x10\x00\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03*\x88\x01\n" +
+	"\x11PERMISSION_DENIED\x10\x00\x1a\x04\xa8E\x93\x03\x1a\x04\xa0E\xf4\x03*p\n" +
 	"\tAuthzMode\x12\x1a\n" +
 	"\x16AUTHZ_MODE_UNSPECIFIED\x10\x00\x12\x13\n" +
 	"\x0fAUTHZ_MODE_NONE\x10\x01\x12\x1b\n" +
-	"\x17AUTHZ_MODE_ORGANIZATION\x10\x02\x12\x16\n" +
-	"\x12AUTHZ_MODE_PROJECT\x10\x03\x12\x15\n" +
-	"\x11AUTHZ_MODE_OBJECT\x10\x04*x\n" +
+	"\x17AUTHZ_MODE_ORGANIZATION\x10\x02\x12\x15\n" +
+	"\x11AUTHZ_MODE_OBJECT\x10\x04*_\n" +
 	"\n" +
 	"ObjectType\x12\x1b\n" +
 	"\x17OBJECT_TYPE_UNSPECIFIED\x10\x00\x12\x16\n" +
 	"\x12OBJECT_TYPE_TENANT\x10\x01\x12\x1c\n" +
-	"\x18OBJECT_TYPE_ORGANIZATION\x10\x02\x12\x17\n" +
-	"\x13OBJECT_TYPE_PROJECT\x10\x03*\xf6\x01\n" +
+	"\x18OBJECT_TYPE_ORGANIZATION\x10\x02*\xf6\x01\n" +
 	"\bRelation\x12\x18\n" +
 	"\x14RELATION_UNSPECIFIED\x10\x00\x12\x12\n" +
 	"\x0eRELATION_OWNER\x10\x01\x12\x12\n" +

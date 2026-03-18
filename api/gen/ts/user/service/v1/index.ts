@@ -11,7 +11,9 @@ export type ErrorReason =
   // 更新用户信息失败
   | "UPDATE_USER_FAILED"
   // 保存用户信息失败
-  | "SAVE_USER_FAILED";
+  | "SAVE_USER_FAILED"
+  // 创建用户失败
+  | "CREATE_USER_FAILED";
 export type UserInfo = {
   id: string | undefined;
   name: string | undefined;
@@ -107,21 +109,20 @@ export type UpdateUserRequest = {
   name: string | undefined;
   email: string | undefined;
   password: string | undefined;
-  role: string | undefined;
 };
 
 export type UpdateUserResponse = {
   user: UserInfo | undefined;
 };
 
-export type SaveUserRequest = {
+export type CreateUserRequest = {
   name: string | undefined;
   email: string | undefined;
   password: string | undefined;
-  role: string | undefined;
+  organizationId: string | undefined;
 };
 
-export type SaveUserResponse = {
+export type CreateUserResponse = {
   id: string | undefined;
 };
 

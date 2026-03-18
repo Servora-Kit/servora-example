@@ -35,6 +35,7 @@ service OrganizationService {
   rpc RemoveMember(RemoveMemberRequest) returns (RemoveMemberResponse);
   rpc ListMembers(ListMembersRequest) returns (ListMembersResponse);
   rpc UpdateMemberRole(UpdateMemberRoleRequest) returns (UpdateMemberRoleResponse);
+  rpc TransferOwnership(TransferOrganizationOwnershipRequest) returns (TransferOrganizationOwnershipResponse);
 }
 
 message OrganizationInfo {
@@ -123,7 +124,7 @@ message RestoreOrganizationResponse {
 message AddMemberRequest {
   string organization_id = 1 [(buf.validate.field).string.uuid = true];
   string user_id = 2 [(buf.validate.field).string.uuid = true];
-  string role = 3 [(buf.validate.field).string = {in: ["owner", "admin", "member", "viewer"]}];
+  string role = 3 [(buf.validate.field).string = {in: ["admin", "member", "viewer"]}];
 }
 
 message AddMemberResponse {
@@ -152,9 +153,18 @@ message ListMembersResponse {
 message UpdateMemberRoleRequest {
   string organization_id = 1 [(buf.validate.field).string.uuid = true];
   string user_id = 2 [(buf.validate.field).string.uuid = true];
-  string role = 3 [(buf.validate.field).string = {in: ["owner", "admin", "member", "viewer"]}];
+  string role = 3 [(buf.validate.field).string = {in: ["admin", "member", "viewer"]}];
 }
 
 message UpdateMemberRoleResponse {
   OrganizationMemberInfo member = 1;
+}
+
+message TransferOrganizationOwnershipRequest {
+  string organization_id = 1 [(buf.validate.field).string.uuid = true];
+  string new_owner_user_id = 2 [(buf.validate.field).string.uuid = true];
+}
+
+message TransferOrganizationOwnershipResponse {
+  bool success = 1;
 }

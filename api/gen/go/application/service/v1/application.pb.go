@@ -93,7 +93,7 @@ type ApplicationInfo struct {
 	GrantTypes      []string               `protobuf:"bytes,6,rep,name=grant_types,json=grantTypes,proto3" json:"grant_types,omitempty"`
 	ApplicationType string                 `protobuf:"bytes,7,opt,name=application_type,json=applicationType,proto3" json:"application_type,omitempty"`
 	AccessTokenType string                 `protobuf:"bytes,8,opt,name=access_token_type,json=accessTokenType,proto3" json:"access_token_type,omitempty"`
-	OrganizationId  string                 `protobuf:"bytes,9,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	TenantId        string                 `protobuf:"bytes,9,opt,name=tenant_id,json=tenantId,proto3" json:"tenant_id,omitempty"`
 	IdTokenLifetime int32                  `protobuf:"varint,10,opt,name=id_token_lifetime,json=idTokenLifetime,proto3" json:"id_token_lifetime,omitempty"`
 	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
@@ -187,9 +187,9 @@ func (x *ApplicationInfo) GetAccessTokenType() string {
 	return ""
 }
 
-func (x *ApplicationInfo) GetOrganizationId() string {
+func (x *ApplicationInfo) GetTenantId() string {
 	if x != nil {
-		return x.OrganizationId
+		return x.TenantId
 	}
 	return ""
 }
@@ -851,7 +851,7 @@ var File_application_service_v1_application_proto protoreflect.FileDescriptor
 
 const file_application_service_v1_application_proto_rawDesc = "" +
 	"\n" +
-	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xd2\x03\n" +
+	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xc6\x03\n" +
 	"\x0fApplicationInfo\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12\x12\n" +
@@ -861,8 +861,8 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"\vgrant_types\x18\x06 \x03(\tR\n" +
 	"grantTypes\x12)\n" +
 	"\x10application_type\x18\a \x01(\tR\x0fapplicationType\x12*\n" +
-	"\x11access_token_type\x18\b \x01(\tR\x0faccessTokenType\x12'\n" +
-	"\x0forganization_id\x18\t \x01(\tR\x0eorganizationId\x12*\n" +
+	"\x11access_token_type\x18\b \x01(\tR\x0faccessTokenType\x12\x1b\n" +
+	"\ttenant_id\x18\t \x01(\tR\btenantId\x12*\n" +
 	"\x11id_token_lifetime\x18\n" +
 	" \x01(\x05R\x0fidTokenLifetime\x129\n" +
 	"\n" +
