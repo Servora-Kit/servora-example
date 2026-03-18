@@ -42,7 +42,13 @@ services:
     restart: unless-stopped
     command: ["--config=/etc/otelcol/config.yaml"]
     healthcheck:
-      test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/config.yaml"]
+      test:
+        [
+          "CMD",
+          "/otelcol-contrib",
+          "validate",
+          "--config=/etc/otelcol/config.yaml",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -164,7 +170,11 @@ services:
       - --datastore-uri
       - postgres://servora:servora@db:5432/openfga?sslmode=disable
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8080/healthz | grep -q SERVING"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:8080/healthz | grep -q SERVING",
+        ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -172,7 +182,7 @@ services:
     ports:
       - "18080:8080"
       - "18081:8081"
-      - "3000:3000"
+      - "3002:3000"
     networks:
       - servora-network
 
@@ -188,7 +198,7 @@ services:
     ports:
       - "8080:80"
       - "8081:8080"
-      - "8082:8082"   # metrics (Prometheus scrape)
+      - "8082:8082" # metrics (Prometheus scrape)
     volumes:
       - ./manifests/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
     healthcheck:
