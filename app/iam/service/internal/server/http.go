@@ -13,9 +13,10 @@ import (
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	iamv1 "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/assets"
-	iammw "github.com/Servora-Kit/servora/app/iam/service/internal/server/middleware"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/oidc"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
+	"github.com/Servora-Kit/servora/pkg/authn"
+	"github.com/Servora-Kit/servora/pkg/authz"
 	"github.com/Servora-Kit/servora/pkg/cap"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/health"
@@ -55,22 +56,22 @@ func NewHTTPMiddleware(
 		cap.OperationCapRedeem,
 	)
 
-	authn := iammw.Authn(iammw.WithVerifier(km.Verifier()))
+	authnMw := authn.Authn(authn.WithVerifier(km.Verifier()))
 
-	authzOpts := []iammw.AuthzOption{
-		iammw.WithFGAClient(fga),
-		iammw.WithAuthzRules(iamv1.AuthzRules),
+	authzOpts := []authz.Option{
+		authz.WithFGAClient(fga),
+		authz.WithAuthzRules(iamv1.AuthzRules),
 	}
 	if rdb != nil {
-		authzOpts = append(authzOpts, iammw.WithAuthzCache(rdb, openfga.DefaultCheckCacheTTL))
+		authzOpts = append(authzOpts, authz.WithAuthzCache(rdb, openfga.DefaultCheckCacheTTL))
 	}
-	authz := iammw.Authz(authzOpts...)
+	authzMw := authz.Authz(authzOpts...)
 
 	ms = append(ms,
-		selector.Server(authn).
+		selector.Server(authnMw).
 			Match(publicWhitelist.MatchFunc()).
 			Build(),
-		authz,
+		authzMw,
 	)
 
 	return ms

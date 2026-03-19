@@ -1,8 +1,6 @@
 package server
 
 import (
-	"strings"
-
 	kmw "github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/selector"
 	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
@@ -11,8 +9,9 @@ import (
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
 	iamv1 "github.com/Servora-Kit/servora/api/gen/go/iam/service/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
-	iammw "github.com/Servora-Kit/servora/app/iam/service/internal/server/middleware"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/service"
+	"github.com/Servora-Kit/servora/pkg/authn"
+	"github.com/Servora-Kit/servora/pkg/authz"
 	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
 	"github.com/Servora-Kit/servora/pkg/jwks"
 	"github.com/Servora-Kit/servora/pkg/logger"
@@ -43,53 +42,25 @@ func NewGRPCMiddleware(
 		authnpb.AuthnService_SignupByEmail_FullMethodName,
 	)
 
-	authn := iammw.Authn(iammw.WithVerifier(km.Verifier()))
+	authnMw := authn.Authn(authn.WithVerifier(km.Verifier()))
 
-	authzRules := remapAuthzRulesForGRPC(iamv1.AuthzRules)
-	authzOpts := []iammw.AuthzOption{
-		iammw.WithFGAClient(fga),
-		iammw.WithAuthzRules(authzRules),
+	authzOpts := []authz.Option{
+		authz.WithFGAClient(fga),
+		authz.WithAuthzRules(iamv1.AuthzRules),
 	}
 	if rdb != nil {
-		authzOpts = append(authzOpts, iammw.WithAuthzCache(rdb, openfga.DefaultCheckCacheTTL))
+		authzOpts = append(authzOpts, authz.WithAuthzCache(rdb, openfga.DefaultCheckCacheTTL))
 	}
-	authz := iammw.Authz(authzOpts...)
+	authzMw := authz.Authz(authzOpts...)
 
 	ms = append(ms,
-		selector.Server(authn).
+		selector.Server(authnMw).
 			Match(publicWhitelist.MatchFunc()).
 			Build(),
-		authz,
+		authzMw,
 	)
 
 	return ms
-}
-
-// remapAuthzRulesForGRPC converts IAM wrapper operation names to domain proto
-// operation names used by gRPC service registrations.
-func remapAuthzRulesForGRPC(src map[string]iamv1.AuthzRuleEntry) map[string]iamv1.AuthzRuleEntry {
-	dst := make(map[string]iamv1.AuthzRuleEntry, len(src))
-	for op, r := range src {
-		dst[remapIAMOpToGRPC(op)] = r
-	}
-	return dst
-}
-
-const iamServicePrefix = "/iam.service.v1."
-
-func remapIAMOpToGRPC(iamOp string) string {
-	if !strings.HasPrefix(iamOp, iamServicePrefix) {
-		return iamOp
-	}
-	rest := iamOp[len(iamServicePrefix):]
-	slashIdx := strings.Index(rest, "/")
-	if slashIdx < 0 {
-		return iamOp
-	}
-	svcName := rest[:slashIdx]
-	method := rest[slashIdx:]
-	domain := strings.ToLower(strings.TrimSuffix(svcName, "Service"))
-	return "/" + domain + ".service.v1." + svcName + method
 }
 
 func NewGRPCServer(

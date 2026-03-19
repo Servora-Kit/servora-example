@@ -6,14 +6,9 @@
 //	import pkgauthz "github.com/Servora-Kit/servora/pkg/authz"
 //	import orderpb "github.com/Servora-Kit/servora/api/gen/go/order/service/v1"
 //
-//	// Convert service-specific generated rules to pkg/authz format
-//	rules := make(map[string]pkgauthz.AuthzRule, len(orderpb.AuthzRules))
-//	for op, r := range orderpb.AuthzRules {
-//	    rules[op] = pkgauthz.AuthzRule{Mode: r.Mode, Relation: r.Relation, ObjectType: r.ObjectType, IDField: r.IDField}
-//	}
 //	mw = append(mw, pkgauthz.Authz(
 //	    pkgauthz.WithFGAClient(fgaClient),
-//	    pkgauthz.WithAuthzRules(rules),
+//	    pkgauthz.WithAuthzRules(orderpb.AuthzRules),
 //	    pkgauthz.WithAuthzCache(redisClient, 60*time.Second),
 //	))
 package authz

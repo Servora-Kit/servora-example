@@ -4,18 +4,67 @@ package iampb
 
 import (
 	v1 "github.com/Servora-Kit/servora/api/gen/go/authz/service/v1"
+	authz "github.com/Servora-Kit/servora/pkg/authz"
 )
 
-// AuthzRuleEntry describes the authorization requirement for a single RPC operation.
-type AuthzRuleEntry struct {
-	Mode       v1.AuthzMode
-	Relation   string
-	ObjectType string
-	IDField    string
-}
-
 // AuthzRules maps each annotated RPC operation to its authorization rule.
-var AuthzRules = map[string]AuthzRuleEntry{
+var AuthzRules = map[string]authz.AuthzRule{
+	"/application.service.v1.ApplicationService/CreateApplication": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/application.service.v1.ApplicationService/DeleteApplication": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/application.service.v1.ApplicationService/GetApplication": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/application.service.v1.ApplicationService/ListApplications": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/application.service.v1.ApplicationService/RegenerateClientSecret": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/application.service.v1.ApplicationService/UpdateApplication": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/authn.service.v1.AuthnService/ChangePassword": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/LoginByEmailPassword": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/Logout": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/LogoutAllDevices": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/RefreshToken": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/RequestEmailVerification": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/RequestPasswordReset": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/ResetPassword": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/SignupByEmail": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/authn.service.v1.AuthnService/VerifyEmail": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
 	"/iam.service.v1.ApplicationService/CreateApplication": {
 		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
 		Relation:   "admin",
@@ -106,6 +155,42 @@ var AuthzRules = map[string]AuthzRuleEntry{
 		ObjectType: "platform",
 	},
 	"/iam.service.v1.UserService/UpdateUser": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/user.service.v1.UserService/CreateUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/CurrentUserInfo": {
+		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
+	},
+	"/user.service.v1.UserService/DeleteUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/GetUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "can_manage_users",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/ListUsers": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "can_manage_users",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/PurgeUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/RestoreUser": {
+		Mode:       v1.AuthzMode_AUTHZ_MODE_CHECK,
+		Relation:   "admin",
+		ObjectType: "platform",
+	},
+	"/user.service.v1.UserService/UpdateUser": {
 		Mode: v1.AuthzMode_AUTHZ_MODE_NONE,
 	},
 }
