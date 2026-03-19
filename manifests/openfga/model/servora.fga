@@ -1,30 +1,20 @@
 model
   schema 1.1
 
+# user 是所有主体的基础类型
 type user
 
+# platform 代表 IAM 本身，用于平台级别管理权限
 type platform
   relations
     define admin: [user]
-    define can_view_all_tenants: admin
-    define can_manage_all_tenants: admin
+    define can_manage_users: admin
+    define can_manage_applications: admin
 
-type tenant
+# application 代表 OAuth2/OIDC 客户端（m2m / web / native）
+type application
   relations
     define platform: [platform]
-    define owner: [user]
-    # effective_admin 是计算关系：租户 owner 或平台 admin 都视为有效管理员
-    define effective_admin: owner or admin from platform
-    define can_view: effective_admin
-    define can_manage: effective_admin
-    define can_transfer_ownership: effective_admin
-
-type organization
-  relations
-    define tenant: [tenant]
-    # 组织 admin = 显式指定的 admin，或租户 effective_admin（owner / platform admin）
-    define admin: [user] or effective_admin from tenant
-    define member: [user] or admin
-    define can_view: member
+    define admin: [user] or admin from platform
+    define can_view: admin
     define can_manage: admin
-    define can_manage_members: admin
