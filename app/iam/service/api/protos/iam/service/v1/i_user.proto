@@ -40,33 +40,34 @@ service UserService {
     };
   }
 
+  // 创建用户需要平台管理员权限
   rpc CreateUser(user.service.v1.CreateUserRequest) returns (user.service.v1.CreateUserResponse) {
     option (google.api.http) = {
       post: "/v1/users"
       body: "*"
     };
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_OBJECT
-      object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_CAN_MANAGE
+      mode: AUTHZ_MODE_CHECK
+      object_type: "platform"
+      relation: "admin"
     };
   }
 
   rpc DeleteUser(user.service.v1.DeleteUserRequest) returns (user.service.v1.DeleteUserResponse) {
     option (google.api.http) = {delete: "/v1/users/{id}"};
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_OBJECT
-      object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_CAN_MANAGE
+      mode: AUTHZ_MODE_CHECK
+      object_type: "platform"
+      relation: "admin"
     };
   }
 
   rpc PurgeUser(user.service.v1.PurgeUserRequest) returns (user.service.v1.PurgeUserResponse) {
     option (google.api.http) = {delete: "/v1/users/{id}/purge"};
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_OBJECT
-      object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_CAN_MANAGE
+      mode: AUTHZ_MODE_CHECK
+      object_type: "platform"
+      relation: "admin"
     };
   }
 
@@ -76,9 +77,9 @@ service UserService {
       body: "*"
     };
     option (authz.service.v1.rule) = {
-      mode: AUTHZ_MODE_OBJECT
-      object_type: OBJECT_TYPE_TENANT
-      relation: RELATION_CAN_MANAGE
+      mode: AUTHZ_MODE_CHECK
+      object_type: "platform"
+      relation: "admin"
     };
   }
 }

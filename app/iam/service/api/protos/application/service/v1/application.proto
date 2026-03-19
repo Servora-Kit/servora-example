@@ -40,21 +40,23 @@ message ApplicationInfo {
   repeated string grant_types = 6;
   string application_type = 7;
   string access_token_type = 8;
-  string tenant_id = 9;
+  // type 区分应用类型：web | native | m2m
+  string type = 9;
   int32 id_token_lifetime = 10;
   google.protobuf.Timestamp created_at = 11;
   google.protobuf.Timestamp updated_at = 12;
 }
 
 message CreateApplicationRequest {
-  reserved 1;
-  string name = 2 [(buf.validate.field).string = {min_len: 2, max_len: 128}];
-  repeated string redirect_uris = 3;
-  repeated string scopes = 4;
-  repeated string grant_types = 5;
-  optional string application_type = 6;
-  optional string access_token_type = 7;
-  optional int32 id_token_lifetime = 8;
+  string name = 1 [(buf.validate.field).string = {min_len: 2, max_len: 128}];
+  repeated string redirect_uris = 2;
+  repeated string scopes = 3;
+  repeated string grant_types = 4;
+  optional string application_type = 5;
+  optional string access_token_type = 6;
+  optional int32 id_token_lifetime = 7;
+  // type: "web" | "native" | "m2m"（默认 "web"）
+  optional string type = 8;
 }
 
 message CreateApplicationResponse {
@@ -71,8 +73,7 @@ message GetApplicationResponse {
 }
 
 message ListApplicationsRequest {
-  reserved 1;
-  pagination.v1.PaginationRequest pagination = 2;
+  pagination.v1.PaginationRequest pagination = 1;
 }
 
 message ListApplicationsResponse {

@@ -39,22 +39,41 @@ service UserService {
   rpc RestoreUser(RestoreUserRequest) returns (RestoreUserResponse);
 }
 
+// UserProfile 对应 OIDC Standard Claims 中的 profile scope 字段。
+// 字段命名与 OIDC UserInfo profile 对齐，签发 ID Token 时直接映射。
+message UserProfile {
+  string name = 1;
+  string given_name = 2;
+  string family_name = 3;
+  string nickname = 4;
+  string picture = 5;
+  string gender = 6;
+  string birthdate = 7;
+  string zoneinfo = 8;
+  string locale = 9;
+}
+
 message UserInfo {
   string id = 1;
-  string name = 2;
+  string username = 2;
   string email = 3;
   string role = 4;
   bool email_verified = 5;
-  repeated string organization_ids = 6;
+  string phone = 6;
+  bool phone_verified = 7;
+  string status = 8;
+  UserProfile profile = 9;
 }
 
 message CurrentUserInfoRequest {}
 
 message CurrentUserInfoResponse {
   string id = 1;
-  string name = 2;
+  string username = 2;
   string email = 3;
   string role = 4;
+  string status = 5;
+  UserProfile profile = 6;
 }
 
 message GetUserRequest {
@@ -100,9 +119,11 @@ message RestoreUserResponse {
 
 message UpdateUserRequest {
   string id = 1;
-  string name = 2;
-  string email = 3;
-  string password = 4;
+  optional string username = 2;
+  optional string email = 3;
+  optional string phone = 4;
+  optional string status = 5;
+  optional UserProfile profile = 6;
 }
 
 message UpdateUserResponse {
@@ -110,13 +131,12 @@ message UpdateUserResponse {
 }
 
 message CreateUserRequest {
-  string name = 1 [(buf.validate.field).string.min_len = 2];
+  string username = 1 [(buf.validate.field).string = {min_len: 2, max_len: 64}];
   string email = 2 [(buf.validate.field).string.email = true];
   string password = 3 [(buf.validate.field).string = {
     min_len: 6
     max_len: 64
   }];
-  string organization_id = 4 [(buf.validate.field).string.uuid = true];
 }
 
 message CreateUserResponse {
