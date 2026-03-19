@@ -38,7 +38,7 @@ func (s *AuthnService) SignupByEmail(ctx context.Context, req *authnpb.SignupByE
 	}
 
 	user, err := s.uc.SignupByEmail(ctx, &entity.User{
-		Name:     req.Name,
+		Username: req.Name,
 		Email:    req.Email,
 		Password: req.Password,
 	})
@@ -47,7 +47,7 @@ func (s *AuthnService) SignupByEmail(ctx context.Context, req *authnpb.SignupByE
 	}
 	return &authnpb.SignupByEmailResponse{
 		Id:    user.ID,
-		Name:  user.Name,
+		Name:  user.Username,
 		Email: user.Email,
 		Role:  user.Role,
 	}, nil

@@ -3,7 +3,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-kratos/kratos/v2/errors"
@@ -49,9 +48,8 @@ func WithAuthzCache(rdb *redis.Client, ttl time.Duration) AuthzOption {
 // using OpenFGA based on proto-declared rules.
 //
 // Behavior:
-//   - AUTHZ_MODE_NONE: skip authorization
-//   - AUTHZ_MODE_ORGANIZATION: check relation on organization:{id}
-//   - AUTHZ_MODE_OBJECT: check relation on {object_type}:{id}
+//   - AUTHZ_MODE_NONE: skip authorization (public endpoints)
+//   - AUTHZ_MODE_CHECK: check relation on {object_type}:{object_id}
 //   - No rule found (fail-closed): deny
 //   - OpenFGA unavailable (fail-closed): 503
 func Authz(opts ...AuthzOption) middleware.Middleware {
@@ -88,13 +86,13 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 				return nil, errors.ServiceUnavailable("AUTHZ_UNAVAILABLE", "authorization service not available")
 			}
 
-			objectType, objectID, err := resolveObject(rule, req, a)
+			objectType, objectID, err := resolveObject(rule, req)
 			if err != nil {
 				return nil, errors.BadRequest("AUTHZ_BAD_REQUEST",
 					fmt.Sprintf("cannot resolve authorization target: %v", err))
 			}
 
-			relation := relationToFGA(rule.Relation)
+			relation := rule.Relation
 			ttl := cfg.cacheTTL
 			if ttl == 0 {
 				ttl = openfga.DefaultCheckCacheTTL
@@ -114,47 +112,24 @@ func Authz(opts ...AuthzOption) middleware.Middleware {
 	}
 }
 
-func resolveObject(rule iamv1.AuthzRuleEntry, req any, a actor.Actor) (objectType, objectID string, err error) {
-	switch rule.Mode {
-	case authzpb.AuthzMode_AUTHZ_MODE_ORGANIZATION:
-		objectType = "organization"
-		if rule.IDField == "" {
-			objectID, err = scopeFromActor(a, "OrganizationID")
-		} else {
-			objectID, err = extractProtoField(req, rule.IDField)
-		}
-	case authzpb.AuthzMode_AUTHZ_MODE_OBJECT:
-		objectType = objectTypeToFGA(rule.ObjectType)
-		if objectType == "tenant" && rule.IDField == "" {
-			objectID, err = scopeFromActor(a, "TenantID")
-		} else {
-			objectID, err = extractProtoField(req, rule.IDField)
-		}
-	default:
-		err = fmt.Errorf("unsupported authz mode: %v", rule.Mode)
+// resolveObject determines the FGA object type and ID for the given rule and request.
+// For AUTHZ_MODE_CHECK:
+//   - ObjectType is taken directly from rule.ObjectType (e.g. "platform")
+//   - ObjectID is extracted from the proto request field named by rule.IDField,
+//     or defaults to "default" when IDField is empty (e.g. platform-level checks).
+func resolveObject(rule iamv1.AuthzRuleEntry, req any) (objectType, objectID string, err error) {
+	objectType = rule.ObjectType
+	if objectType == "" {
+		return "", "", fmt.Errorf("object_type not specified in authz rule")
 	}
-	return
-}
 
-func scopeFromActor(a actor.Actor, field string) (string, error) {
-	ua, ok := a.(*actor.UserActor)
-	if !ok {
-		return "", fmt.Errorf("actor is not a UserActor")
+	if rule.IDField == "" {
+		// No ID field means the object is a singleton (e.g. platform:default).
+		return objectType, "default", nil
 	}
-	switch field {
-	case "TenantID":
-		if id := ua.TenantID(); id != "" {
-			return id, nil
-		}
-		return "", fmt.Errorf("missing X-Tenant-ID header")
-	case "OrganizationID":
-		if id := ua.OrganizationID(); id != "" {
-			return id, nil
-		}
-		return "", fmt.Errorf("missing X-Organization-ID header")
-	default:
-		return "", fmt.Errorf("unknown scope field: %s", field)
-	}
+
+	objectID, err = extractProtoField(req, rule.IDField)
+	return
 }
 
 func extractProtoField(req any, fieldName string) (string, error) {
@@ -179,14 +154,4 @@ func extractProtoField(req any, fieldName string) (string, error) {
 		return "", fmt.Errorf("field %q is empty", fieldName)
 	}
 	return s, nil
-}
-
-func relationToFGA(r authzpb.Relation) string {
-	s := strings.TrimPrefix(r.String(), "RELATION_")
-	return strings.ToLower(s)
-}
-
-func objectTypeToFGA(ot authzpb.ObjectType) string {
-	s := strings.TrimPrefix(ot.String(), "OBJECT_TYPE_")
-	return strings.ToLower(s)
 }

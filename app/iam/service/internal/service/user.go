@@ -64,9 +64,10 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	}
 	u := &entity.User{
 		ID:       req.Id,
-		Username: req.Username,
-		Email:    req.Email,
-		Password: req.Password,
+		Username: req.GetUsername(),
+		Email:    req.GetEmail(),
+		Phone:    req.GetPhone(),
+		Status:   req.GetStatus(),
 	}
 	if req.Profile != nil {
 		u.Profile = entity.UserProfile{
