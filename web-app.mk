@@ -30,7 +30,7 @@ CYAN  := \033[0;36m
 GREEN := \033[0;32m
 RESET := \033[0m
 
-.PHONY: help install ci dev build preview start test lint format check clean
+.PHONY: help install ci dev build preview start test lint lint.ts typecheck format check clean
 
 # ----------------------------------------------------------------------------
 # Help
@@ -46,6 +46,8 @@ help:
 	@echo "  $(GREEN)start$(RESET)     Run production server (after build)"
 	@echo "  $(GREEN)test$(RESET)      Run tests (vitest)"
 	@echo "  $(GREEN)lint$(RESET)      Run ESLint"
+	@echo "  $(GREEN)typecheck$(RESET) TypeScript (tsc --noEmit, if script exists)"
+	@echo "  $(GREEN)lint.ts$(RESET)   typecheck then ESLint (if scripts exist)"
 	@echo "  $(GREEN)format$(RESET)    Check formatting (Prettier)"
 	@echo "  $(GREEN)check$(RESET)     Format + lint fix (Prettier --write + ESLint --fix)"
 	@echo "  $(GREEN)clean$(RESET)     Remove build artifacts and node_modules"
@@ -83,6 +85,20 @@ test:
 
 lint:
 	$(PKG_RUN) lint
+
+typecheck:
+ifeq ($(WEB_APP_PNPM),)
+	@npm run typecheck --if-present
+else
+	@pnpm run --if-present typecheck
+endif
+
+lint.ts: typecheck
+ifeq ($(WEB_APP_PNPM),)
+	@npm run lint --if-present
+else
+	@pnpm run --if-present lint
+endif
 
 format:
 	$(PKG_RUN) format

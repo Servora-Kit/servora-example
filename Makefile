@@ -61,6 +61,21 @@ DOCKER_BAKE_FILE := docker-bake.hcl
 BAKE_TARGETS ?= default
 # MICROSERVICES := iam sayhello
 MICROSERVICES := iam
+
+# Frontend packages under web/<name>/ (pnpm workspace members; must match pnpm-workspace.yaml)
+# WEB_APPS := iam pkg ui
+WEB_APPS := iam
+
+# Default app for `make web.dev` (must be listed in WEB_APPS)
+WEB_DEV_APP ?= iam
+
+# Go modules to lint from repo root (each path has its own go.mod). Excludes api/gen (generated).
+# When adding a workspace service module, append it here (see go.work `use`).
+GO_WORKSPACE_MODULES := app/iam/service app/sayhello/service
+
+# pnpm --filter args built from WEB_APPS (+ optional api client anchor)
+WEB_PNPM_FILTERS := $(foreach app,$(WEB_APPS),--filter "./web/$(app)")
+TS_CLIENT_PNPM_FILTER := --filter "./api/ts-client"
 # INFRA_SERVICES := consul db redis mailpit openfga otel-collector jaeger loki prometheus grafana traefik
 INFRA_SERVICES := consul db redis mailpit openfga otel-collector jaeger loki prometheus traefik
 COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
@@ -75,7 +90,7 @@ endef
 # MAIN TARGETS
 # ============================================================================
 
-.PHONY: help env init plugin cli dep vendor test cover vet lint.go lint.proto lint.ts buf-update
+.PHONY: help env init plugin cli dep vendor test cover vet lint lint.go lint.proto lint.ts web.dev buf-update
 .PHONY: wire ent gen api api-go api-authz api-ts openapi build all clean
 .PHONY: compose.build compose.up compose.rebuild compose.stop compose.down compose.reset compose.ps compose.logs compose.init
 .PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
@@ -86,6 +101,10 @@ env:
 	@echo "CURRENT_DIR: $(CURRENT_DIR)"
 	@echo "ROOT_DIR: $(ROOT_DIR)"
 	@echo "SRCS_MK: $(SRCS_MK)"
+	@echo "MICROSERVICES: $(MICROSERVICES)"
+	@echo "WEB_APPS: $(WEB_APPS)"
+	@echo "WEB_DEV_APP: $(WEB_DEV_APP)"
+	@echo "GO_WORKSPACE_MODULES: $(GO_WORKSPACE_MODULES)"
 	@echo "VERSION: $(VERSION)"
 	@echo "GOVERSION: $(GOVERSION)"
 
@@ -138,17 +157,29 @@ cover:
 vet:
 	@go vet ./...
 
-# run golang lint
-lint.go:
-	@golangci-lint run
+# run all configured linters (Go + TypeScript). Proto: use `make lint.proto` when needed.
+lint: lint.go lint.ts
+	@echo "$(GREEN)✓ lint (go + ts) complete$(RESET)"
 
-# lint TypeScript web applications (type check + eslint, all web/* packages)
+# run golang lint (root module + every workspace module in GO_WORKSPACE_MODULES)
+lint.go:
+	@echo "$(CYAN)Linting Go (repo root module)...$(RESET)"
+	@golangci-lint run
+	@$(foreach mod,$(GO_WORKSPACE_MODULES),echo "$(CYAN)Linting Go ($(mod))...$(RESET)" && (cd $(ROOT_DIR)$(mod) && golangci-lint run) && ) true
+	@echo "$(GREEN)✓ Go lint complete (root + $(words $(GO_WORKSPACE_MODULES)) workspace module(s))$(RESET)"
+
+# lint TypeScript: WEB_APPS + api/ts-client (scripts optional via --if-present)
 lint.ts:
-	@echo "$(CYAN)Type checking TypeScript web applications...$(RESET)"
-	@pnpm --filter "./web/**" run typecheck
-	@echo "$(CYAN)Linting TypeScript web applications...$(RESET)"
-	@pnpm --filter "./web/**" run lint
+	@echo "$(CYAN)Type checking TypeScript (WEB_APPS + api/ts-client)...$(RESET)"
+	@pnpm $(WEB_PNPM_FILTERS) $(TS_CLIENT_PNPM_FILTER) run --if-present typecheck
+	@echo "$(CYAN)Linting TypeScript (WEB_APPS + api/ts-client)...$(RESET)"
+	@pnpm $(WEB_PNPM_FILTERS) $(TS_CLIENT_PNPM_FILTER) run --if-present lint
 	@echo "$(GREEN)✓ TypeScript lint complete$(RESET)"
+
+# start web dev server for WEB_DEV_APP; Ctrl+C stops
+web.dev:
+	@echo "$(CYAN)Starting web dev server ($(WEB_DEV_APP))...$(RESET)"
+	@pnpm --filter "./web/$(WEB_DEV_APP)" run dev
 
 # generate wire code for all services
 wire:

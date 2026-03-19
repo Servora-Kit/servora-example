@@ -64,7 +64,7 @@ OPENAPI_CONFIG := buf.$(SERVICE_NAME).openapi.gen.yaml
 CONF ?= ./configs/local/
 RUN_DEPS ?= api openapi
 
-.PHONY: build _build clean gen wire api openapi run app help env gen.gorm gen.ent
+.PHONY: build _build clean gen wire api openapi run app help env gen.gorm gen.ent lint.go
 
 # show environment variables
 env:
@@ -141,6 +141,10 @@ ifneq (,$(wildcard ./api/buf.openapi.gen.yaml))
 else
 	@echo "No OpenAPI config found for $(SERVICE_NAME), skipping..."
 endif
+
+# run golangci-lint in this service module only
+lint.go:
+	@golangci-lint run
 
 # show help
 help:
