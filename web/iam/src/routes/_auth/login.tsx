@@ -4,7 +4,7 @@ import { Button } from '#/components/ui/button'
 import { Input } from '#/components/ui/input'
 import { Label } from '#/components/ui/label'
 import { iamClients } from '#/api'
-import { setTokens, setUser } from '#/stores/auth'
+import { clearAuth, setTokens, setUser } from '#/stores/auth'
 
 export const Route = createFileRoute('/_auth/login')({
   validateSearch: (search: Record<string, unknown>) => ({
@@ -49,16 +49,24 @@ function LoginPage() {
       const res = await iamClients.authn.LoginByEmailPassword({ email, password })
       setTokens(res.accessToken ?? '', res.refreshToken ?? '')
 
+      let role = ''
       try {
         const userInfo = await iamClients.user.CurrentUserInfo({})
+        role = userInfo.role ?? ''
         setUser({
           id: userInfo.id ?? '',
           name: userInfo.username ?? userInfo.email ?? '',
           email: userInfo.email ?? '',
-          role: userInfo.role ?? '',
+          role,
         })
       } catch {
         // non-critical
+      }
+
+      if (role !== 'admin') {
+        clearAuth()
+        setError('此账号无权访问 IAM 管理平台，请使用管理员账号登录')
+        return
       }
 
       const target = redirectTo || '/dashboard'

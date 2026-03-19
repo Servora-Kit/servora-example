@@ -45,10 +45,12 @@ func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 		SetPhone(u.Phone).
 		SetPhoneVerified(u.PhoneVerified).
 		SetRole(u.Role).
-		SetStatus(u.Status).
 		SetEmailVerified(u.EmailVerified).
 		SetProfile(profileJSON)
 
+	if u.Status != "" {
+		b.SetStatus(u.Status)
+	}
 	if u.EmailVerifiedAt != nil {
 		b.SetEmailVerifiedAt(*u.EmailVerifiedAt)
 	}

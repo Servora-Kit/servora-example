@@ -29,11 +29,14 @@ func (s *UserService) CurrentUserInfo(ctx context.Context, req *userpb.CurrentUs
 	if err != nil {
 		return nil, err
 	}
+	info := userInfoMapper.Map(user)
 	return &userpb.CurrentUserInfoResponse{
-		Id:       user.ID,
-		Username: user.Username,
-		Email:    user.Email,
-		Role:     user.Role,
+		Id:      info.Id,
+		Username: info.Username,
+		Email:   info.Email,
+		Role:    info.Role,
+		Status:  info.Status,
+		Profile: info.Profile,
 	}, nil
 }
 

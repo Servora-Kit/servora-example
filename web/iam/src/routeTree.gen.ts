@@ -19,25 +19,12 @@ import { Route as AuthLoginRouteImport } from './routes/_auth/login'
 import { Route as AuthCallbackRouteImport } from './routes/_auth/callback'
 import { Route as AppDashboardRouteImport } from './routes/_app/dashboard'
 import { Route as AppUsersIndexRouteImport } from './routes/_app/users/index'
-import { Route as AppTenantsIndexRouteImport } from './routes/_app/tenants/index'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
-import { Route as AppPositionsIndexRouteImport } from './routes/_app/positions/index'
-import { Route as AppOrganizationsIndexRouteImport } from './routes/_app/organizations/index'
 import { Route as AppApplicationsIndexRouteImport } from './routes/_app/applications/index'
 import { Route as AppUsersUserIdRouteImport } from './routes/_app/users/$userId'
 import { Route as AppSettingsSecurityRouteImport } from './routes/_app/settings/security'
-import { Route as AppSettingsRolesRouteImport } from './routes/_app/settings/roles'
 import { Route as AppSettingsProfileRouteImport } from './routes/_app/settings/profile'
 import { Route as AppApplicationsAppIdRouteImport } from './routes/_app/applications/$appId'
-import { Route as AppTenantsTenantIdIndexRouteImport } from './routes/_app/tenants/$tenantId/index'
-import { Route as AppSystemDictIndexRouteImport } from './routes/_app/system/dict/index'
-import { Route as AppRbacRolesIndexRouteImport } from './routes/_app/rbac/roles/index'
-import { Route as AppRbacPermissionsIndexRouteImport } from './routes/_app/rbac/permissions/index'
-import { Route as AppRbacMenusIndexRouteImport } from './routes/_app/rbac/menus/index'
-import { Route as AppOrganizationsOrgIdIndexRouteImport } from './routes/_app/organizations/$orgId/index'
-import { Route as AppTenantsTenantIdMembersRouteImport } from './routes/_app/tenants/$tenantId/members'
-import { Route as AppOrganizationsOrgIdSettingsRouteImport } from './routes/_app/organizations/$orgId/settings'
-import { Route as AppOrganizationsOrgIdMembersRouteImport } from './routes/_app/organizations/$orgId/members'
 
 const AuthRouteRoute = AuthRouteRouteImport.update({
   id: '/_auth',
@@ -87,24 +74,9 @@ const AppUsersIndexRoute = AppUsersIndexRouteImport.update({
   path: '/users/',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppTenantsIndexRoute = AppTenantsIndexRouteImport.update({
-  id: '/tenants/',
-  path: '/tenants/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppPositionsIndexRoute = AppPositionsIndexRouteImport.update({
-  id: '/positions/',
-  path: '/positions/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppOrganizationsIndexRoute = AppOrganizationsIndexRouteImport.update({
-  id: '/organizations/',
-  path: '/organizations/',
   getParentRoute: () => AppRouteRoute,
 } as any)
 const AppApplicationsIndexRoute = AppApplicationsIndexRouteImport.update({
@@ -122,11 +94,6 @@ const AppSettingsSecurityRoute = AppSettingsSecurityRouteImport.update({
   path: '/settings/security',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppSettingsRolesRoute = AppSettingsRolesRouteImport.update({
-  id: '/settings/roles',
-  path: '/settings/roles',
-  getParentRoute: () => AppRouteRoute,
-} as any)
 const AppSettingsProfileRoute = AppSettingsProfileRouteImport.update({
   id: '/settings/profile',
   path: '/settings/profile',
@@ -137,55 +104,6 @@ const AppApplicationsAppIdRoute = AppApplicationsAppIdRouteImport.update({
   path: '/applications/$appId',
   getParentRoute: () => AppRouteRoute,
 } as any)
-const AppTenantsTenantIdIndexRoute = AppTenantsTenantIdIndexRouteImport.update({
-  id: '/tenants/$tenantId/',
-  path: '/tenants/$tenantId/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppSystemDictIndexRoute = AppSystemDictIndexRouteImport.update({
-  id: '/system/dict/',
-  path: '/system/dict/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppRbacRolesIndexRoute = AppRbacRolesIndexRouteImport.update({
-  id: '/rbac/roles/',
-  path: '/rbac/roles/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppRbacPermissionsIndexRoute = AppRbacPermissionsIndexRouteImport.update({
-  id: '/rbac/permissions/',
-  path: '/rbac/permissions/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppRbacMenusIndexRoute = AppRbacMenusIndexRouteImport.update({
-  id: '/rbac/menus/',
-  path: '/rbac/menus/',
-  getParentRoute: () => AppRouteRoute,
-} as any)
-const AppOrganizationsOrgIdIndexRoute =
-  AppOrganizationsOrgIdIndexRouteImport.update({
-    id: '/organizations/$orgId/',
-    path: '/organizations/$orgId/',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppTenantsTenantIdMembersRoute =
-  AppTenantsTenantIdMembersRouteImport.update({
-    id: '/tenants/$tenantId/members',
-    path: '/tenants/$tenantId/members',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppOrganizationsOrgIdSettingsRoute =
-  AppOrganizationsOrgIdSettingsRouteImport.update({
-    id: '/organizations/$orgId/settings',
-    path: '/organizations/$orgId/settings',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
-const AppOrganizationsOrgIdMembersRoute =
-  AppOrganizationsOrgIdMembersRouteImport.update({
-    id: '/organizations/$orgId/members',
-    path: '/organizations/$orgId/members',
-    getParentRoute: () => AppRouteRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -197,24 +115,11 @@ export interface FileRoutesByFullPath {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/applications/$appId': typeof AppApplicationsAppIdRoute
   '/settings/profile': typeof AppSettingsProfileRoute
-  '/settings/roles': typeof AppSettingsRolesRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/applications/': typeof AppApplicationsIndexRoute
-  '/organizations/': typeof AppOrganizationsIndexRoute
-  '/positions/': typeof AppPositionsIndexRoute
   '/settings/': typeof AppSettingsIndexRoute
-  '/tenants/': typeof AppTenantsIndexRoute
   '/users/': typeof AppUsersIndexRoute
-  '/organizations/$orgId/members': typeof AppOrganizationsOrgIdMembersRoute
-  '/organizations/$orgId/settings': typeof AppOrganizationsOrgIdSettingsRoute
-  '/tenants/$tenantId/members': typeof AppTenantsTenantIdMembersRoute
-  '/organizations/$orgId/': typeof AppOrganizationsOrgIdIndexRoute
-  '/rbac/menus/': typeof AppRbacMenusIndexRoute
-  '/rbac/permissions/': typeof AppRbacPermissionsIndexRoute
-  '/rbac/roles/': typeof AppRbacRolesIndexRoute
-  '/system/dict/': typeof AppSystemDictIndexRoute
-  '/tenants/$tenantId/': typeof AppTenantsTenantIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -226,24 +131,11 @@ export interface FileRoutesByTo {
   '/verify-email': typeof AuthVerifyEmailRoute
   '/applications/$appId': typeof AppApplicationsAppIdRoute
   '/settings/profile': typeof AppSettingsProfileRoute
-  '/settings/roles': typeof AppSettingsRolesRoute
   '/settings/security': typeof AppSettingsSecurityRoute
   '/users/$userId': typeof AppUsersUserIdRoute
   '/applications': typeof AppApplicationsIndexRoute
-  '/organizations': typeof AppOrganizationsIndexRoute
-  '/positions': typeof AppPositionsIndexRoute
   '/settings': typeof AppSettingsIndexRoute
-  '/tenants': typeof AppTenantsIndexRoute
   '/users': typeof AppUsersIndexRoute
-  '/organizations/$orgId/members': typeof AppOrganizationsOrgIdMembersRoute
-  '/organizations/$orgId/settings': typeof AppOrganizationsOrgIdSettingsRoute
-  '/tenants/$tenantId/members': typeof AppTenantsTenantIdMembersRoute
-  '/organizations/$orgId': typeof AppOrganizationsOrgIdIndexRoute
-  '/rbac/menus': typeof AppRbacMenusIndexRoute
-  '/rbac/permissions': typeof AppRbacPermissionsIndexRoute
-  '/rbac/roles': typeof AppRbacRolesIndexRoute
-  '/system/dict': typeof AppSystemDictIndexRoute
-  '/tenants/$tenantId': typeof AppTenantsTenantIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -258,24 +150,11 @@ export interface FileRoutesById {
   '/_auth/verify-email': typeof AuthVerifyEmailRoute
   '/_app/applications/$appId': typeof AppApplicationsAppIdRoute
   '/_app/settings/profile': typeof AppSettingsProfileRoute
-  '/_app/settings/roles': typeof AppSettingsRolesRoute
   '/_app/settings/security': typeof AppSettingsSecurityRoute
   '/_app/users/$userId': typeof AppUsersUserIdRoute
   '/_app/applications/': typeof AppApplicationsIndexRoute
-  '/_app/organizations/': typeof AppOrganizationsIndexRoute
-  '/_app/positions/': typeof AppPositionsIndexRoute
   '/_app/settings/': typeof AppSettingsIndexRoute
-  '/_app/tenants/': typeof AppTenantsIndexRoute
   '/_app/users/': typeof AppUsersIndexRoute
-  '/_app/organizations/$orgId/members': typeof AppOrganizationsOrgIdMembersRoute
-  '/_app/organizations/$orgId/settings': typeof AppOrganizationsOrgIdSettingsRoute
-  '/_app/tenants/$tenantId/members': typeof AppTenantsTenantIdMembersRoute
-  '/_app/organizations/$orgId/': typeof AppOrganizationsOrgIdIndexRoute
-  '/_app/rbac/menus/': typeof AppRbacMenusIndexRoute
-  '/_app/rbac/permissions/': typeof AppRbacPermissionsIndexRoute
-  '/_app/rbac/roles/': typeof AppRbacRolesIndexRoute
-  '/_app/system/dict/': typeof AppSystemDictIndexRoute
-  '/_app/tenants/$tenantId/': typeof AppTenantsTenantIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -289,24 +168,11 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/applications/$appId'
     | '/settings/profile'
-    | '/settings/roles'
     | '/settings/security'
     | '/users/$userId'
     | '/applications/'
-    | '/organizations/'
-    | '/positions/'
     | '/settings/'
-    | '/tenants/'
     | '/users/'
-    | '/organizations/$orgId/members'
-    | '/organizations/$orgId/settings'
-    | '/tenants/$tenantId/members'
-    | '/organizations/$orgId/'
-    | '/rbac/menus/'
-    | '/rbac/permissions/'
-    | '/rbac/roles/'
-    | '/system/dict/'
-    | '/tenants/$tenantId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -318,24 +184,11 @@ export interface FileRouteTypes {
     | '/verify-email'
     | '/applications/$appId'
     | '/settings/profile'
-    | '/settings/roles'
     | '/settings/security'
     | '/users/$userId'
     | '/applications'
-    | '/organizations'
-    | '/positions'
     | '/settings'
-    | '/tenants'
     | '/users'
-    | '/organizations/$orgId/members'
-    | '/organizations/$orgId/settings'
-    | '/tenants/$tenantId/members'
-    | '/organizations/$orgId'
-    | '/rbac/menus'
-    | '/rbac/permissions'
-    | '/rbac/roles'
-    | '/system/dict'
-    | '/tenants/$tenantId'
   id:
     | '__root__'
     | '/'
@@ -349,24 +202,11 @@ export interface FileRouteTypes {
     | '/_auth/verify-email'
     | '/_app/applications/$appId'
     | '/_app/settings/profile'
-    | '/_app/settings/roles'
     | '/_app/settings/security'
     | '/_app/users/$userId'
     | '/_app/applications/'
-    | '/_app/organizations/'
-    | '/_app/positions/'
     | '/_app/settings/'
-    | '/_app/tenants/'
     | '/_app/users/'
-    | '/_app/organizations/$orgId/members'
-    | '/_app/organizations/$orgId/settings'
-    | '/_app/tenants/$tenantId/members'
-    | '/_app/organizations/$orgId/'
-    | '/_app/rbac/menus/'
-    | '/_app/rbac/permissions/'
-    | '/_app/rbac/roles/'
-    | '/_app/system/dict/'
-    | '/_app/tenants/$tenantId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -447,32 +287,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppUsersIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/tenants/': {
-      id: '/_app/tenants/'
-      path: '/tenants'
-      fullPath: '/tenants/'
-      preLoaderRoute: typeof AppTenantsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
       fullPath: '/settings/'
       preLoaderRoute: typeof AppSettingsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/positions/': {
-      id: '/_app/positions/'
-      path: '/positions'
-      fullPath: '/positions/'
-      preLoaderRoute: typeof AppPositionsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/organizations/': {
-      id: '/_app/organizations/'
-      path: '/organizations'
-      fullPath: '/organizations/'
-      preLoaderRoute: typeof AppOrganizationsIndexRouteImport
       parentRoute: typeof AppRouteRoute
     }
     '/_app/applications/': {
@@ -496,13 +315,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsSecurityRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/settings/roles': {
-      id: '/_app/settings/roles'
-      path: '/settings/roles'
-      fullPath: '/settings/roles'
-      preLoaderRoute: typeof AppSettingsRolesRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
     '/_app/settings/profile': {
       id: '/_app/settings/profile'
       path: '/settings/profile'
@@ -517,69 +329,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppApplicationsAppIdRouteImport
       parentRoute: typeof AppRouteRoute
     }
-    '/_app/tenants/$tenantId/': {
-      id: '/_app/tenants/$tenantId/'
-      path: '/tenants/$tenantId'
-      fullPath: '/tenants/$tenantId/'
-      preLoaderRoute: typeof AppTenantsTenantIdIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/system/dict/': {
-      id: '/_app/system/dict/'
-      path: '/system/dict'
-      fullPath: '/system/dict/'
-      preLoaderRoute: typeof AppSystemDictIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/rbac/roles/': {
-      id: '/_app/rbac/roles/'
-      path: '/rbac/roles'
-      fullPath: '/rbac/roles/'
-      preLoaderRoute: typeof AppRbacRolesIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/rbac/permissions/': {
-      id: '/_app/rbac/permissions/'
-      path: '/rbac/permissions'
-      fullPath: '/rbac/permissions/'
-      preLoaderRoute: typeof AppRbacPermissionsIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/rbac/menus/': {
-      id: '/_app/rbac/menus/'
-      path: '/rbac/menus'
-      fullPath: '/rbac/menus/'
-      preLoaderRoute: typeof AppRbacMenusIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/organizations/$orgId/': {
-      id: '/_app/organizations/$orgId/'
-      path: '/organizations/$orgId'
-      fullPath: '/organizations/$orgId/'
-      preLoaderRoute: typeof AppOrganizationsOrgIdIndexRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/tenants/$tenantId/members': {
-      id: '/_app/tenants/$tenantId/members'
-      path: '/tenants/$tenantId/members'
-      fullPath: '/tenants/$tenantId/members'
-      preLoaderRoute: typeof AppTenantsTenantIdMembersRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/organizations/$orgId/settings': {
-      id: '/_app/organizations/$orgId/settings'
-      path: '/organizations/$orgId/settings'
-      fullPath: '/organizations/$orgId/settings'
-      preLoaderRoute: typeof AppOrganizationsOrgIdSettingsRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
-    '/_app/organizations/$orgId/members': {
-      id: '/_app/organizations/$orgId/members'
-      path: '/organizations/$orgId/members'
-      fullPath: '/organizations/$orgId/members'
-      preLoaderRoute: typeof AppOrganizationsOrgIdMembersRouteImport
-      parentRoute: typeof AppRouteRoute
-    }
   }
 }
 
@@ -587,48 +336,22 @@ interface AppRouteRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppApplicationsAppIdRoute: typeof AppApplicationsAppIdRoute
   AppSettingsProfileRoute: typeof AppSettingsProfileRoute
-  AppSettingsRolesRoute: typeof AppSettingsRolesRoute
   AppSettingsSecurityRoute: typeof AppSettingsSecurityRoute
   AppUsersUserIdRoute: typeof AppUsersUserIdRoute
   AppApplicationsIndexRoute: typeof AppApplicationsIndexRoute
-  AppOrganizationsIndexRoute: typeof AppOrganizationsIndexRoute
-  AppPositionsIndexRoute: typeof AppPositionsIndexRoute
   AppSettingsIndexRoute: typeof AppSettingsIndexRoute
-  AppTenantsIndexRoute: typeof AppTenantsIndexRoute
   AppUsersIndexRoute: typeof AppUsersIndexRoute
-  AppOrganizationsOrgIdMembersRoute: typeof AppOrganizationsOrgIdMembersRoute
-  AppOrganizationsOrgIdSettingsRoute: typeof AppOrganizationsOrgIdSettingsRoute
-  AppTenantsTenantIdMembersRoute: typeof AppTenantsTenantIdMembersRoute
-  AppOrganizationsOrgIdIndexRoute: typeof AppOrganizationsOrgIdIndexRoute
-  AppRbacMenusIndexRoute: typeof AppRbacMenusIndexRoute
-  AppRbacPermissionsIndexRoute: typeof AppRbacPermissionsIndexRoute
-  AppRbacRolesIndexRoute: typeof AppRbacRolesIndexRoute
-  AppSystemDictIndexRoute: typeof AppSystemDictIndexRoute
-  AppTenantsTenantIdIndexRoute: typeof AppTenantsTenantIdIndexRoute
 }
 
 const AppRouteRouteChildren: AppRouteRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppApplicationsAppIdRoute: AppApplicationsAppIdRoute,
   AppSettingsProfileRoute: AppSettingsProfileRoute,
-  AppSettingsRolesRoute: AppSettingsRolesRoute,
   AppSettingsSecurityRoute: AppSettingsSecurityRoute,
   AppUsersUserIdRoute: AppUsersUserIdRoute,
   AppApplicationsIndexRoute: AppApplicationsIndexRoute,
-  AppOrganizationsIndexRoute: AppOrganizationsIndexRoute,
-  AppPositionsIndexRoute: AppPositionsIndexRoute,
   AppSettingsIndexRoute: AppSettingsIndexRoute,
-  AppTenantsIndexRoute: AppTenantsIndexRoute,
   AppUsersIndexRoute: AppUsersIndexRoute,
-  AppOrganizationsOrgIdMembersRoute: AppOrganizationsOrgIdMembersRoute,
-  AppOrganizationsOrgIdSettingsRoute: AppOrganizationsOrgIdSettingsRoute,
-  AppTenantsTenantIdMembersRoute: AppTenantsTenantIdMembersRoute,
-  AppOrganizationsOrgIdIndexRoute: AppOrganizationsOrgIdIndexRoute,
-  AppRbacMenusIndexRoute: AppRbacMenusIndexRoute,
-  AppRbacPermissionsIndexRoute: AppRbacPermissionsIndexRoute,
-  AppRbacRolesIndexRoute: AppRbacRolesIndexRoute,
-  AppSystemDictIndexRoute: AppSystemDictIndexRoute,
-  AppTenantsTenantIdIndexRoute: AppTenantsTenantIdIndexRoute,
 }
 
 const AppRouteRouteWithChildren = AppRouteRoute._addFileChildren(
