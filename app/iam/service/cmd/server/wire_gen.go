@@ -92,8 +92,8 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		cleanup()
 		return nil, nil, err
 	}
-	loginHandler := oidc.NewLoginHandler(authnRepo, redisClient, logger)
-	loginCompleteHandler := oidc.NewLoginCompleteHandler(loginHandler)
+	loginHandler := oidc.NewLoginHandler(app, redisClient, logger)
+	loginCompleteHandler := oidc.NewLoginCompleteHandler(loginHandler, keyManager, authnRepo)
 	httpServer := server.NewHTTPServer(confServer, app, httpMiddleware, telemetryMetrics, logger, handler, authnService, userService, applicationService, capCap, provider, loginHandler, loginCompleteHandler)
 	seeder := data.NewSeeder(entClient, openfgaClient, confBiz, logger)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer, seeder)

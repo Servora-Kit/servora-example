@@ -6,43 +6,48 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
+	conf "github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	authnpb "github.com/Servora-Kit/servora/api/gen/go/authn/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
-	"github.com/Servora-Kit/servora/pkg/helpers"
+	"github.com/Servora-Kit/servora/pkg/jwks"
 	"github.com/Servora-Kit/servora/pkg/logger"
 	"github.com/Servora-Kit/servora/pkg/redis"
+	kErrors "github.com/go-kratos/kratos/v2/errors"
 )
 
-// LoginHandler handles the OIDC login flow (GET redirects to SPA, POST handles form submission).
+// LoginHandler 处理 OIDC 登录流程（GET 重定向到 SPA）。
 type LoginHandler struct {
-	authnRepo  biz.AuthnRepo
-	redis      *redis.Client
-	log        *logger.Helper
-	spaBaseURL string // base URL of the accounts SPA; TODO: make configurable via config file
+	redis        *redis.Client
+	log          *logger.Helper
+	loginBaseURL string // 登录页基地址，如 http://localhost:3000
 }
 
-// NewLoginHandler builds a handler that authenticates users and marks OIDC auth requests done.
-func NewLoginHandler(authnRepo biz.AuthnRepo, rdb *redis.Client, l logger.Logger) *LoginHandler {
+// NewLoginHandler 构建 handler，从 *conf.App 读取 login_base_url。
+// login_base_url 为空时 panic，属于启动必选配置。
+func NewLoginHandler(app *conf.App, rdb *redis.Client, l logger.Logger) *LoginHandler {
+	loginBaseURL := app.GetOidc().GetLoginBaseUrl()
+	if loginBaseURL == "" {
+		panic("oidc: app.oidc.login_base_url is required but not configured")
+	}
+	loginBaseURL = strings.TrimRight(loginBaseURL, "/")
+
 	return &LoginHandler{
-		authnRepo:  authnRepo,
-		redis:      rdb,
-		log:        logger.NewHelper(l, logger.WithModule("oidc/login/iam-service")),
-		spaBaseURL: "http://localhost:3001",
+		redis:        rdb,
+		log:          logger.NewHelper(l, logger.WithModule("oidc/login/iam-service")),
+		loginBaseURL: loginBaseURL,
 	}
 }
 
-// ServeHTTP dispatches to GET (render form) or POST (handle form submission).
+// ServeHTTP 仅处理 GET：将 OIDC 授权请求重定向到 SPA 登录页。
 func (h *LoginHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		h.renderLogin(w, r)
-	case http.MethodPost:
-		h.handleLogin(w, r)
-	default:
+	if r.Method != http.MethodGet {
 		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
 	}
+	h.renderLogin(w, r)
 }
 
 func (h *LoginHandler) renderLogin(w http.ResponseWriter, r *http.Request) {
@@ -51,41 +56,68 @@ func (h *LoginHandler) renderLogin(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "missing authRequestID", http.StatusBadRequest)
 		return
 	}
-	spaLoginURL := fmt.Sprintf("%s/login?authRequestID=%s", h.spaBaseURL, url.QueryEscape(authRequestID))
+	spaLoginURL := fmt.Sprintf(
+		"%s/login?authRequestID=%s",
+		h.loginBaseURL,
+		url.QueryEscape(authRequestID),
+	)
 	http.Redirect(w, r, spaLoginURL, http.StatusFound)
 }
 
-func (h *LoginHandler) handleLogin(w http.ResponseWriter, r *http.Request) {
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
-		return
+// completeOIDCRequest 将 auth request 标记为完成（写入 user_id + auth_time + done），
+// 并返回下游 callback URL。
+func (h *LoginHandler) completeOIDCRequest(ctx context.Context, authRequestID, userID string) (string, error) {
+	if authRequestID == "" || userID == "" {
+		return "", kErrors.BadRequest("MISSING_FIELDS", "authRequestID and userID are required")
 	}
-	authRequestID := r.FormValue("authRequestID")
-	email := r.FormValue("email")
-	password := r.FormValue("password")
 
-	callbackURL, err := h.authenticate(r.Context(), authRequestID, email, password)
+	key := "oidc:auth_request:" + authRequestID
+	data, err := h.redis.Get(ctx, key)
 	if err != nil {
-		// Redirect back to the SPA login page with the error message.
-		target := fmt.Sprintf("%s/login?authRequestID=%s&error=%s",
-			h.spaBaseURL,
-			url.QueryEscape(authRequestID),
-			url.QueryEscape(err.Error()),
-		)
-		http.Redirect(w, r, target, http.StatusFound)
-		return
+		return "", authnpb.ErrorTokenExpired("auth request not found or expired")
 	}
-	http.Redirect(w, r, callbackURL, http.StatusFound)
+
+	var reqData map[string]any
+	if err := json.Unmarshal([]byte(data), &reqData); err != nil {
+		h.log.Errorf("unmarshal auth request data: %v", err)
+		return "", kErrors.InternalServer("INTERNAL_ERROR", "failed to process auth request")
+	}
+	reqData["user_id"] = userID
+	reqData["auth_time"] = time.Now().UTC().Format(time.RFC3339Nano)
+	reqData["done"] = true
+
+	updated, err := json.Marshal(reqData)
+	if err != nil {
+		h.log.Errorf("marshal auth request data: %v", err)
+		return "", kErrors.InternalServer("INTERNAL_ERROR", "failed to serialize auth request")
+	}
+	if err := h.redis.Set(ctx, key, string(updated), 10*time.Minute); err != nil {
+		h.log.Errorf("save auth request: %v", err)
+		return "", kErrors.InternalServer("INTERNAL_ERROR", "failed to save auth request")
+	}
+
+	return fmt.Sprintf("/authorize/callback?id=%s", authRequestID), nil
 }
 
-// LoginCompleteHandler serves the JSON API at POST /login/complete.
+// LoginCompleteHandler 提供 POST /login/complete JSON API。
+// 前端先通过 IAM API 完成认证获得 access token，再调此接口完成 OIDC 授权流程。
 type LoginCompleteHandler struct {
-	lh *LoginHandler
+	lh         *LoginHandler
+	keyManager *jwks.KeyManager
+	authnRepo  biz.AuthnRepo
 }
 
-// NewLoginCompleteHandler builds the API handler that returns callbackURL in JSON.
-func NewLoginCompleteHandler(lh *LoginHandler) *LoginCompleteHandler {
-	return &LoginCompleteHandler{lh: lh}
+// NewLoginCompleteHandler 构建 LoginCompleteHandler。
+func NewLoginCompleteHandler(
+	lh *LoginHandler,
+	km *jwks.KeyManager,
+	authnRepo biz.AuthnRepo,
+) *LoginCompleteHandler {
+	return &LoginCompleteHandler{
+		lh:         lh,
+		keyManager: km,
+		authnRepo:  authnRepo,
+	}
 }
 
 func (h *LoginCompleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -96,62 +128,47 @@ func (h *LoginCompleteHandler) ServeHTTP(w http.ResponseWriter, r *http.Request)
 
 	var req struct {
 		AuthRequestID string `json:"authRequestID"`
-		Email         string `json:"email"`
-		Password      string `json:"password"`
+		AccessToken   string `json:"accessToken"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "bad request", http.StatusBadRequest)
+		writeJSONError(w, http.StatusBadRequest, kErrors.BadRequest("BAD_REQUEST", "invalid request body"))
 		return
 	}
 
-	callbackURL, err := h.lh.authenticate(r.Context(), req.AuthRequestID, req.Email, req.Password)
+	if req.AuthRequestID == "" || req.AccessToken == "" {
+		writeJSONError(w, http.StatusBadRequest, kErrors.BadRequest("MISSING_FIELDS", "authRequestID and accessToken are required"))
+		return
+	}
+
+	// 验证 access token 并提取用户 ID
+	claims := &biz.UserClaims{}
+	if err := h.keyManager.Verifier().Verify(req.AccessToken, claims); err != nil {
+		writeJSONError(w, http.StatusUnauthorized, authnpb.ErrorInvalidCredentials("invalid or expired access token"))
+		return
+	}
+	userID, err := claims.GetSubject()
+	if err != nil || userID == "" {
+		writeJSONError(w, http.StatusUnauthorized, authnpb.ErrorInvalidCredentials("token missing subject"))
+		return
+	}
+
+	callbackURL, err := h.lh.completeOIDCRequest(r.Context(), req.AuthRequestID, userID)
 	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusUnauthorized)
-		_ = json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+		se := kErrors.FromError(err)
+		writeJSONError(w, int(se.Code), se)
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	_ = json.NewEncoder(w).Encode(map[string]string{"callbackURL": callbackURL})
+	if encErr := json.NewEncoder(w).Encode(map[string]string{"callbackURL": callbackURL}); encErr != nil {
+		h.lh.log.Errorf("encode response: %v", encErr)
+	}
 }
 
-func (h *LoginHandler) authenticate(ctx context.Context, authRequestID, email, password string) (string, error) {
-	if authRequestID == "" || email == "" || password == "" {
-		return "", fmt.Errorf("missing required fields")
-	}
-
-	user, err := h.authnRepo.GetUserByEmail(ctx, email)
-	if err != nil {
-		if ent.IsNotFound(err) {
-			return "", fmt.Errorf("invalid email or password")
-		}
-		h.log.Errorf("get user by email: %v", err)
-		return "", fmt.Errorf("internal error")
-	}
-
-	if !helpers.BcryptCheck(password, user.Password) {
-		return "", fmt.Errorf("invalid email or password")
-	}
-
-	key := "oidc:auth_request:" + authRequestID
-	data, err := h.redis.Get(ctx, key)
-	if err != nil {
-		return "", fmt.Errorf("auth request not found or expired")
-	}
-
-	var reqData map[string]any
-	if err := json.Unmarshal([]byte(data), &reqData); err != nil {
-		return "", fmt.Errorf("internal error")
-	}
-	reqData["user_id"] = user.ID
-	reqData["auth_time"] = time.Now().UTC().Format(time.RFC3339Nano)
-	reqData["done"] = true
-
-	updated, _ := json.Marshal(reqData)
-	if err := h.redis.Set(ctx, key, string(updated), 10*time.Minute); err != nil {
-		return "", fmt.Errorf("internal error")
-	}
-
-	return fmt.Sprintf("/authorize/callback?id=%s", authRequestID), nil
+// writeJSONError 将 Kratos 错误以 JSON 格式写回响应。
+func writeJSONError(w http.ResponseWriter, statusCode int, err error) {
+	se := kErrors.FromError(err)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	_ = json.NewEncoder(w).Encode(se)
 }
