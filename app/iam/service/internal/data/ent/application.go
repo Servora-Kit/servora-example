@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -38,38 +37,15 @@ type Application struct {
 	ApplicationType string `json:"application_type,omitempty"`
 	// AccessTokenType holds the value of the "access_token_type" field.
 	AccessTokenType string `json:"access_token_type,omitempty"`
-	// TenantID holds the value of the "tenant_id" field.
-	TenantID uuid.UUID `json:"tenant_id,omitempty"`
+	// Type holds the value of the "type" field.
+	Type string `json:"type,omitempty"`
 	// IDTokenLifetime holds the value of the "id_token_lifetime" field.
 	IDTokenLifetime int `json:"id_token_lifetime,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the ApplicationQuery when eager-loading is set.
-	Edges        ApplicationEdges `json:"edges"`
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// ApplicationEdges holds the relations/edges for other nodes in the graph.
-type ApplicationEdges struct {
-	// Tenant holds the value of the tenant edge.
-	Tenant *Tenant `json:"tenant,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// TenantOrErr returns the Tenant value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e ApplicationEdges) TenantOrErr() (*Tenant, error) {
-	if e.Tenant != nil {
-		return e.Tenant, nil
-	} else if e.loadedTypes[0] {
-		return nil, &NotFoundError{label: tenant.Label}
-	}
-	return nil, &NotLoadedError{edge: "tenant"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -81,11 +57,11 @@ func (*Application) scanValues(columns []string) ([]any, error) {
 			values[i] = new([]byte)
 		case application.FieldIDTokenLifetime:
 			values[i] = new(sql.NullInt64)
-		case application.FieldClientID, application.FieldClientSecretHash, application.FieldName, application.FieldApplicationType, application.FieldAccessTokenType:
+		case application.FieldClientID, application.FieldClientSecretHash, application.FieldName, application.FieldApplicationType, application.FieldAccessTokenType, application.FieldType:
 			values[i] = new(sql.NullString)
 		case application.FieldDeletedAt, application.FieldCreatedAt, application.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case application.FieldID, application.FieldTenantID:
+		case application.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -169,11 +145,11 @@ func (_m *Application) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.AccessTokenType = value.String
 			}
-		case application.FieldTenantID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field tenant_id", values[i])
-			} else if value != nil {
-				_m.TenantID = *value
+		case application.FieldType:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field type", values[i])
+			} else if value.Valid {
+				_m.Type = value.String
 			}
 		case application.FieldIDTokenLifetime:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
@@ -204,11 +180,6 @@ func (_m *Application) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *Application) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
-}
-
-// QueryTenant queries the "tenant" edge of the Application entity.
-func (_m *Application) QueryTenant() *TenantQuery {
-	return NewApplicationClient(_m.config).QueryTenant(_m)
 }
 
 // Update returns a builder for updating this Application.
@@ -263,8 +234,8 @@ func (_m *Application) String() string {
 	builder.WriteString("access_token_type=")
 	builder.WriteString(_m.AccessTokenType)
 	builder.WriteString(", ")
-	builder.WriteString("tenant_id=")
-	builder.WriteString(fmt.Sprintf("%v", _m.TenantID))
+	builder.WriteString("type=")
+	builder.WriteString(_m.Type)
 	builder.WriteString(", ")
 	builder.WriteString("id_token_lifetime=")
 	builder.WriteString(fmt.Sprintf("%v", _m.IDTokenLifetime))

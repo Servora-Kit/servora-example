@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -33,25 +32,16 @@ const (
 	FieldApplicationType = "application_type"
 	// FieldAccessTokenType holds the string denoting the access_token_type field in the database.
 	FieldAccessTokenType = "access_token_type"
-	// FieldTenantID holds the string denoting the tenant_id field in the database.
-	FieldTenantID = "tenant_id"
+	// FieldType holds the string denoting the type field in the database.
+	FieldType = "type"
 	// FieldIDTokenLifetime holds the string denoting the id_token_lifetime field in the database.
 	FieldIDTokenLifetime = "id_token_lifetime"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeTenant holds the string denoting the tenant edge name in mutations.
-	EdgeTenant = "tenant"
 	// Table holds the table name of the application in the database.
 	Table = "applications"
-	// TenantTable is the table that holds the tenant relation/edge.
-	TenantTable = "applications"
-	// TenantInverseTable is the table name for the Tenant entity.
-	// It exists in this package in order to avoid circular dependency with the "tenant" package.
-	TenantInverseTable = "tenants"
-	// TenantColumn is the table column denoting the tenant relation/edge.
-	TenantColumn = "tenant_id"
 )
 
 // Columns holds all SQL columns for application fields.
@@ -66,7 +56,7 @@ var Columns = []string{
 	FieldGrantTypes,
 	FieldApplicationType,
 	FieldAccessTokenType,
-	FieldTenantID,
+	FieldType,
 	FieldIDTokenLifetime,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -97,6 +87,10 @@ var (
 	DefaultAccessTokenType string
 	// AccessTokenTypeValidator is a validator for the "access_token_type" field. It is called by the builders before save.
 	AccessTokenTypeValidator func(string) error
+	// DefaultType holds the default value on creation for the "type" field.
+	DefaultType string
+	// TypeValidator is a validator for the "type" field. It is called by the builders before save.
+	TypeValidator func(string) error
 	// DefaultIDTokenLifetime holds the default value on creation for the "id_token_lifetime" field.
 	DefaultIDTokenLifetime int
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -147,9 +141,9 @@ func ByAccessTokenType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAccessTokenType, opts...).ToFunc()
 }
 
-// ByTenantID orders the results by the tenant_id field.
-func ByTenantID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldTenantID, opts...).ToFunc()
+// ByType orders the results by the type field.
+func ByType(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldType, opts...).ToFunc()
 }
 
 // ByIDTokenLifetime orders the results by the id_token_lifetime field.
@@ -165,18 +159,4 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByTenantField orders the results by tenant field.
-func ByTenantField(field string, opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newTenantStep(), sql.OrderByField(field, opts...))
-	}
-}
-func newTenantStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(TenantInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.M2O, true, TenantTable, TenantColumn),
-	)
 }

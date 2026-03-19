@@ -6,7 +6,6 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
-	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	entmixin "github.com/Servora-Kit/servora/pkg/ent/mixin"
 	"github.com/google/uuid"
@@ -27,7 +26,8 @@ func (Application) Fields() []ent.Field {
 		field.JSON("grant_types", []string{}),
 		field.String("application_type").MaxLen(32).Default("web"),
 		field.String("access_token_type").MaxLen(32).Default("jwt"),
-		field.UUID("tenant_id", uuid.UUID{}),
+		// type 区分应用用途：web | native | m2m
+		field.String("type").MaxLen(32).Default("web"),
 		field.Int("id_token_lifetime").Default(3600),
 		field.Time("created_at").Default(time.Now).Immutable(),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
@@ -41,13 +41,7 @@ func (Application) Mixin() []ent.Mixin {
 }
 
 func (Application) Edges() []ent.Edge {
-	return []ent.Edge{
-		edge.From("tenant", Tenant.Type).
-			Ref("applications").
-			Field("tenant_id").
-			Unique().
-			Required(),
-	}
+	return nil
 }
 
 func (Application) Annotations() []schema.Annotation {

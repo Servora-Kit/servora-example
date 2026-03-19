@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -100,9 +99,17 @@ func (_c *ApplicationCreate) SetNillableAccessTokenType(v *string) *ApplicationC
 	return _c
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (_c *ApplicationCreate) SetTenantID(v uuid.UUID) *ApplicationCreate {
-	_c.mutation.SetTenantID(v)
+// SetType sets the "type" field.
+func (_c *ApplicationCreate) SetType(v string) *ApplicationCreate {
+	_c.mutation.SetType(v)
+	return _c
+}
+
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_c *ApplicationCreate) SetNillableType(v *string) *ApplicationCreate {
+	if v != nil {
+		_c.SetType(*v)
+	}
 	return _c
 }
 
@@ -162,11 +169,6 @@ func (_c *ApplicationCreate) SetNillableID(v *uuid.UUID) *ApplicationCreate {
 	return _c
 }
 
-// SetTenant sets the "tenant" edge to the Tenant entity.
-func (_c *ApplicationCreate) SetTenant(v *Tenant) *ApplicationCreate {
-	return _c.SetTenantID(v.ID)
-}
-
 // Mutation returns the ApplicationMutation object of the builder.
 func (_c *ApplicationCreate) Mutation() *ApplicationMutation {
 	return _c.mutation
@@ -209,6 +211,10 @@ func (_c *ApplicationCreate) defaults() {
 	if _, ok := _c.mutation.AccessTokenType(); !ok {
 		v := application.DefaultAccessTokenType
 		_c.mutation.SetAccessTokenType(v)
+	}
+	if _, ok := _c.mutation.GetType(); !ok {
+		v := application.DefaultType
+		_c.mutation.SetType(v)
 	}
 	if _, ok := _c.mutation.IDTokenLifetime(); !ok {
 		v := application.DefaultIDTokenLifetime
@@ -279,8 +285,13 @@ func (_c *ApplicationCreate) check() error {
 			return &ValidationError{Name: "access_token_type", err: fmt.Errorf(`ent: validator failed for field "Application.access_token_type": %w`, err)}
 		}
 	}
-	if _, ok := _c.mutation.TenantID(); !ok {
-		return &ValidationError{Name: "tenant_id", err: errors.New(`ent: missing required field "Application.tenant_id"`)}
+	if _, ok := _c.mutation.GetType(); !ok {
+		return &ValidationError{Name: "type", err: errors.New(`ent: missing required field "Application.type"`)}
+	}
+	if v, ok := _c.mutation.GetType(); ok {
+		if err := application.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Application.type": %w`, err)}
+		}
 	}
 	if _, ok := _c.mutation.IDTokenLifetime(); !ok {
 		return &ValidationError{Name: "id_token_lifetime", err: errors.New(`ent: missing required field "Application.id_token_lifetime"`)}
@@ -290,9 +301,6 @@ func (_c *ApplicationCreate) check() error {
 	}
 	if _, ok := _c.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Application.updated_at"`)}
-	}
-	if len(_c.mutation.TenantIDs()) == 0 {
-		return &ValidationError{Name: "tenant", err: errors.New(`ent: missing required edge "Application.tenant"`)}
 	}
 	return nil
 }
@@ -365,6 +373,10 @@ func (_c *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 		_spec.SetField(application.FieldAccessTokenType, field.TypeString, value)
 		_node.AccessTokenType = value
 	}
+	if value, ok := _c.mutation.GetType(); ok {
+		_spec.SetField(application.FieldType, field.TypeString, value)
+		_node.Type = value
+	}
 	if value, ok := _c.mutation.IDTokenLifetime(); ok {
 		_spec.SetField(application.FieldIDTokenLifetime, field.TypeInt, value)
 		_node.IDTokenLifetime = value
@@ -376,23 +388,6 @@ func (_c *ApplicationCreate) createSpec() (*Application, *sqlgraph.CreateSpec) {
 	if value, ok := _c.mutation.UpdatedAt(); ok {
 		_spec.SetField(application.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
-	}
-	if nodes := _c.mutation.TenantIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   application.TenantTable,
-			Columns: []string{application.TenantColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_node.TenantID = nodes[0]
-		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

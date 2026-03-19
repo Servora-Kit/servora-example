@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/google/uuid"
 )
 
@@ -17,54 +16,48 @@ const (
 	FieldID = "id"
 	// FieldDeletedAt holds the string denoting the deleted_at field in the database.
 	FieldDeletedAt = "deleted_at"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	// FieldUsername holds the string denoting the username field in the database.
+	FieldUsername = "username"
 	// FieldEmail holds the string denoting the email field in the database.
 	FieldEmail = "email"
 	// FieldPassword holds the string denoting the password field in the database.
 	FieldPassword = "password"
+	// FieldPhone holds the string denoting the phone field in the database.
+	FieldPhone = "phone"
+	// FieldPhoneVerified holds the string denoting the phone_verified field in the database.
+	FieldPhoneVerified = "phone_verified"
 	// FieldRole holds the string denoting the role field in the database.
 	FieldRole = "role"
+	// FieldStatus holds the string denoting the status field in the database.
+	FieldStatus = "status"
 	// FieldEmailVerified holds the string denoting the email_verified field in the database.
 	FieldEmailVerified = "email_verified"
 	// FieldEmailVerifiedAt holds the string denoting the email_verified_at field in the database.
 	FieldEmailVerifiedAt = "email_verified_at"
+	// FieldProfile holds the string denoting the profile field in the database.
+	FieldProfile = "profile"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
-	// EdgeOrgMemberships holds the string denoting the org_memberships edge name in mutations.
-	EdgeOrgMemberships = "org_memberships"
-	// EdgeOwnedTenants holds the string denoting the owned_tenants edge name in mutations.
-	EdgeOwnedTenants = "owned_tenants"
 	// Table holds the table name of the user in the database.
 	Table = "users"
-	// OrgMembershipsTable is the table that holds the org_memberships relation/edge.
-	OrgMembershipsTable = "organization_members"
-	// OrgMembershipsInverseTable is the table name for the OrganizationMember entity.
-	// It exists in this package in order to avoid circular dependency with the "organizationmember" package.
-	OrgMembershipsInverseTable = "organization_members"
-	// OrgMembershipsColumn is the table column denoting the org_memberships relation/edge.
-	OrgMembershipsColumn = "user_id"
-	// OwnedTenantsTable is the table that holds the owned_tenants relation/edge.
-	OwnedTenantsTable = "tenants"
-	// OwnedTenantsInverseTable is the table name for the Tenant entity.
-	// It exists in this package in order to avoid circular dependency with the "tenant" package.
-	OwnedTenantsInverseTable = "tenants"
-	// OwnedTenantsColumn is the table column denoting the owned_tenants relation/edge.
-	OwnedTenantsColumn = "owner_user_id"
 )
 
 // Columns holds all SQL columns for user fields.
 var Columns = []string{
 	FieldID,
 	FieldDeletedAt,
-	FieldName,
+	FieldUsername,
 	FieldEmail,
 	FieldPassword,
+	FieldPhone,
+	FieldPhoneVerified,
 	FieldRole,
+	FieldStatus,
 	FieldEmailVerified,
 	FieldEmailVerifiedAt,
+	FieldProfile,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -80,16 +73,24 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// NameValidator is a validator for the "name" field. It is called by the builders before save.
-	NameValidator func(string) error
+	// UsernameValidator is a validator for the "username" field. It is called by the builders before save.
+	UsernameValidator func(string) error
 	// EmailValidator is a validator for the "email" field. It is called by the builders before save.
 	EmailValidator func(string) error
 	// PasswordValidator is a validator for the "password" field. It is called by the builders before save.
 	PasswordValidator func(string) error
+	// PhoneValidator is a validator for the "phone" field. It is called by the builders before save.
+	PhoneValidator func(string) error
+	// DefaultPhoneVerified holds the default value on creation for the "phone_verified" field.
+	DefaultPhoneVerified bool
 	// DefaultRole holds the default value on creation for the "role" field.
 	DefaultRole string
 	// RoleValidator is a validator for the "role" field. It is called by the builders before save.
 	RoleValidator func(string) error
+	// DefaultStatus holds the default value on creation for the "status" field.
+	DefaultStatus string
+	// StatusValidator is a validator for the "status" field. It is called by the builders before save.
+	StatusValidator func(string) error
 	// DefaultEmailVerified holds the default value on creation for the "email_verified" field.
 	DefaultEmailVerified bool
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
@@ -115,9 +116,9 @@ func ByDeletedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldDeletedAt, opts...).ToFunc()
 }
 
-// ByName orders the results by the name field.
-func ByName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldName, opts...).ToFunc()
+// ByUsername orders the results by the username field.
+func ByUsername(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldUsername, opts...).ToFunc()
 }
 
 // ByEmail orders the results by the email field.
@@ -130,9 +131,24 @@ func ByPassword(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldPassword, opts...).ToFunc()
 }
 
+// ByPhone orders the results by the phone field.
+func ByPhone(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhone, opts...).ToFunc()
+}
+
+// ByPhoneVerified orders the results by the phone_verified field.
+func ByPhoneVerified(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldPhoneVerified, opts...).ToFunc()
+}
+
 // ByRole orders the results by the role field.
 func ByRole(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRole, opts...).ToFunc()
+}
+
+// ByStatus orders the results by the status field.
+func ByStatus(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldStatus, opts...).ToFunc()
 }
 
 // ByEmailVerified orders the results by the email_verified field.
@@ -153,46 +169,4 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
-}
-
-// ByOrgMembershipsCount orders the results by org_memberships count.
-func ByOrgMembershipsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOrgMembershipsStep(), opts...)
-	}
-}
-
-// ByOrgMemberships orders the results by org_memberships terms.
-func ByOrgMemberships(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOrgMembershipsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-
-// ByOwnedTenantsCount orders the results by owned_tenants count.
-func ByOwnedTenantsCount(opts ...sql.OrderTermOption) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborsCount(s, newOwnedTenantsStep(), opts...)
-	}
-}
-
-// ByOwnedTenants orders the results by owned_tenants terms.
-func ByOwnedTenants(term sql.OrderTerm, terms ...sql.OrderTerm) OrderOption {
-	return func(s *sql.Selector) {
-		sqlgraph.OrderByNeighborTerms(s, newOwnedTenantsStep(), append([]sql.OrderTerm{term}, terms...)...)
-	}
-}
-func newOrgMembershipsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OrgMembershipsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, OrgMembershipsTable, OrgMembershipsColumn),
-	)
-}
-func newOwnedTenantsStep() *sqlgraph.Step {
-	return sqlgraph.NewStep(
-		sqlgraph.From(Table, FieldID),
-		sqlgraph.To(OwnedTenantsInverseTable, FieldID),
-		sqlgraph.Edge(sqlgraph.O2M, false, OwnedTenantsTable, OwnedTenantsColumn),
-	)
 }

@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
 	"github.com/google/uuid"
 )
 
@@ -24,7 +23,6 @@ type ApplicationQuery struct {
 	order      []application.OrderOption
 	inters     []Interceptor
 	predicates []predicate.Application
-	withTenant *TenantQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,28 +57,6 @@ func (_q *ApplicationQuery) Unique(unique bool) *ApplicationQuery {
 func (_q *ApplicationQuery) Order(o ...application.OrderOption) *ApplicationQuery {
 	_q.order = append(_q.order, o...)
 	return _q
-}
-
-// QueryTenant chains the current query on the "tenant" edge.
-func (_q *ApplicationQuery) QueryTenant() *TenantQuery {
-	query := (&TenantClient{config: _q.config}).Query()
-	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
-		if err := _q.prepareQuery(ctx); err != nil {
-			return nil, err
-		}
-		selector := _q.sqlQuery(ctx)
-		if err := selector.Err(); err != nil {
-			return nil, err
-		}
-		step := sqlgraph.NewStep(
-			sqlgraph.From(application.Table, application.FieldID, selector),
-			sqlgraph.To(tenant.Table, tenant.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, application.TenantTable, application.TenantColumn),
-		)
-		fromU = sqlgraph.SetNeighbors(_q.driver.Dialect(), step)
-		return fromU, nil
-	}
-	return query
 }
 
 // First returns the first Application entity from the query.
@@ -275,22 +251,10 @@ func (_q *ApplicationQuery) Clone() *ApplicationQuery {
 		order:      append([]application.OrderOption{}, _q.order...),
 		inters:     append([]Interceptor{}, _q.inters...),
 		predicates: append([]predicate.Application{}, _q.predicates...),
-		withTenant: _q.withTenant.Clone(),
 		// clone intermediate query.
 		sql:  _q.sql.Clone(),
 		path: _q.path,
 	}
-}
-
-// WithTenant tells the query-builder to eager-load the nodes that are connected to
-// the "tenant" edge. The optional arguments are used to configure the query builder of the edge.
-func (_q *ApplicationQuery) WithTenant(opts ...func(*TenantQuery)) *ApplicationQuery {
-	query := (&TenantClient{config: _q.config}).Query()
-	for _, opt := range opts {
-		opt(query)
-	}
-	_q.withTenant = query
-	return _q
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -369,11 +333,8 @@ func (_q *ApplicationQuery) prepareQuery(ctx context.Context) error {
 
 func (_q *ApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Application, error) {
 	var (
-		nodes       = []*Application{}
-		_spec       = _q.querySpec()
-		loadedTypes = [1]bool{
-			_q.withTenant != nil,
-		}
+		nodes = []*Application{}
+		_spec = _q.querySpec()
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Application).scanValues(nil, columns)
@@ -381,7 +342,6 @@ func (_q *ApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Application{config: _q.config}
 		nodes = append(nodes, node)
-		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	for i := range hooks {
@@ -393,43 +353,7 @@ func (_q *ApplicationQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
-	if query := _q.withTenant; query != nil {
-		if err := _q.loadTenant(ctx, query, nodes, nil,
-			func(n *Application, e *Tenant) { n.Edges.Tenant = e }); err != nil {
-			return nil, err
-		}
-	}
 	return nodes, nil
-}
-
-func (_q *ApplicationQuery) loadTenant(ctx context.Context, query *TenantQuery, nodes []*Application, init func(*Application), assign func(*Application, *Tenant)) error {
-	ids := make([]uuid.UUID, 0, len(nodes))
-	nodeids := make(map[uuid.UUID][]*Application)
-	for i := range nodes {
-		fk := nodes[i].TenantID
-		if _, ok := nodeids[fk]; !ok {
-			ids = append(ids, fk)
-		}
-		nodeids[fk] = append(nodeids[fk], nodes[i])
-	}
-	if len(ids) == 0 {
-		return nil
-	}
-	query.Where(tenant.IDIn(ids...))
-	neighbors, err := query.All(ctx)
-	if err != nil {
-		return err
-	}
-	for _, n := range neighbors {
-		nodes, ok := nodeids[n.ID]
-		if !ok {
-			return fmt.Errorf(`unexpected foreign-key "tenant_id" returned %v`, n.ID)
-		}
-		for i := range nodes {
-			assign(nodes[i], n)
-		}
-	}
-	return nil
 }
 
 func (_q *ApplicationQuery) sqlCount(ctx context.Context) (int, error) {
@@ -456,9 +380,6 @@ func (_q *ApplicationQuery) querySpec() *sqlgraph.QuerySpec {
 			if fields[i] != application.FieldID {
 				_spec.Node.Columns = append(_spec.Node.Columns, fields[i])
 			}
-		}
-		if _q.withTenant != nil {
-			_spec.Node.AddColumnOnce(application.FieldTenantID)
 		}
 	}
 	if ps := _q.predicates; len(ps) > 0 {

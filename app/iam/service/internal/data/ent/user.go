@@ -3,6 +3,7 @@
 package ent
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -20,55 +21,31 @@ type User struct {
 	ID uuid.UUID `json:"id,omitempty"`
 	// DeletedAt holds the value of the "deleted_at" field.
 	DeletedAt *time.Time `json:"deleted_at,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	// Username holds the value of the "username" field.
+	Username string `json:"username,omitempty"`
 	// Email holds the value of the "email" field.
 	Email string `json:"email,omitempty"`
 	// Password holds the value of the "password" field.
 	Password string `json:"password,omitempty"`
+	// Phone holds the value of the "phone" field.
+	Phone string `json:"phone,omitempty"`
+	// PhoneVerified holds the value of the "phone_verified" field.
+	PhoneVerified bool `json:"phone_verified,omitempty"`
 	// Role holds the value of the "role" field.
 	Role string `json:"role,omitempty"`
+	// Status holds the value of the "status" field.
+	Status string `json:"status,omitempty"`
 	// EmailVerified holds the value of the "email_verified" field.
 	EmailVerified bool `json:"email_verified,omitempty"`
 	// EmailVerifiedAt holds the value of the "email_verified_at" field.
 	EmailVerifiedAt *time.Time `json:"email_verified_at,omitempty"`
+	// Profile holds the value of the "profile" field.
+	Profile map[string]interface{} `json:"profile,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the UserQuery when eager-loading is set.
-	Edges        UserEdges `json:"edges"`
+	UpdatedAt    time.Time `json:"updated_at,omitempty"`
 	selectValues sql.SelectValues
-}
-
-// UserEdges holds the relations/edges for other nodes in the graph.
-type UserEdges struct {
-	// OrgMemberships holds the value of the org_memberships edge.
-	OrgMemberships []*OrganizationMember `json:"org_memberships,omitempty"`
-	// OwnedTenants holds the value of the owned_tenants edge.
-	OwnedTenants []*Tenant `json:"owned_tenants,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [2]bool
-}
-
-// OrgMembershipsOrErr returns the OrgMemberships value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) OrgMembershipsOrErr() ([]*OrganizationMember, error) {
-	if e.loadedTypes[0] {
-		return e.OrgMemberships, nil
-	}
-	return nil, &NotLoadedError{edge: "org_memberships"}
-}
-
-// OwnedTenantsOrErr returns the OwnedTenants value or an error if the edge
-// was not loaded in eager-loading.
-func (e UserEdges) OwnedTenantsOrErr() ([]*Tenant, error) {
-	if e.loadedTypes[1] {
-		return e.OwnedTenants, nil
-	}
-	return nil, &NotLoadedError{edge: "owned_tenants"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -76,9 +53,11 @@ func (*User) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case user.FieldEmailVerified:
+		case user.FieldProfile:
+			values[i] = new([]byte)
+		case user.FieldPhoneVerified, user.FieldEmailVerified:
 			values[i] = new(sql.NullBool)
-		case user.FieldName, user.FieldEmail, user.FieldPassword, user.FieldRole:
+		case user.FieldUsername, user.FieldEmail, user.FieldPassword, user.FieldPhone, user.FieldRole, user.FieldStatus:
 			values[i] = new(sql.NullString)
 		case user.FieldDeletedAt, user.FieldEmailVerifiedAt, user.FieldCreatedAt, user.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -112,11 +91,11 @@ func (_m *User) assignValues(columns []string, values []any) error {
 				_m.DeletedAt = new(time.Time)
 				*_m.DeletedAt = value.Time
 			}
-		case user.FieldName:
+		case user.FieldUsername:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field username", values[i])
 			} else if value.Valid {
-				_m.Name = value.String
+				_m.Username = value.String
 			}
 		case user.FieldEmail:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -130,11 +109,29 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.Password = value.String
 			}
+		case user.FieldPhone:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field phone", values[i])
+			} else if value.Valid {
+				_m.Phone = value.String
+			}
+		case user.FieldPhoneVerified:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field phone_verified", values[i])
+			} else if value.Valid {
+				_m.PhoneVerified = value.Bool
+			}
 		case user.FieldRole:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field role", values[i])
 			} else if value.Valid {
 				_m.Role = value.String
+			}
+		case user.FieldStatus:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field status", values[i])
+			} else if value.Valid {
+				_m.Status = value.String
 			}
 		case user.FieldEmailVerified:
 			if value, ok := values[i].(*sql.NullBool); !ok {
@@ -148,6 +145,14 @@ func (_m *User) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.EmailVerifiedAt = new(time.Time)
 				*_m.EmailVerifiedAt = value.Time
+			}
+		case user.FieldProfile:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field profile", values[i])
+			} else if value != nil && len(*value) > 0 {
+				if err := json.Unmarshal(*value, &_m.Profile); err != nil {
+					return fmt.Errorf("unmarshal field profile: %w", err)
+				}
 			}
 		case user.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -172,16 +177,6 @@ func (_m *User) assignValues(columns []string, values []any) error {
 // This includes values selected through modifiers, order, etc.
 func (_m *User) Value(name string) (ent.Value, error) {
 	return _m.selectValues.Get(name)
-}
-
-// QueryOrgMemberships queries the "org_memberships" edge of the User entity.
-func (_m *User) QueryOrgMemberships() *OrganizationMemberQuery {
-	return NewUserClient(_m.config).QueryOrgMemberships(_m)
-}
-
-// QueryOwnedTenants queries the "owned_tenants" edge of the User entity.
-func (_m *User) QueryOwnedTenants() *TenantQuery {
-	return NewUserClient(_m.config).QueryOwnedTenants(_m)
 }
 
 // Update returns a builder for updating this User.
@@ -212,8 +207,8 @@ func (_m *User) String() string {
 		builder.WriteString(v.Format(time.ANSIC))
 	}
 	builder.WriteString(", ")
-	builder.WriteString("name=")
-	builder.WriteString(_m.Name)
+	builder.WriteString("username=")
+	builder.WriteString(_m.Username)
 	builder.WriteString(", ")
 	builder.WriteString("email=")
 	builder.WriteString(_m.Email)
@@ -221,8 +216,17 @@ func (_m *User) String() string {
 	builder.WriteString("password=")
 	builder.WriteString(_m.Password)
 	builder.WriteString(", ")
+	builder.WriteString("phone=")
+	builder.WriteString(_m.Phone)
+	builder.WriteString(", ")
+	builder.WriteString("phone_verified=")
+	builder.WriteString(fmt.Sprintf("%v", _m.PhoneVerified))
+	builder.WriteString(", ")
 	builder.WriteString("role=")
 	builder.WriteString(_m.Role)
+	builder.WriteString(", ")
+	builder.WriteString("status=")
+	builder.WriteString(_m.Status)
 	builder.WriteString(", ")
 	builder.WriteString("email_verified=")
 	builder.WriteString(fmt.Sprintf("%v", _m.EmailVerified))
@@ -231,6 +235,9 @@ func (_m *User) String() string {
 		builder.WriteString("email_verified_at=")
 		builder.WriteString(v.Format(time.ANSIC))
 	}
+	builder.WriteString(", ")
+	builder.WriteString("profile=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Profile))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(_m.CreatedAt.Format(time.ANSIC))

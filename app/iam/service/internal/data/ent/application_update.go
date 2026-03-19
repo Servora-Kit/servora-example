@@ -14,8 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/predicate"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/tenant"
-	"github.com/google/uuid"
 )
 
 // ApplicationUpdate is the builder for updating Application entities.
@@ -157,16 +155,16 @@ func (_u *ApplicationUpdate) SetNillableAccessTokenType(v *string) *ApplicationU
 	return _u
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (_u *ApplicationUpdate) SetTenantID(v uuid.UUID) *ApplicationUpdate {
-	_u.mutation.SetTenantID(v)
+// SetType sets the "type" field.
+func (_u *ApplicationUpdate) SetType(v string) *ApplicationUpdate {
+	_u.mutation.SetType(v)
 	return _u
 }
 
-// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
-func (_u *ApplicationUpdate) SetNillableTenantID(v *uuid.UUID) *ApplicationUpdate {
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_u *ApplicationUpdate) SetNillableType(v *string) *ApplicationUpdate {
 	if v != nil {
-		_u.SetTenantID(*v)
+		_u.SetType(*v)
 	}
 	return _u
 }
@@ -198,20 +196,9 @@ func (_u *ApplicationUpdate) SetUpdatedAt(v time.Time) *ApplicationUpdate {
 	return _u
 }
 
-// SetTenant sets the "tenant" edge to the Tenant entity.
-func (_u *ApplicationUpdate) SetTenant(v *Tenant) *ApplicationUpdate {
-	return _u.SetTenantID(v.ID)
-}
-
 // Mutation returns the ApplicationMutation object of the builder.
 func (_u *ApplicationUpdate) Mutation() *ApplicationMutation {
 	return _u.mutation
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (_u *ApplicationUpdate) ClearTenant() *ApplicationUpdate {
-	_u.mutation.ClearTenant()
-	return _u
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -277,8 +264,10 @@ func (_u *ApplicationUpdate) check() error {
 			return &ValidationError{Name: "access_token_type", err: fmt.Errorf(`ent: validator failed for field "Application.access_token_type": %w`, err)}
 		}
 	}
-	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Application.tenant"`)
+	if v, ok := _u.mutation.GetType(); ok {
+		if err := application.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Application.type": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -340,6 +329,9 @@ func (_u *ApplicationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	if value, ok := _u.mutation.AccessTokenType(); ok {
 		_spec.SetField(application.FieldAccessTokenType, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.GetType(); ok {
+		_spec.SetField(application.FieldType, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.IDTokenLifetime(); ok {
 		_spec.SetField(application.FieldIDTokenLifetime, field.TypeInt, value)
 	}
@@ -348,35 +340,6 @@ func (_u *ApplicationUpdate) sqlSave(ctx context.Context) (_node int, err error)
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(application.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if _u.mutation.TenantCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   application.TenantTable,
-			Columns: []string{application.TenantColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TenantIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   application.TenantTable,
-			Columns: []string{application.TenantColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -524,16 +487,16 @@ func (_u *ApplicationUpdateOne) SetNillableAccessTokenType(v *string) *Applicati
 	return _u
 }
 
-// SetTenantID sets the "tenant_id" field.
-func (_u *ApplicationUpdateOne) SetTenantID(v uuid.UUID) *ApplicationUpdateOne {
-	_u.mutation.SetTenantID(v)
+// SetType sets the "type" field.
+func (_u *ApplicationUpdateOne) SetType(v string) *ApplicationUpdateOne {
+	_u.mutation.SetType(v)
 	return _u
 }
 
-// SetNillableTenantID sets the "tenant_id" field if the given value is not nil.
-func (_u *ApplicationUpdateOne) SetNillableTenantID(v *uuid.UUID) *ApplicationUpdateOne {
+// SetNillableType sets the "type" field if the given value is not nil.
+func (_u *ApplicationUpdateOne) SetNillableType(v *string) *ApplicationUpdateOne {
 	if v != nil {
-		_u.SetTenantID(*v)
+		_u.SetType(*v)
 	}
 	return _u
 }
@@ -565,20 +528,9 @@ func (_u *ApplicationUpdateOne) SetUpdatedAt(v time.Time) *ApplicationUpdateOne 
 	return _u
 }
 
-// SetTenant sets the "tenant" edge to the Tenant entity.
-func (_u *ApplicationUpdateOne) SetTenant(v *Tenant) *ApplicationUpdateOne {
-	return _u.SetTenantID(v.ID)
-}
-
 // Mutation returns the ApplicationMutation object of the builder.
 func (_u *ApplicationUpdateOne) Mutation() *ApplicationMutation {
 	return _u.mutation
-}
-
-// ClearTenant clears the "tenant" edge to the Tenant entity.
-func (_u *ApplicationUpdateOne) ClearTenant() *ApplicationUpdateOne {
-	_u.mutation.ClearTenant()
-	return _u
 }
 
 // Where appends a list predicates to the ApplicationUpdate builder.
@@ -657,8 +609,10 @@ func (_u *ApplicationUpdateOne) check() error {
 			return &ValidationError{Name: "access_token_type", err: fmt.Errorf(`ent: validator failed for field "Application.access_token_type": %w`, err)}
 		}
 	}
-	if _u.mutation.TenantCleared() && len(_u.mutation.TenantIDs()) > 0 {
-		return errors.New(`ent: clearing a required unique edge "Application.tenant"`)
+	if v, ok := _u.mutation.GetType(); ok {
+		if err := application.TypeValidator(v); err != nil {
+			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Application.type": %w`, err)}
+		}
 	}
 	return nil
 }
@@ -737,6 +691,9 @@ func (_u *ApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Application
 	if value, ok := _u.mutation.AccessTokenType(); ok {
 		_spec.SetField(application.FieldAccessTokenType, field.TypeString, value)
 	}
+	if value, ok := _u.mutation.GetType(); ok {
+		_spec.SetField(application.FieldType, field.TypeString, value)
+	}
 	if value, ok := _u.mutation.IDTokenLifetime(); ok {
 		_spec.SetField(application.FieldIDTokenLifetime, field.TypeInt, value)
 	}
@@ -745,35 +702,6 @@ func (_u *ApplicationUpdateOne) sqlSave(ctx context.Context) (_node *Application
 	}
 	if value, ok := _u.mutation.UpdatedAt(); ok {
 		_spec.SetField(application.FieldUpdatedAt, field.TypeTime, value)
-	}
-	if _u.mutation.TenantCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   application.TenantTable,
-			Columns: []string{application.TenantColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := _u.mutation.TenantIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   application.TenantTable,
-			Columns: []string{application.TenantColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: sqlgraph.NewFieldSpec(tenant.FieldID, field.TypeUUID),
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Application{config: _u.config}
 	_spec.Assign = _node.assignValues
