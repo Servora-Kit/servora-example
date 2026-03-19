@@ -18,3 +18,8 @@ type application
     define admin: [user] or admin from platform
     define can_view: admin
     define can_manage: admin
+
+# service 代表 M2M 服务身份（service account），用于服务间调用授权
+type service
+  relations
+    define can_call: [service, service#can_call]

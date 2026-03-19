@@ -17,6 +17,11 @@ tuples:
     relation: admin
     object: application:app-2
 
+  # Service-to-service authorization
+  - user: service:order-service
+    relation: can_call
+    object: service:payment-service
+
 tests:
   # --- Platform tests ---
 
@@ -84,3 +89,26 @@ tests:
           admin: false
           can_view: false
           can_manage: false
+
+  # --- Service tests ---
+
+  - name: order-service can call payment-service (direct grant)
+    check:
+      - user: service:order-service
+        object: service:payment-service
+        assertions:
+          can_call: true
+
+  - name: unrelated service cannot call payment-service
+    check:
+      - user: service:unknown
+        object: service:payment-service
+        assertions:
+          can_call: false
+
+  - name: payment-service cannot call order-service (one-directional)
+    check:
+      - user: service:payment-service
+        object: service:order-service
+        assertions:
+          can_call: false
