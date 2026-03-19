@@ -36,10 +36,11 @@ func (r *authnRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User,
 	}
 	created, err := r.data.Ent(ctx).User.
 		Create().
-		SetName(u.Name).
+		SetUsername(u.Username).
 		SetEmail(u.Email).
 		SetPassword(u.Password).
 		SetRole(u.Role).
+		SetStatus("active").
 		Save(ctx)
 	if err != nil {
 		r.log.Errorf("SaveUser failed: %v", err)
@@ -49,7 +50,7 @@ func (r *authnRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User,
 }
 
 func (r *authnRepo) GetUserByUserName(ctx context.Context, name string) (*entity.User, error) {
-	entUser, err := r.data.Ent(ctx).User.Query().Where(user.NameEQ(name)).Only(ctx)
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.UsernameEQ(name)).Only(ctx)
 	if err != nil {
 		return nil, err
 	}

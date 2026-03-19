@@ -9,59 +9,48 @@ import (
 )
 
 var userMapper = mapper.NewForwardMapper(func(u *ent.User) *entity.User {
-	return &entity.User{
+	e := &entity.User{
 		ID:              u.ID.String(),
-		Name:            u.Name,
+		Username:        u.Username,
 		Email:           u.Email,
 		Password:        u.Password,
+		Phone:           u.Phone,
+		PhoneVerified:   u.PhoneVerified,
 		Role:            u.Role,
+		Status:          u.Status,
 		EmailVerified:   u.EmailVerified,
 		EmailVerifiedAt: u.EmailVerifiedAt,
+		CreatedAt:       u.CreatedAt,
+		UpdatedAt:       u.UpdatedAt,
 	}
-})
-
-var orgMapper = mapper.NewForwardMapper(func(o *ent.Organization) *entity.Organization {
-	e := &entity.Organization{
-		ID:        o.ID.String(),
-		TenantID:  o.TenantID.String(),
-		Name:      o.Name,
-		Slug:      o.Slug,
-		Type:      string(o.Type),
-		Sort:      o.Sort,
-		CreatedAt: o.CreatedAt,
-		UpdatedAt: o.UpdatedAt,
-	}
-	if o.DisplayName != nil {
-		e.DisplayName = *o.DisplayName
-	}
-	if o.ParentID != nil {
-		s := o.ParentID.String()
-		e.ParentID = &s
-	}
-	if o.LeaderUserID != nil {
-		s := o.LeaderUserID.String()
-		e.LeaderUserID = &s
-	}
-	return e
-})
-
-
-var tenantMapper = mapper.NewForwardMapper(func(t *ent.Tenant) *entity.Tenant {
-	e := &entity.Tenant{
-		ID:          t.ID.String(),
-		OwnerUserID: t.OwnerUserID.String(),
-		Slug:        t.Slug,
-		Name:        t.Name,
-		Kind:        string(t.Kind),
-		Status:      string(t.Status),
-		CreatedAt:   t.CreatedAt,
-		UpdatedAt:   t.UpdatedAt,
-	}
-	if t.Domain != nil {
-		e.Domain = *t.Domain
-	}
-	if t.DisplayName != nil {
-		e.DisplayName = *t.DisplayName
+	if u.Profile != nil {
+		if v, ok := u.Profile["name"].(string); ok {
+			e.Profile.Name = v
+		}
+		if v, ok := u.Profile["given_name"].(string); ok {
+			e.Profile.GivenName = v
+		}
+		if v, ok := u.Profile["family_name"].(string); ok {
+			e.Profile.FamilyName = v
+		}
+		if v, ok := u.Profile["nickname"].(string); ok {
+			e.Profile.Nickname = v
+		}
+		if v, ok := u.Profile["picture"].(string); ok {
+			e.Profile.Picture = v
+		}
+		if v, ok := u.Profile["gender"].(string); ok {
+			e.Profile.Gender = v
+		}
+		if v, ok := u.Profile["birthdate"].(string); ok {
+			e.Profile.Birthdate = v
+		}
+		if v, ok := u.Profile["zoneinfo"].(string); ok {
+			e.Profile.Zoneinfo = v
+		}
+		if v, ok := u.Profile["locale"].(string); ok {
+			e.Profile.Locale = v
+		}
 	}
 	return e
 })
@@ -77,7 +66,7 @@ var applicationMapper = mapper.NewForwardMapper(func(a *ent.Application) *entity
 		GrantTypes:       a.GrantTypes,
 		ApplicationType:  a.ApplicationType,
 		AccessTokenType:  a.AccessTokenType,
-		TenantID:         a.TenantID.String(),
+		Type:             a.Type,
 		IDTokenLifetime:  time.Duration(a.IDTokenLifetime) * time.Second,
 		CreatedAt:        a.CreatedAt,
 		UpdatedAt:        a.UpdatedAt,
