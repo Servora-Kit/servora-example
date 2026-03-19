@@ -7,7 +7,9 @@ import (
 	"github.com/zitadel/oidc/v3/pkg/op"
 )
 
-// OIDC path prefixes delegated to the Provider (zitadel/oidc chi router).
+// oidcPrefixes lists path prefixes routed to the zitadel/oidc Provider.
+// These are registered via HandlePrefix (gorilla/mux PathPrefix) so any
+// sub-path (e.g. /.well-known/openid-configuration) is matched correctly.
 var oidcPrefixes = []string{
 	"/.well-known/",
 	"/authorize",
@@ -23,8 +25,8 @@ var oidcPrefixes = []string{
 // Server remains protocol-agnostic; all OIDC route knowledge lives here.
 func Register(s *khttp.Server, provider *op.Provider, lh *LoginHandler, lch *LoginCompleteHandler) {
 	for _, prefix := range oidcPrefixes {
-		s.Handle(prefix, stdhttp.Handler(provider))
+		s.HandlePrefix(prefix, stdhttp.Handler(provider))
 	}
-	s.Handle("/login", lh)
-	s.Handle("/login/complete", lch)
+	s.HandlePrefix("/login/complete", lch)
+	s.HandlePrefix("/login", lh)
 }

@@ -28,8 +28,12 @@ func (c *oidcClient) IDTokenLifetime() time.Duration                            
 func (c *oidcClient) DevMode() bool                                                       { return c.devMode }
 func (c *oidcClient) IDTokenUserinfoClaimsAssertion() bool                                { return false }
 func (c *oidcClient) ClockSkew() time.Duration                                            { return 0 }
-func (c *oidcClient) RestrictAdditionalIdTokenScopes() func(scopes []string) []string     { return nil }
-func (c *oidcClient) RestrictAdditionalAccessTokenScopes() func(scopes []string) []string { return nil }
+func (c *oidcClient) RestrictAdditionalIdTokenScopes() func(scopes []string) []string {
+	return func(scopes []string) []string { return scopes }
+}
+func (c *oidcClient) RestrictAdditionalAccessTokenScopes() func(scopes []string) []string {
+	return func(scopes []string) []string { return scopes }
+}
 
 func (c *oidcClient) ApplicationType() op.ApplicationType {
 	switch c.app.ApplicationType {
