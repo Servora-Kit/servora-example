@@ -9,7 +9,7 @@ import (
 
 func EntLogFuncFrom(logger kratoslog.Logger, module string) func(...any) {
 	if zapLogger, ok := logger.(*ZapLogger); ok {
-		moduleLogger := zapLogger.log.With(zap.String("module", module))
+		moduleLogger := zapLogger.Zap().With(zap.String("module", module))
 		return func(args ...any) {
 			moduleLogger.Sugar().Debug(args...)
 		}

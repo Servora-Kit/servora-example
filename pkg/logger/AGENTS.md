@@ -1,7 +1,7 @@
 # AGENTS.md - pkg/logger/
 
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-15 | Updated: 2026-03-15 -->
+<!-- Generated: 2026-03-15 | Updated: 2026-03-20 -->
 
 ## 模块目的
 
@@ -9,24 +9,50 @@
 
 ## 当前文件
 
-- `log.go`：主日志实现、`Config`、`WithModule`、`WithField`
+- `log.go`：主日志实现、`ZapLogger`、`New`、`For`、`With`、`WithModule`、`WithField`
 - `gorm_log.go`：GORM 日志适配
 - `ent_log.go`：Ent 调试日志桥接
 
-## 当前实现事实
+## API 速览
 
-- `NewLogger` 会在配置存在且 `Filename` 为空时默认回落到 `./logs/app.log`
-- 支持 `dev`、`prod`、`test` 三类环境输出策略
-- `WithModule` 约定 module 命名形如 `组件/层/服务名`
-- `NewHelper` 支持额外 `Option` 注入
+| 函数/方法 | 说明 |
+|---|---|
+| `New(app *conf.App) *ZapLogger` | 从 proto 配置创建 logger，nil-safe |
+| `For(l, module) *Helper` | 一行创建带 module 的 Helper（最常用） |
+| `With(l, args...) Logger` | 添加字段；支持 string 快捷 module 或 Option 风格 |
+| `WithModule(m) Option` | 添加 module 字段的 Option |
+| `WithField(k, v) Option` | 添加任意字段的 Option |
+| `NewHelper(l, opts...) *Helper` | 保留，供需要多个 Option 的场景 |
+| `(*ZapLogger).Zap() *zap.Logger` | 暴露底层 zap（供 franz-go kzap、GORM bridge 等） |
+| `(*ZapLogger).Sync() error` | Flush 缓冲区 |
+| `GormLoggerFrom(l, module)` | 创建 GORM 兼容 logger |
+| `EntLogFuncFrom(l, module)` | 创建 Ent debug log 函数 |
 
 ## 使用示例
 
 ```go
-l := logger.NewLogger(&logger.Config{Env: "dev"})
-helper := logger.NewHelper(l, logger.WithModule("auth/biz/iam-service"))
-helper.Info("service started")
+// 创建 logger（bootstrap 层）
+zapLogger := logger.New(bc.App)
+appLogger := log.With(zapLogger, "service", "iam", "trace_id", tracing.TraceID())
+
+// 业务层创建模块 Helper（最常用写法）
+log: logger.For(l, "user/biz/iam")
+
+// 中间件层带 module 的 logger
+logger.With(l, "http/server/iam")
+
+// 需要多个字段时
+logger.NewHelper(l, logger.WithField("operation", "createConn"))
+
+// 获取底层 zap（供 franz-go kzap 等）
+zapLogger.Zap()
 ```
+
+## module 命名约定
+
+格式：`组件/层/服务`（去掉 `-service` 后缀）
+
+示例：`"user/biz/iam"`、`"redis/data/iam"`、`"grpc/server/iam"`、`"openfga/pkg"`
 
 ## 测试
 
