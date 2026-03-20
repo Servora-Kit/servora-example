@@ -6,10 +6,10 @@
 
 | 文件 | 用途 | 模板变量 |
 |------|------|----------|
-| `verify_email.html` | 邮箱验证邮件 | `{{.Link}}` 验证链接，`{{.ExpiryHours}}` 展示用（如 "24"） |
-| `reset_password.html` | 密码重置邮件 | `{{.Link}}` 重置链接，`{{.ExpiryHours}}` 展示用（如 "1"） |
+| `verify_email.html` | 邮箱验证邮件 | `{{.Link}}` 验证链接，`{{.ExpiryHours}}` 展示用（如 "24"），`{{.LogoDataURI}}` 品牌图（内嵌 PNG 的 `data:image/png;base64,...`，用于 `<img src="{{.LogoDataURI}}">`） |
+| `reset_password.html` | 密码重置邮件 | `{{.Link}}` 重置链接，`{{.ExpiryHours}}` 展示用（如 "1"），`{{.LogoDataURI}}` 同上 |
 
-使用 Go `html/template` 语法，变量会自动转义，避免 XSS。
+使用 Go `html/template` 语法，变量会自动转义，避免 XSS。`LogoDataURI` 由服务端注入为 `template.URL`，仅用于 `src` 等 URL 上下文。
 
 ## 配置示例
 

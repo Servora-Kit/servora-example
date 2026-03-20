@@ -246,9 +246,13 @@ export function Sidebar({ title, titleHref, menuGroups, bottom }: SidebarProps) 
           collapsed && 'justify-center px-0',
         )}
       >
-        <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground text-sm font-bold">
-          S
-        </div>
+        <img
+          src="/servora-logo.png"
+          alt="Servora"
+          width={32}
+          height={32}
+          className="size-8 shrink-0 rounded-md object-contain"
+        />
         {!collapsed && (
           <span className="truncate text-sm font-semibold text-sidebar-foreground">
             {title}

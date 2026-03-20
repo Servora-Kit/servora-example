@@ -3,6 +3,7 @@ package biz
 import (
 	"bytes"
 	_ "embed"
+	"encoding/base64"
 	"fmt"
 	"html/template"
 	"os"
@@ -20,14 +21,16 @@ const (
 
 // VerifyEmailData 供 verify_email.html 使用的数据
 type VerifyEmailData struct {
-	Link        string // 验证链接
-	ExpiryHours string // 展示用，如 "24"
+	Link        string       // 验证链接
+	ExpiryHours string       // 展示用，如 "24"
+	LogoDataURI template.URL // data:image/png;base64,...（用于 <img src>，勿手动拼接不可信内容）
 }
 
 // ResetPasswordData 供 reset_password.html 使用的数据
 type ResetPasswordData struct {
-	Link        string // 重置链接
-	ExpiryHours string // 展示用，如 "1"
+	Link        string       // 重置链接
+	ExpiryHours string       // 展示用，如 "1"
+	LogoDataURI template.URL // data:image/png;base64,...
 }
 
 var (
@@ -39,7 +42,16 @@ var (
 
 	//go:embed mail_templates/reset_password.html
 	embeddedResetPasswordHTML []byte
+
+	//go:embed mail_templates/logo.png
+	embeddedMailLogoPNG []byte
+
+	mailLogoDataURI template.URL
 )
+
+func init() {
+	mailLogoDataURI = template.URL("data:image/png;base64," + base64.StdEncoding.EncodeToString(embeddedMailLogoPNG))
+}
 
 // ttlHours 将 duration 转换为整数小时字符串，最小显示 1
 func ttlHours(d time.Duration) string {
@@ -55,7 +67,7 @@ func ttlHours(d time.Duration) string {
 // 若 conf 中配置了 template_dir 且存在 verify_email.html 则优先使用，否则使用内嵌模板。
 func RenderVerifyEmail(cfg *conf.Mail, link string, ttl time.Duration) (subject string, html []byte, err error) {
 	subject = defaultVerifyEmailSubject
-	data := VerifyEmailData{Link: link, ExpiryHours: ttlHours(ttl)}
+	data := VerifyEmailData{Link: link, ExpiryHours: ttlHours(ttl), LogoDataURI: mailLogoDataURI}
 
 	if cfg != nil && cfg.GetTemplateDir() != "" {
 		path := filepath.Join(cfg.GetTemplateDir(), verifyEmailTmplName)
@@ -73,7 +85,7 @@ func RenderVerifyEmail(cfg *conf.Mail, link string, ttl time.Duration) (subject 
 // 若 conf 中配置了 template_dir 且存在 reset_password.html 则优先使用，否则使用内嵌模板。
 func RenderResetPassword(cfg *conf.Mail, link string, ttl time.Duration) (subject string, html []byte, err error) {
 	subject = defaultResetPasswordSubject
-	data := ResetPasswordData{Link: link, ExpiryHours: ttlHours(ttl)}
+	data := ResetPasswordData{Link: link, ExpiryHours: ttlHours(ttl), LogoDataURI: mailLogoDataURI}
 
 	if cfg != nil && cfg.GetTemplateDir() != "" {
 		path := filepath.Join(cfg.GetTemplateDir(), resetPasswordTmplName)
