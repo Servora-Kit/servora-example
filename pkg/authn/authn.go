@@ -43,19 +43,62 @@ func WithErrorHandler(h func(ctx context.Context, err error) error) Option {
 }
 
 func defaultClaimsMapper(claims gojwt.MapClaims) (actor.Actor, error) {
-	id := claimString(claims, "sub")
+	sub := claimString(claims, "sub")
+	id := sub
 	if id == "" {
 		id = claimString(claims, "id")
 	}
-	name := claimString(claims, "name")
-	email := claimString(claims, "email")
 
-	metadata := make(map[string]string)
-	if role := claimString(claims, "role"); role != "" {
-		metadata["role"] = role
+	// Merge both "roles" (array) and "role" (string, legacy) claims.
+	roles := claimStringSlice(claims, "roles")
+	if singleRole := claimString(claims, "role"); singleRole != "" {
+		roles = append(roles, singleRole)
 	}
 
-	return actor.NewUserActor(id, name, email, metadata), nil
+	// Build open attrs for any extra claims not captured by named fields.
+	attrs := make(map[string]string)
+	if role := claimString(claims, "role"); role != "" {
+		attrs["role"] = role
+	}
+
+	return actor.NewUserActor(actor.UserActorParams{
+		ID:          id,
+		DisplayName: claimString(claims, "name"),
+		Email:       claimString(claims, "email"),
+		Subject:     sub,
+		ClientID:    claimString(claims, "azp"),  // Keycloak authorized party
+		Realm:       claimString(claims, "iss"),  // issuer as realm hint
+		Roles:       roles,
+		Scopes:      claimStringSlice(claims, "scope"),
+		Attrs:       attrs,
+	}), nil
+}
+
+// claimStringSlice extracts a string slice from a claim (handles both []interface{} and
+// space-separated string formats).
+func claimStringSlice(claims gojwt.MapClaims, key string) []string {
+	v, ok := claims[key]
+	if !ok {
+		return nil
+	}
+	switch val := v.(type) {
+	case []interface{}:
+		out := make([]string, 0, len(val))
+		for _, item := range val {
+			if s, ok := item.(string); ok {
+				out = append(out, s)
+			}
+		}
+		return out
+	case string:
+		if val == "" {
+			return nil
+		}
+		parts := strings.Fields(val)
+		return parts
+	default:
+		return nil
+	}
 }
 
 func claimString(claims gojwt.MapClaims, key string) string {

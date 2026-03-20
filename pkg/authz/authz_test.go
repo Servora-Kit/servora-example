@@ -35,7 +35,7 @@ func transportCtx(operation string) context.Context {
 }
 
 func userActorCtx(ctx context.Context, userID string) context.Context {
-	return actor.NewContext(ctx, actor.NewUserActor(userID, "Test User", "test@example.com", nil))
+	return actor.NewContext(ctx, actor.NewUserActor(actor.UserActorParams{ID: userID, DisplayName: "Test User", Email: "test@example.com"}))
 }
 
 const testOp = "/test.service.v1.TestService/TestMethod"
@@ -233,7 +233,14 @@ func TestExtractProtoField_EmptyFieldValue_Error(t *testing.T) {
 // anonymousActor is a test actor with TypeAnonymous.
 type anonymousActor struct{}
 
-func (a *anonymousActor) ID() string          { return "" }
-func (a *anonymousActor) Type() actor.Type    { return actor.TypeAnonymous }
-func (a *anonymousActor) DisplayName() string { return "anonymous" }
-func (a *anonymousActor) Scope(key string) string { return "" }
+func (a *anonymousActor) ID() string                  { return "" }
+func (a *anonymousActor) Type() actor.Type            { return actor.TypeAnonymous }
+func (a *anonymousActor) DisplayName() string         { return "anonymous" }
+func (a *anonymousActor) Email() string               { return "" }
+func (a *anonymousActor) Subject() string             { return "" }
+func (a *anonymousActor) ClientID() string            { return "" }
+func (a *anonymousActor) Realm() string               { return "" }
+func (a *anonymousActor) Roles() []string             { return []string{} }
+func (a *anonymousActor) Scopes() []string            { return []string{} }
+func (a *anonymousActor) Attrs() map[string]string    { return map[string]string{} }
+func (a *anonymousActor) Scope(_ string) string       { return "" }

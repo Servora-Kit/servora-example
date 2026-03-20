@@ -170,8 +170,8 @@ func TestAuthn_ValidJWT_CorrectActorInjected(t *testing.T) {
 		if ua.Email() != "alice@example.com" {
 			t.Errorf("email = %q, want alice@example.com", ua.Email())
 		}
-		if ua.Meta("role") != "admin" {
-			t.Errorf("role = %q, want admin", ua.Meta("role"))
+		if ua.Attrs()["role"] != "admin" {
+			t.Errorf("role = %q, want admin", ua.Attrs()["role"])
 		}
 		tok, hasTok := svrmw.TokenFromContext(ctx)
 		if !hasTok {
@@ -226,7 +226,7 @@ func TestAuthn_NilVerifier_PassThrough(t *testing.T) {
 func TestAuthn_CustomClaimsMapper_CustomActorReturned(t *testing.T) {
 	signer, verifier := setupTest(t)
 
-	customActor := actor.NewUserActor("custom-id", "Custom", "custom@example.com", nil)
+	customActor := actor.NewUserActor(actor.UserActorParams{ID: "custom-id", DisplayName: "Custom", Email: "custom@example.com"})
 	customMapper := func(_ gojwt.MapClaims) (actor.Actor, error) {
 		return customActor, nil
 	}
