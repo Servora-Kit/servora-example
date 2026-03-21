@@ -325,7 +325,7 @@ func (s *oidcStorage) GetClientByClientID(ctx context.Context, clientID string) 
 	if err != nil {
 		return nil, fmt.Errorf("client not found: %w", err)
 	}
-	app := applicationMapper.Map(entApp)
+	app := applicationMapper.MustToProto(entApp)
 	return newOIDCClient(app, strings.EqualFold(s.env, "dev")), nil
 }
 

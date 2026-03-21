@@ -42,7 +42,7 @@ func (r *applicationRepo) Create(ctx context.Context, app *apppb.Application, cl
 	if err != nil {
 		return nil, err
 	}
-	return applicationMapper.Map(created), nil
+	return applicationMapper.MustToProto(created), nil
 }
 
 func (r *applicationRepo) GetByID(ctx context.Context, id string) (*apppb.Application, error) {
@@ -56,7 +56,7 @@ func (r *applicationRepo) GetByID(ctx context.Context, id string) (*apppb.Applic
 	if err != nil {
 		return nil, wrapNotFound(err)
 	}
-	return applicationMapper.Map(a), nil
+	return applicationMapper.MustToProto(a), nil
 }
 
 func (r *applicationRepo) GetByClientID(ctx context.Context, clientID string) (*apppb.Application, error) {
@@ -66,7 +66,7 @@ func (r *applicationRepo) GetByClientID(ctx context.Context, clientID string) (*
 	if err != nil {
 		return nil, wrapNotFound(err)
 	}
-	return applicationMapper.Map(a), nil
+	return applicationMapper.MustToProto(a), nil
 }
 
 func (r *applicationRepo) List(ctx context.Context, page, pageSize int32) ([]*apppb.Application, int64, error) {
@@ -86,7 +86,11 @@ func (r *applicationRepo) List(ctx context.Context, page, pageSize int32) ([]*ap
 	if err != nil {
 		return nil, 0, err
 	}
-	return applicationMapper.MapSlice(apps), int64(total), nil
+	result, err := applicationMapper.ToProtoList(apps)
+	if err != nil {
+		return nil, 0, err
+	}
+	return result, int64(total), nil
 }
 
 func (r *applicationRepo) Update(ctx context.Context, app *apppb.Application) (*apppb.Application, error) {

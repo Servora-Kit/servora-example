@@ -1,6 +1,8 @@
 package data
 
 import (
+	"github.com/google/uuid"
+
 	apppb "github.com/Servora-Kit/servora/api/gen/go/application/service/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
@@ -65,19 +67,21 @@ func profileFromJSON(m map[string]interface{}) *userpb.UserProfile {
 	return p
 }
 
-var applicationMapper = mapper.NewForwardMapper(func(a *ent.Application) *apppb.Application {
-	return &apppb.Application{
-		Id:              a.ID.String(),
-		ClientId:        a.ClientID,
-		Name:            a.Name,
-		RedirectUris:    a.RedirectUris,
-		Scopes:          a.Scopes,
-		GrantTypes:      a.GrantTypes,
-		ApplicationType: a.ApplicationType,
-		AccessTokenType: a.AccessTokenType,
-		Type:            a.Type,
-		IdTokenLifetime: int32(a.IDTokenLifetime),
-		CreatedAt:       timestamppb.New(a.CreatedAt),
-		UpdatedAt:       timestamppb.New(a.UpdatedAt),
-	}
-})
+var applicationMapper = func() *mapper.CopierMapper[apppb.Application, ent.Application] {
+	m := mapper.NewCopierMapper[apppb.Application, ent.Application]()
+	m.AppendConverters(mapper.AllBuiltinConverters())
+	m.AppendConverters(mapper.NewGenericConverterPair[uuid.UUID, string](
+		func(id uuid.UUID) (string, error) { return id.String(), nil },
+		func(s string) (uuid.UUID, error) { return uuid.Parse(s) },
+	))
+	m.AppendConverters(mapper.NewGenericConverterPair[int, int32](
+		func(i int) (int32, error) { return int32(i), nil },
+		func(i int32) (int, error) { return int(i), nil },
+	))
+	m.WithFieldMapping(map[string]string{
+		"ID":               "Id",
+		"ClientID":         "ClientId",
+		"IDTokenLifetime":  "IdTokenLifetime",
+	})
+	return m
+}()
