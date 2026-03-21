@@ -93,7 +93,7 @@ endef
 # ============================================================================
 
 .PHONY: help env init plugin cli dep vendor test cover vet lint lint.go lint.proto lint.ts web.dev buf-update
-.PHONY: wire ent gen api api-go api-authz api-ts openapi build all clean
+.PHONY: wire ent gen api api-go api-authz api-mapper api-ts openapi build all clean
 .PHONY: compose.build compose.up compose.rebuild compose.stop compose.down compose.reset compose.ps compose.logs compose.init
 .PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
 .PHONY: openfga.init openfga.model.validate openfga.model.test openfga.model.apply
@@ -125,6 +125,7 @@ plugin:
 	@go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
 	@go install github.com/envoyproxy/protoc-gen-validate@latest
 	@go install ./cmd/protoc-gen-servora-authz
+	@go install ./cmd/protoc-gen-servora-mapper
 	@echo "$(GREEN)✓ Protoc plugins installed$(RESET)"
 
 # install cli tools
@@ -200,7 +201,7 @@ gen: api openapi wire ent
 	@echo "$(GREEN)✓ All code generated$(RESET)"
 
 # generate protobuf api code (go + ts)
-api: api-go api-authz api-ts
+api: api-go api-authz api-mapper api-ts
 	@echo "$(GREEN)✓ Protobuf code generated $(RESET)"
 
 # generate protobuf api go code
@@ -212,6 +213,11 @@ api-go:
 api-authz:
 	@echo "$(CYAN)Generating AuthZ rules via buf.authz.gen.yaml...$(RESET)"
 	@buf generate --template buf.authz.gen.yaml
+
+# generate mapper plans from proto annotations
+api-mapper:
+	@echo "$(CYAN)Generating Mapper plans via buf.mapper.gen.yaml...$(RESET)"
+	@buf generate --template buf.mapper.gen.yaml
 
 # generate protobuf api typescript code for web (shared api/gen/ts + per-service templates under app/*/service/api/)
 api-ts:
