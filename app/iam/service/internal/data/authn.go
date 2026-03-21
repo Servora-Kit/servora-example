@@ -7,10 +7,9 @@ import (
 
 	"github.com/google/uuid"
 
+	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
-	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
 
@@ -26,19 +25,12 @@ func NewAuthnRepo(data *Data, l logger.Logger) biz.AuthnRepo {
 	}
 }
 
-func (r *authnRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, error) {
-	if !helpers.BcryptIsHashed(u.Password) {
-		bcryptPassword, err := helpers.BcryptHash(u.Password)
-		if err != nil {
-			return nil, err
-		}
-		u.Password = bcryptPassword
-	}
+func (r *authnRepo) SaveUser(ctx context.Context, u *userpb.User, hashedPassword string) (*userpb.User, error) {
 	created, err := r.data.Ent(ctx).User.
 		Create().
 		SetUsername(u.Username).
 		SetEmail(u.Email).
-		SetPassword(u.Password).
+		SetPassword(hashedPassword).
 		SetRole(u.Role).
 		SetStatus("active").
 		Save(ctx)
@@ -49,32 +41,44 @@ func (r *authnRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User,
 	return userMapper.Map(created), nil
 }
 
-func (r *authnRepo) GetUserByUserName(ctx context.Context, name string) (*entity.User, error) {
+func (r *authnRepo) GetUserByUserName(ctx context.Context, name string) (*userpb.User, error) {
 	entUser, err := r.data.Ent(ctx).User.Query().Where(user.UsernameEQ(name)).Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapNotFound(err)
 	}
 	return userMapper.Map(entUser), nil
 }
 
-func (r *authnRepo) GetUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *authnRepo) GetUserByEmail(ctx context.Context, email string) (*userpb.User, error) {
 	entUser, err := r.data.Ent(ctx).User.Query().Where(user.EmailEQ(email)).Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapNotFound(err)
 	}
 	return userMapper.Map(entUser), nil
 }
 
-func (r *authnRepo) GetUserByID(ctx context.Context, id string) (*entity.User, error) {
+func (r *authnRepo) GetUserByID(ctx context.Context, id string) (*userpb.User, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
 	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapNotFound(err)
 	}
 	return userMapper.Map(entUser), nil
+}
+
+func (r *authnRepo) GetPasswordHash(ctx context.Context, userID string) (string, error) {
+	uid, err := uuid.Parse(userID)
+	if err != nil {
+		return "", fmt.Errorf("invalid user ID: %w", err)
+	}
+	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Only(ctx)
+	if err != nil {
+		return "", wrapNotFound(err)
+	}
+	return entUser.Password, nil
 }
 
 func (r *authnRepo) UpdatePassword(ctx context.Context, userID string, hashedPassword string) error {

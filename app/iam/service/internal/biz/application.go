@@ -6,17 +6,16 @@ import (
 	"encoding/hex"
 
 	apppb "github.com/Servora-Kit/servora/api/gen/go/application/service/v1"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
 
 type ApplicationRepo interface {
-	Create(ctx context.Context, app *entity.Application) (*entity.Application, error)
-	GetByID(ctx context.Context, id string) (*entity.Application, error)
-	GetByClientID(ctx context.Context, clientID string) (*entity.Application, error)
-	List(ctx context.Context, page, pageSize int32) ([]*entity.Application, int64, error)
-	Update(ctx context.Context, app *entity.Application) (*entity.Application, error)
+	Create(ctx context.Context, app *apppb.Application, clientSecretHash string) (*apppb.Application, error)
+	GetByID(ctx context.Context, id string) (*apppb.Application, error)
+	GetByClientID(ctx context.Context, clientID string) (*apppb.Application, error)
+	List(ctx context.Context, page, pageSize int32) ([]*apppb.Application, int64, error)
+	Update(ctx context.Context, app *apppb.Application) (*apppb.Application, error)
 	Delete(ctx context.Context, id string) error
 	UpdateClientSecretHash(ctx context.Context, id string, hash string) error
 }
@@ -33,7 +32,7 @@ func NewApplicationUsecase(repo ApplicationRepo, l logger.Logger) *ApplicationUs
 	}
 }
 
-func (uc *ApplicationUsecase) Create(ctx context.Context, app *entity.Application) (*entity.Application, string, error) {
+func (uc *ApplicationUsecase) Create(ctx context.Context, app *apppb.Application) (*apppb.Application, string, error) {
 	clientID, err := generateRandomHex(16)
 	if err != nil {
 		uc.log.Errorf("generate client_id: %v", err)
@@ -51,10 +50,9 @@ func (uc *ApplicationUsecase) Create(ctx context.Context, app *entity.Applicatio
 		return nil, "", apppb.ErrorApplicationCreateFailed("failed to create application")
 	}
 
-	app.ClientID = clientID
-	app.ClientSecretHash = hash
+	app.ClientId = clientID
 
-	created, err := uc.repo.Create(ctx, app)
+	created, err := uc.repo.Create(ctx, app, hash)
 	if err != nil {
 		uc.log.Errorf("create application failed: %v", err)
 		return nil, "", apppb.ErrorApplicationCreateFailed("%v", err)
@@ -62,19 +60,19 @@ func (uc *ApplicationUsecase) Create(ctx context.Context, app *entity.Applicatio
 	return created, plainSecret, nil
 }
 
-func (uc *ApplicationUsecase) Get(ctx context.Context, id string) (*entity.Application, error) {
+func (uc *ApplicationUsecase) Get(ctx context.Context, id string) (*apppb.Application, error) {
 	return uc.repo.GetByID(ctx, id)
 }
 
-func (uc *ApplicationUsecase) GetByClientID(ctx context.Context, clientID string) (*entity.Application, error) {
+func (uc *ApplicationUsecase) GetByClientID(ctx context.Context, clientID string) (*apppb.Application, error) {
 	return uc.repo.GetByClientID(ctx, clientID)
 }
 
-func (uc *ApplicationUsecase) List(ctx context.Context, page, pageSize int32) ([]*entity.Application, int64, error) {
+func (uc *ApplicationUsecase) List(ctx context.Context, page, pageSize int32) ([]*apppb.Application, int64, error) {
 	return uc.repo.List(ctx, page, pageSize)
 }
 
-func (uc *ApplicationUsecase) Update(ctx context.Context, app *entity.Application) (*entity.Application, error) {
+func (uc *ApplicationUsecase) Update(ctx context.Context, app *apppb.Application) (*apppb.Application, error) {
 	return uc.repo.Update(ctx, app)
 }
 

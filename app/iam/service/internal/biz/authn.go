@@ -13,8 +13,7 @@ import (
 
 	authnpb "github.com/Servora-Kit/servora/api/gen/go/authn/service/v1"
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
+	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/jwks"
 	"github.com/Servora-Kit/servora/pkg/logger"
@@ -73,10 +72,11 @@ type TokenStore interface {
 }
 
 type AuthnRepo interface {
-	SaveUser(context.Context, *entity.User) (*entity.User, error)
-	GetUserByEmail(context.Context, string) (*entity.User, error)
-	GetUserByUserName(context.Context, string) (*entity.User, error)
-	GetUserByID(context.Context, string) (*entity.User, error)
+	SaveUser(ctx context.Context, user *userpb.User, hashedPassword string) (*userpb.User, error)
+	GetUserByEmail(context.Context, string) (*userpb.User, error)
+	GetUserByUserName(context.Context, string) (*userpb.User, error)
+	GetUserByID(context.Context, string) (*userpb.User, error)
+	GetPasswordHash(ctx context.Context, userID string) (string, error)
 	UpdatePassword(ctx context.Context, userID string, hashedPassword string) error
 	UpdateEmailVerified(ctx context.Context, userID string, verified bool) error
 	TokenStore
@@ -87,9 +87,9 @@ type OTPRepo interface {
 	ConsumeToken(ctx context.Context, purpose, token string) (userID string, err error)
 }
 
-func (uc *AuthnUsecase) SignupByEmail(ctx context.Context, user *entity.User) (*entity.User, error) {
-	existingUser, err := uc.repo.GetUserByUserName(ctx, user.Username)
-	if err != nil && !ent.IsNotFound(err) {
+func (uc *AuthnUsecase) SignupByEmail(ctx context.Context, username, email, password string) (*userpb.User, error) {
+	existingUser, err := uc.repo.GetUserByUserName(ctx, username)
+	if err != nil && !errors.Is(err, ErrNotFound) {
 		uc.log.Errorf("check username failed: %v", err)
 		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
@@ -97,8 +97,8 @@ func (uc *AuthnUsecase) SignupByEmail(ctx context.Context, user *entity.User) (*
 		return nil, authnpb.ErrorUserAlreadyExists("username already exists")
 	}
 
-	existingEmail, err := uc.repo.GetUserByEmail(ctx, user.Email)
-	if err != nil && !ent.IsNotFound(err) {
+	existingEmail, err := uc.repo.GetUserByEmail(ctx, email)
+	if err != nil && !errors.Is(err, ErrNotFound) {
 		uc.log.Errorf("check email failed: %v", err)
 		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
@@ -106,15 +106,24 @@ func (uc *AuthnUsecase) SignupByEmail(ctx context.Context, user *entity.User) (*
 		return nil, authnpb.ErrorUserAlreadyExists("email already exists")
 	}
 
-	user.Role = "user"
-	createdUser, err := uc.repo.SaveUser(ctx, user)
+	hashedPassword, err := helpers.BcryptHash(password)
+	if err != nil {
+		uc.log.Errorf("hash password failed: %v", err)
+		return nil, kerrors.InternalServer("INTERNAL", "internal error")
+	}
+
+	user := &userpb.User{
+		Username: username,
+		Email:    email,
+		Role:     "user",
+	}
+	createdUser, err := uc.repo.SaveUser(ctx, user, hashedPassword)
 	if err != nil {
 		return nil, err
 	}
 
-	// Automatically send verification email; failure is non-fatal.
 	if err := uc.sendVerificationEmail(ctx, createdUser); err != nil {
-		uc.log.Warnf("auto-send verification email failed for user %s: %v", createdUser.ID, err)
+		uc.log.Warnf("auto-send verification email failed for user %s: %v", createdUser.Id, err)
 	}
 
 	return createdUser, nil
@@ -122,18 +131,18 @@ func (uc *AuthnUsecase) SignupByEmail(ctx context.Context, user *entity.User) (*
 
 // SendVerificationEmail is the public wrapper used by other usecases (e.g. UserUsecase)
 // to trigger email verification for a newly created user.
-func (uc *AuthnUsecase) SendVerificationEmail(ctx context.Context, user *entity.User) error {
+func (uc *AuthnUsecase) SendVerificationEmail(ctx context.Context, user *userpb.User) error {
 	return uc.sendVerificationEmail(ctx, user)
 }
 
 // sendVerificationEmail generates a verification token and sends the email.
-func (uc *AuthnUsecase) sendVerificationEmail(ctx context.Context, user *entity.User) error {
+func (uc *AuthnUsecase) sendVerificationEmail(ctx context.Context, user *userpb.User) error {
 	raw, err := uc.generateOpaqueToken()
 	if err != nil {
 		return err
 	}
 	ttl := uc.verifyEmailTTL()
-	if err := uc.tokenStore.SetToken(ctx, purposeVerifyEmail, tokenHash(raw), user.ID, ttl); err != nil {
+	if err := uc.tokenStore.SetToken(ctx, purposeVerifyEmail, tokenHash(raw), user.Id, ttl); err != nil {
 		return err
 	}
 	link := uc.buildTokenLink(mailPathVerifyEmail, raw)
@@ -161,19 +170,22 @@ func (uc *AuthnUsecase) generateOpaqueToken() (string, error) {
 	return hex.EncodeToString(bytes), nil
 }
 
-func (uc *AuthnUsecase) LoginByEmailPassword(ctx context.Context, user *entity.User) (*TokenPair, error) {
-	foundUser, err := uc.repo.GetUserByEmail(ctx, user.Email)
+func (uc *AuthnUsecase) LoginByEmailPassword(ctx context.Context, email, password string) (*TokenPair, error) {
+	foundUser, err := uc.repo.GetUserByEmail(ctx, email)
 	if err != nil {
-		if ent.IsNotFound(err) {
+		if errors.Is(err, ErrNotFound) {
 			return nil, authnpb.ErrorUserNotFound("invalid email or password")
 		}
 		uc.log.Errorf("get user by email failed: %v", err)
 		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
-	if foundUser == nil {
-		return nil, authnpb.ErrorUserNotFound("invalid email or password")
+
+	hash, err := uc.repo.GetPasswordHash(ctx, foundUser.Id)
+	if err != nil {
+		uc.log.Errorf("get password hash failed: %v", err)
+		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
-	if !helpers.BcryptCheck(user.Password, foundUser.Password) {
+	if !helpers.BcryptCheck(password, hash) {
 		return nil, authnpb.ErrorIncorrectPassword("invalid email or password")
 	}
 
@@ -188,12 +200,12 @@ func (uc *AuthnUsecase) LoginByEmailPassword(ctx context.Context, user *entity.U
 	}
 
 	accessClaims := &UserClaims{
-		ID:       foundUser.ID,
+		ID:       foundUser.Id,
 		Username: foundUser.Username,
 		Role:     foundUser.Role,
 		Nonce:    nonce,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   foundUser.ID,
+			Subject:   foundUser.Id,
 			Audience:  jwt.ClaimStrings{uc.cfg.Jwt.Audience},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(uc.cfg.Jwt.AccessExpire) * time.Second)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -214,7 +226,7 @@ func (uc *AuthnUsecase) LoginByEmailPassword(ctx context.Context, user *entity.U
 	}
 
 	refreshExpirationTime := time.Duration(uc.cfg.Jwt.RefreshExpire) * time.Second
-	if err := uc.repo.SaveRefreshToken(ctx, foundUser.ID, refreshToken, refreshExpirationTime); err != nil {
+	if err := uc.repo.SaveRefreshToken(ctx, foundUser.Id, refreshToken, refreshExpirationTime); err != nil {
 		uc.log.Errorf("save refresh token failed: %v", err)
 		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
@@ -247,12 +259,12 @@ func (uc *AuthnUsecase) RefreshToken(ctx context.Context, refreshToken string) (
 	}
 
 	accessClaims := &UserClaims{
-		ID:       user.ID,
+		ID:       user.Id,
 		Username: user.Username,
 		Role:     user.Role,
 		Nonce:    nonce,
 		RegisteredClaims: jwt.RegisteredClaims{
-			Subject:   user.ID,
+			Subject:   user.Id,
 			Audience:  jwt.ClaimStrings{uc.cfg.Jwt.Audience},
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(accessExpirationTime)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
@@ -277,7 +289,7 @@ func (uc *AuthnUsecase) RefreshToken(ctx context.Context, refreshToken string) (
 	}
 
 	refreshExpirationTime := time.Duration(uc.cfg.Jwt.RefreshExpire) * time.Second
-	if err := uc.repo.SaveRefreshToken(ctx, user.ID, newRefreshToken, refreshExpirationTime); err != nil {
+	if err := uc.repo.SaveRefreshToken(ctx, user.Id, newRefreshToken, refreshExpirationTime); err != nil {
 		uc.log.Errorf("save refresh token failed: %v", err)
 		return nil, kerrors.InternalServer("INTERNAL", "internal error")
 	}
@@ -297,13 +309,13 @@ func (uc *AuthnUsecase) Logout(ctx context.Context, refreshToken string) error {
 }
 
 func (uc *AuthnUsecase) ChangePassword(ctx context.Context, userID, currentPassword, newPassword string) error {
-	user, err := uc.repo.GetUserByID(ctx, userID)
+	hash, err := uc.repo.GetPasswordHash(ctx, userID)
 	if err != nil {
-		uc.log.Errorf("get user for change password failed: %v", err)
+		uc.log.Errorf("get password hash for change password failed: %v", err)
 		return kerrors.InternalServer("INTERNAL", "internal error")
 	}
 
-	if !helpers.BcryptCheck(currentPassword, user.Password) {
+	if !helpers.BcryptCheck(currentPassword, hash) {
 		return authnpb.ErrorIncorrectPassword("current password is incorrect")
 	}
 
@@ -374,7 +386,7 @@ func tokenHash(raw string) string {
 func (uc *AuthnUsecase) RequestEmailVerification(ctx context.Context, email string) error {
 	user, err := uc.repo.GetUserByEmail(ctx, email)
 	if err != nil || user == nil || user.EmailVerified {
-		return nil // always succeed to avoid leaking state
+		return nil
 	}
 
 	raw, err := uc.generateOpaqueToken()
@@ -384,7 +396,7 @@ func (uc *AuthnUsecase) RequestEmailVerification(ctx context.Context, email stri
 	}
 
 	ttl := uc.verifyEmailTTL()
-	if err := uc.tokenStore.SetToken(ctx, purposeVerifyEmail, tokenHash(raw), user.ID, ttl); err != nil {
+	if err := uc.tokenStore.SetToken(ctx, purposeVerifyEmail, tokenHash(raw), user.Id, ttl); err != nil {
 		uc.log.Errorf("save verify token failed: %v", err)
 		return kerrors.InternalServer("INTERNAL", "internal error")
 	}
@@ -432,7 +444,7 @@ func (uc *AuthnUsecase) RequestPasswordReset(ctx context.Context, email string) 
 	}
 
 	resetTTL := uc.resetPasswordTTL()
-	if err := uc.tokenStore.SetToken(ctx, purposeResetPassword, tokenHash(raw), user.ID, resetTTL); err != nil {
+	if err := uc.tokenStore.SetToken(ctx, purposeResetPassword, tokenHash(raw), user.Id, resetTTL); err != nil {
 		uc.log.Errorf("save reset token failed: %v", err)
 		return kerrors.InternalServer("INTERNAL", "internal error")
 	}

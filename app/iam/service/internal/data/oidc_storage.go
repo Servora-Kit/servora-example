@@ -351,7 +351,7 @@ func (s *oidcStorage) SetUserinfoFromToken(ctx context.Context, userinfo *oidc.U
 	if err != nil {
 		return fmt.Errorf("user not found: %w", err)
 	}
-	userinfo.Subject = user.ID
+	userinfo.Subject = user.Id
 	userinfo.Name = user.Username
 	userinfo.Email = user.Email
 	userinfo.EmailVerified = oidc.Bool(user.EmailVerified)
@@ -364,7 +364,7 @@ func (s *oidcStorage) SetIntrospectionFromToken(ctx context.Context, resp *oidc.
 		return fmt.Errorf("user not found: %w", err)
 	}
 	resp.Active = true
-	resp.Subject = user.ID
+	resp.Subject = user.Id
 	resp.Username = user.Username
 	resp.Email = user.Email
 	resp.EmailVerified = oidc.Bool(user.EmailVerified)

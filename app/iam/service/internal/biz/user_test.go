@@ -8,7 +8,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/log"
 
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 )
 
 // --- fakes ---
@@ -23,18 +23,24 @@ func (r *fakeUserRepo) PurgeCascade(_ context.Context, id string) error {
 	return r.purgeCascadeErr
 }
 
-func (r *fakeUserRepo) SaveUser(context.Context, *entity.User) (*entity.User, error)   { return nil, nil }
-func (r *fakeUserRepo) GetUserById(context.Context, string) (*entity.User, error)       { return nil, nil }
-func (r *fakeUserRepo) DeleteUser(context.Context, *entity.User) (*entity.User, error)  { return nil, nil }
-func (r *fakeUserRepo) PurgeUser(context.Context, *entity.User) (*entity.User, error)   { return nil, nil }
-func (r *fakeUserRepo) RestoreUser(context.Context, string) (*entity.User, error)       { return nil, nil }
-func (r *fakeUserRepo) GetUserByIdIncludingDeleted(context.Context, string) (*entity.User, error) {
+func (r *fakeUserRepo) SaveUser(context.Context, *userpb.User, string) (*userpb.User, error) {
 	return nil, nil
 }
-func (r *fakeUserRepo) UpdateUser(context.Context, *entity.User) (*entity.User, error) {
+func (r *fakeUserRepo) GetUserById(context.Context, string) (*userpb.User, error) {
 	return nil, nil
 }
-func (r *fakeUserRepo) ListUsers(context.Context, int32, int32) ([]*entity.User, int64, error) {
+func (r *fakeUserRepo) DeleteUser(context.Context, string) error  { return nil }
+func (r *fakeUserRepo) PurgeUser(context.Context, string) error   { return nil }
+func (r *fakeUserRepo) RestoreUser(context.Context, string) (*userpb.User, error) {
+	return nil, nil
+}
+func (r *fakeUserRepo) GetUserByIdIncludingDeleted(context.Context, string) (*userpb.User, error) {
+	return nil, nil
+}
+func (r *fakeUserRepo) UpdateUser(context.Context, *userpb.User) (*userpb.User, error) {
+	return nil, nil
+}
+func (r *fakeUserRepo) ListUsers(context.Context, int32, int32) ([]*userpb.User, int64, error) {
 	return nil, 0, nil
 }
 
@@ -48,17 +54,20 @@ func (r *fakeAuthnRepo) DeleteUserRefreshTokens(_ context.Context, userID string
 	return r.deleteTokensErr
 }
 
-func (r *fakeAuthnRepo) SaveUser(context.Context, *entity.User) (*entity.User, error) {
+func (r *fakeAuthnRepo) SaveUser(context.Context, *userpb.User, string) (*userpb.User, error) {
 	return nil, nil
 }
-func (r *fakeAuthnRepo) GetUserByEmail(context.Context, string) (*entity.User, error) {
+func (r *fakeAuthnRepo) GetUserByEmail(context.Context, string) (*userpb.User, error) {
 	return nil, nil
 }
-func (r *fakeAuthnRepo) GetUserByUserName(context.Context, string) (*entity.User, error) {
+func (r *fakeAuthnRepo) GetUserByUserName(context.Context, string) (*userpb.User, error) {
 	return nil, nil
 }
-func (r *fakeAuthnRepo) GetUserByID(context.Context, string) (*entity.User, error) {
+func (r *fakeAuthnRepo) GetUserByID(context.Context, string) (*userpb.User, error) {
 	return nil, nil
+}
+func (r *fakeAuthnRepo) GetPasswordHash(context.Context, string) (string, error) {
+	return "", nil
 }
 func (r *fakeAuthnRepo) UpdatePassword(context.Context, string, string) error   { return nil }
 func (r *fakeAuthnRepo) UpdateEmailVerified(context.Context, string, bool) error { return nil }
@@ -112,7 +121,7 @@ func TestPurgeUser_HappyPath(t *testing.T) {
 	ar := &fakeAuthnRepo{}
 
 	uc := newTestPurgeUserUC(ur, ar)
-	ok, err := uc.PurgeUser(context.Background(), &entity.User{ID: "user-1"})
+	ok, err := uc.PurgeUser(context.Background(), "user-1")
 	if err != nil {
 		t.Fatalf("PurgeUser() unexpected error: %v", err)
 	}
@@ -133,7 +142,7 @@ func TestPurgeUser_CascadeFails_StopsEarly(t *testing.T) {
 	ar := &fakeAuthnRepo{}
 
 	uc := newTestPurgeUserUC(ur, ar)
-	ok, err := uc.PurgeUser(context.Background(), &entity.User{ID: "user-1"})
+	ok, err := uc.PurgeUser(context.Background(), "user-1")
 	if err == nil {
 		t.Fatal("PurgeUser() expected error when PurgeCascade fails")
 	}
@@ -151,7 +160,7 @@ func TestPurgeUser_RedisFails_StillSucceeds(t *testing.T) {
 	ar := &fakeAuthnRepo{deleteTokensErr: errors.New("redis error")}
 
 	uc := newTestPurgeUserUC(ur, ar)
-	ok, err := uc.PurgeUser(context.Background(), &entity.User{ID: "user-1"})
+	ok, err := uc.PurgeUser(context.Background(), "user-1")
 	if err != nil {
 		t.Fatalf("PurgeUser() should succeed even when Redis fails: %v", err)
 	}
@@ -167,7 +176,7 @@ func TestPurgeUser_ExecutionOrder_DBBeforeRedis(t *testing.T) {
 	ar := &orderTrackingAuthnRepo{order: &order}
 
 	uc := NewUserUsecase(ur, log.DefaultLogger, nil, ar, nil, &fakeAuthZRepo{})
-	_, _ = uc.PurgeUser(context.Background(), &entity.User{ID: "user-1"})
+	_, _ = uc.PurgeUser(context.Background(), "user-1")
 
 	if len(order) < 2 {
 		t.Fatalf("expected at least 2 operations, got %v", order)

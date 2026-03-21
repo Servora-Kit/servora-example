@@ -9,10 +9,9 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
+	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/user"
-	"github.com/Servora-Kit/servora/pkg/helpers"
 	"github.com/Servora-Kit/servora/pkg/logger"
 )
 
@@ -28,20 +27,12 @@ func NewUserRepo(data *Data, l logger.Logger) biz.UserRepo {
 	}
 }
 
-func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, error) {
-	if !helpers.BcryptIsHashed(u.Password) {
-		bcryptPassword, err := helpers.BcryptHash(u.Password)
-		if err != nil {
-			return nil, err
-		}
-		u.Password = bcryptPassword
-	}
-
+func (r *userRepo) SaveUser(ctx context.Context, u *userpb.User, hashedPassword string) (*userpb.User, error) {
 	profileJSON := profileToJSON(u.Profile)
 	b := r.data.Ent(ctx).User.Create().
 		SetUsername(u.Username).
 		SetEmail(u.Email).
-		SetPassword(u.Password).
+		SetPassword(hashedPassword).
 		SetPhone(u.Phone).
 		SetPhoneVerified(u.PhoneVerified).
 		SetRole(u.Role).
@@ -52,10 +43,10 @@ func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 		b.SetStatus(u.Status)
 	}
 	if u.EmailVerifiedAt != nil {
-		b.SetEmailVerifiedAt(*u.EmailVerifiedAt)
+		b.SetEmailVerifiedAt(u.EmailVerifiedAt.AsTime())
 	}
-	if u.ID != "" {
-		uid, err := uuid.Parse(u.ID)
+	if u.Id != "" {
+		uid, err := uuid.Parse(u.Id)
 		if err != nil {
 			return nil, fmt.Errorf("invalid user ID: %w", err)
 		}
@@ -70,39 +61,32 @@ func (r *userRepo) SaveUser(ctx context.Context, u *entity.User) (*entity.User, 
 	return userMapper.Map(created), nil
 }
 
-func (r *userRepo) GetUserById(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepo) GetUserById(ctx context.Context, id string) (*userpb.User, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
 	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid), user.DeletedAtIsNil()).Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapNotFound(err)
 	}
 	return userMapper.Map(entUser), nil
 }
 
-func (r *userRepo) DeleteUser(ctx context.Context, u *entity.User) (*entity.User, error) {
-	uid, err := uuid.Parse(u.ID)
+func (r *userRepo) DeleteUser(ctx context.Context, id string) error {
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid user ID: %w", err)
+		return fmt.Errorf("invalid user ID: %w", err)
 	}
-	err = r.data.Ent(ctx).User.UpdateOneID(uid).SetDeletedAt(time.Now()).Exec(ctx)
-	if err != nil {
-		return nil, err
-	}
-	return u, nil
+	return r.data.Ent(ctx).User.UpdateOneID(uid).SetDeletedAt(time.Now()).Exec(ctx)
 }
 
-func (r *userRepo) PurgeUser(ctx context.Context, u *entity.User) (*entity.User, error) {
-	uid, err := uuid.Parse(u.ID)
+func (r *userRepo) PurgeUser(ctx context.Context, id string) error {
+	uid, err := uuid.Parse(id)
 	if err != nil {
-		return nil, fmt.Errorf("invalid user ID: %w", err)
+		return fmt.Errorf("invalid user ID: %w", err)
 	}
-	if err := r.data.Ent(ctx).User.DeleteOneID(uid).Exec(ctx); err != nil {
-		return nil, err
-	}
-	return u, nil
+	return r.data.Ent(ctx).User.DeleteOneID(uid).Exec(ctx)
 }
 
 func (r *userRepo) PurgeCascade(ctx context.Context, id string) error {
@@ -113,7 +97,7 @@ func (r *userRepo) PurgeCascade(ctx context.Context, id string) error {
 	return r.data.Ent(ctx).User.DeleteOneID(uid).Exec(ctx)
 }
 
-func (r *userRepo) RestoreUser(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepo) RestoreUser(ctx context.Context, id string) (*userpb.User, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
@@ -125,29 +109,22 @@ func (r *userRepo) RestoreUser(ctx context.Context, id string) (*entity.User, er
 	return userMapper.Map(u), nil
 }
 
-func (r *userRepo) GetUserByIdIncludingDeleted(ctx context.Context, id string) (*entity.User, error) {
+func (r *userRepo) GetUserByIdIncludingDeleted(ctx context.Context, id string) (*userpb.User, error) {
 	uid, err := uuid.Parse(id)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
 	}
 	entUser, err := r.data.Ent(ctx).User.Query().Where(user.IDEQ(uid)).Only(ctx)
 	if err != nil {
-		return nil, err
+		return nil, wrapNotFound(err)
 	}
 	return userMapper.Map(entUser), nil
 }
 
-func (r *userRepo) UpdateUser(ctx context.Context, u *entity.User) (*entity.User, error) {
-	uid, err := uuid.Parse(u.ID)
+func (r *userRepo) UpdateUser(ctx context.Context, u *userpb.User) (*userpb.User, error) {
+	uid, err := uuid.Parse(u.Id)
 	if err != nil {
 		return nil, fmt.Errorf("invalid user ID: %w", err)
-	}
-	if u.Password != "" && !helpers.BcryptIsHashed(u.Password) {
-		hashed, err := helpers.BcryptHash(u.Password)
-		if err != nil {
-			return nil, err
-		}
-		u.Password = hashed
 	}
 
 	profileJSON := profileToJSON(u.Profile)
@@ -159,9 +136,6 @@ func (r *userRepo) UpdateUser(ctx context.Context, u *entity.User) (*entity.User
 	}
 	if u.Email != "" {
 		upd.SetEmail(u.Email)
-	}
-	if u.Password != "" {
-		upd.SetPassword(u.Password)
 	}
 	if u.Phone != "" {
 		upd.SetPhone(u.Phone)
@@ -180,7 +154,7 @@ func (r *userRepo) UpdateUser(ctx context.Context, u *entity.User) (*entity.User
 	return userMapper.Map(updated), nil
 }
 
-func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([]*entity.User, int64, error) {
+func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([]*userpb.User, int64, error) {
 	offset := int((page - 1) * pageSize)
 	limit := int(pageSize)
 
@@ -198,8 +172,10 @@ func (r *userRepo) ListUsers(ctx context.Context, page int32, pageSize int32) ([
 	return userMapper.MapSlice(entUsers), int64(total), nil
 }
 
-// profileToJSON serializes UserProfile into a map[string]interface{} for Ent JSON storage.
-func profileToJSON(p entity.UserProfile) map[string]interface{} {
+func profileToJSON(p *userpb.UserProfile) map[string]interface{} {
+	if p == nil {
+		return nil
+	}
 	b, _ := json.Marshal(p)
 	var m map[string]interface{}
 	_ = json.Unmarshal(b, &m)

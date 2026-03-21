@@ -8,6 +8,7 @@ import (
 
 	entsql "entgo.io/ent/dialect/sql"
 	"github.com/Servora-Kit/servora/api/gen/go/conf/v1"
+	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/data/ent/migrate"
 
@@ -115,4 +116,13 @@ func NewRedis(cfg *conf.Data, l logger.Logger) (*redis.Client, func(), error) {
 
 func NewMailSender(c *conf.Mail) mail.Sender {
 	return mail.NewSender(c)
+}
+
+// wrapNotFound wraps ent's NotFoundError into biz.ErrNotFound so the biz layer
+// can use errors.Is(err, biz.ErrNotFound) without importing ent.
+func wrapNotFound(err error) error {
+	if ent.IsNotFound(err) {
+		return fmt.Errorf("%w: %v", biz.ErrNotFound, err)
+	}
+	return err
 }

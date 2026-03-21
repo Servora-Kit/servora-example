@@ -6,7 +6,6 @@ import (
 	userpb "github.com/Servora-Kit/servora/api/gen/go/user/service/v1"
 
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/pkg/pagination"
 )
 
@@ -29,15 +28,7 @@ func (s *UserService) CurrentUserInfo(ctx context.Context, req *userpb.CurrentUs
 	if err != nil {
 		return nil, err
 	}
-	info := userInfoMapper.Map(user)
-	return &userpb.CurrentUserInfoResponse{
-		Id:      info.Id,
-		Username: info.Username,
-		Email:   info.Email,
-		Role:    info.Role,
-		Status:  info.Status,
-		Profile: info.Profile,
-	}, nil
+	return &userpb.CurrentUserInfoResponse{User: user}, nil
 }
 
 func (s *UserService) GetUser(ctx context.Context, req *userpb.GetUserRequest) (*userpb.GetUserResponse, error) {
@@ -45,7 +36,7 @@ func (s *UserService) GetUser(ctx context.Context, req *userpb.GetUserRequest) (
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.GetUserResponse{User: userInfoMapper.Map(u)}, nil
+	return &userpb.GetUserResponse{User: u}, nil
 }
 
 func (s *UserService) ListUsers(ctx context.Context, req *userpb.ListUsersRequest) (*userpb.ListUsersResponse, error) {
@@ -55,7 +46,7 @@ func (s *UserService) ListUsers(ctx context.Context, req *userpb.ListUsersReques
 		return nil, err
 	}
 	return &userpb.ListUsersResponse{
-		Users:      userInfoMapper.MapSlice(users),
+		Users:      users,
 		Pagination: pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
@@ -65,47 +56,27 @@ func (s *UserService) UpdateUser(ctx context.Context, req *userpb.UpdateUserRequ
 	if err != nil {
 		return nil, err
 	}
-	u := &entity.User{
-		ID:       req.Id,
-		Username: req.GetUsername(),
-		Email:    req.GetEmail(),
-		Phone:    req.GetPhone(),
-		Status:   req.GetStatus(),
+	data := req.GetData()
+	if data != nil {
+		data.Id = req.Id
 	}
-	if req.Profile != nil {
-		u.Profile = entity.UserProfile{
-			Name:       req.Profile.Name,
-			GivenName:  req.Profile.GivenName,
-			FamilyName: req.Profile.FamilyName,
-			Nickname:   req.Profile.Nickname,
-			Picture:    req.Profile.Picture,
-			Gender:     req.Profile.Gender,
-			Birthdate:  req.Profile.Birthdate,
-			Zoneinfo:   req.Profile.Zoneinfo,
-			Locale:     req.Profile.Locale,
-		}
-	}
-	updated, err := s.uc.UpdateUser(ctx, callerID, u)
+	updated, err := s.uc.UpdateUser(ctx, callerID, data)
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.UpdateUserResponse{User: userInfoMapper.Map(updated)}, nil
+	return &userpb.UpdateUserResponse{User: updated}, nil
 }
 
 func (s *UserService) CreateUser(ctx context.Context, req *userpb.CreateUserRequest) (*userpb.CreateUserResponse, error) {
-	user, err := s.uc.CreateUser(ctx, &entity.User{
-		Username: req.Username,
-		Email:    req.Email,
-		Password: req.Password,
-	})
+	user, err := s.uc.CreateUser(ctx, req.GetData(), req.Password)
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.CreateUserResponse{Id: user.ID}, nil
+	return &userpb.CreateUserResponse{User: user}, nil
 }
 
 func (s *UserService) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequest) (*userpb.DeleteUserResponse, error) {
-	success, err := s.uc.DeleteUser(ctx, &entity.User{ID: req.Id})
+	success, err := s.uc.DeleteUser(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -113,7 +84,7 @@ func (s *UserService) DeleteUser(ctx context.Context, req *userpb.DeleteUserRequ
 }
 
 func (s *UserService) PurgeUser(ctx context.Context, req *userpb.PurgeUserRequest) (*userpb.PurgeUserResponse, error) {
-	success, err := s.uc.PurgeUser(ctx, &entity.User{ID: req.Id})
+	success, err := s.uc.PurgeUser(ctx, req.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -125,5 +96,5 @@ func (s *UserService) RestoreUser(ctx context.Context, req *userpb.RestoreUserRe
 	if err != nil {
 		return nil, err
 	}
-	return &userpb.RestoreUserResponse{User: userInfoMapper.Map(u)}, nil
+	return &userpb.RestoreUserResponse{User: u}, nil
 }

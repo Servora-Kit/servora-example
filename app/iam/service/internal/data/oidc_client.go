@@ -8,23 +8,23 @@ import (
 	"github.com/zitadel/oidc/v3/pkg/oidc"
 	"github.com/zitadel/oidc/v3/pkg/op"
 
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
+	apppb "github.com/Servora-Kit/servora/api/gen/go/application/service/v1"
 )
 
 type oidcClient struct {
-	app     *entity.Application
+	app     *apppb.Application
 	devMode bool
 }
 
-func newOIDCClient(app *entity.Application, devMode bool) *oidcClient {
+func newOIDCClient(app *apppb.Application, devMode bool) *oidcClient {
 	return &oidcClient{app: app, devMode: devMode}
 }
 
-func (c *oidcClient) GetID() string                                                       { return c.app.ClientID }
-func (c *oidcClient) RedirectURIs() []string                                              { return c.app.RedirectURIs }
+func (c *oidcClient) GetID() string                                                       { return c.app.ClientId }
+func (c *oidcClient) RedirectURIs() []string                                              { return c.app.RedirectUris }
 func (c *oidcClient) PostLogoutRedirectURIs() []string                                    { return nil }
 func (c *oidcClient) LoginURL(id string) string                                           { return fmt.Sprintf("/login?authRequestID=%s", id) }
-func (c *oidcClient) IDTokenLifetime() time.Duration                                      { return c.app.IDTokenLifetime }
+func (c *oidcClient) IDTokenLifetime() time.Duration                                      { return time.Duration(c.app.IdTokenLifetime) * time.Second }
 func (c *oidcClient) DevMode() bool                                                       { return c.devMode }
 func (c *oidcClient) IDTokenUserinfoClaimsAssertion() bool                                { return false }
 func (c *oidcClient) ClockSkew() time.Duration                                            { return 0 }

@@ -2,11 +2,9 @@ package service
 
 import (
 	"context"
-	"time"
 
 	apppb "github.com/Servora-Kit/servora/api/gen/go/application/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/pkg/pagination"
 )
 
@@ -21,38 +19,26 @@ func NewApplicationService(uc *biz.ApplicationUsecase) *ApplicationService {
 }
 
 func (s *ApplicationService) CreateApplication(ctx context.Context, req *apppb.CreateApplicationRequest) (*apppb.CreateApplicationResponse, error) {
-	appType := "web"
-	if req.Type != nil {
-		appType = *req.Type
+	data := req.GetData()
+	if data.ApplicationType == "" {
+		data.ApplicationType = "web"
 	}
-	appKind := "web"
-	if req.ApplicationType != nil {
-		appKind = *req.ApplicationType
+	if data.Type == "" {
+		data.Type = "web"
 	}
-	tokenType := "jwt"
-	if req.AccessTokenType != nil {
-		tokenType = *req.AccessTokenType
+	if data.AccessTokenType == "" {
+		data.AccessTokenType = "jwt"
 	}
-	lifetime := time.Duration(3600) * time.Second
-	if req.IdTokenLifetime != nil && *req.IdTokenLifetime > 0 {
-		lifetime = time.Duration(*req.IdTokenLifetime) * time.Second
+	if data.IdTokenLifetime <= 0 {
+		data.IdTokenLifetime = 3600
 	}
 
-	app, secret, err := s.uc.Create(ctx, &entity.Application{
-		Name:            req.Name,
-		RedirectURIs:    req.RedirectUris,
-		Scopes:          req.Scopes,
-		GrantTypes:      req.GrantTypes,
-		ApplicationType: appKind,
-		AccessTokenType: tokenType,
-		Type:            appType,
-		IDTokenLifetime: lifetime,
-	})
+	app, secret, err := s.uc.Create(ctx, data)
 	if err != nil {
 		return nil, err
 	}
 	return &apppb.CreateApplicationResponse{
-		Application:  applicationInfoMapper.Map(app),
+		Application:  app,
 		ClientSecret: secret,
 	}, nil
 }
@@ -62,7 +48,7 @@ func (s *ApplicationService) GetApplication(ctx context.Context, req *apppb.GetA
 	if err != nil {
 		return nil, err
 	}
-	return &apppb.GetApplicationResponse{Application: applicationInfoMapper.Map(app)}, nil
+	return &apppb.GetApplicationResponse{Application: app}, nil
 }
 
 func (s *ApplicationService) ListApplications(ctx context.Context, req *apppb.ListApplicationsRequest) (*apppb.ListApplicationsResponse, error) {
@@ -72,24 +58,21 @@ func (s *ApplicationService) ListApplications(ctx context.Context, req *apppb.Li
 		return nil, err
 	}
 	return &apppb.ListApplicationsResponse{
-		Applications: applicationInfoMapper.MapSlice(apps),
+		Applications: apps,
 		Pagination:   pagination.BuildPageResponse(total, page, pageSize),
 	}, nil
 }
 
 func (s *ApplicationService) UpdateApplication(ctx context.Context, req *apppb.UpdateApplicationRequest) (*apppb.UpdateApplicationResponse, error) {
-	app, err := s.uc.Update(ctx, &entity.Application{
-		ID:              req.Id,
-		Name:            req.Name,
-		RedirectURIs:    req.RedirectUris,
-		Scopes:          req.Scopes,
-		GrantTypes:      req.GrantTypes,
-		IDTokenLifetime: time.Duration(req.IdTokenLifetime) * time.Second,
-	})
+	data := req.GetData()
+	if data != nil {
+		data.Id = req.Id
+	}
+	app, err := s.uc.Update(ctx, data)
 	if err != nil {
 		return nil, err
 	}
-	return &apppb.UpdateApplicationResponse{Application: applicationInfoMapper.Map(app)}, nil
+	return &apppb.UpdateApplicationResponse{Application: app}, nil
 }
 
 func (s *ApplicationService) DeleteApplication(ctx context.Context, req *apppb.DeleteApplicationRequest) (*apppb.DeleteApplicationResponse, error) {

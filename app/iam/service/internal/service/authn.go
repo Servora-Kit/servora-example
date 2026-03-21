@@ -8,7 +8,6 @@ import (
 
 	authnpb "github.com/Servora-Kit/servora/api/gen/go/authn/service/v1"
 	"github.com/Servora-Kit/servora/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/app/iam/service/internal/biz/entity"
 	"github.com/Servora-Kit/servora/pkg/actor"
 	"github.com/Servora-Kit/servora/pkg/cap"
 )
@@ -37,16 +36,12 @@ func (s *AuthnService) SignupByEmail(ctx context.Context, req *authnpb.SignupByE
 		return nil, authnpb.ErrorInvalidCaptcha("invalid or expired captcha token")
 	}
 
-	user, err := s.uc.SignupByEmail(ctx, &entity.User{
-		Username: req.Name,
-		Email:    req.Email,
-		Password: req.Password,
-	})
+	user, err := s.uc.SignupByEmail(ctx, req.Name, req.Email, req.Password)
 	if err != nil {
 		return nil, err
 	}
 	return &authnpb.SignupByEmailResponse{
-		Id:    user.ID,
+		Id:    user.Id,
 		Name:  user.Username,
 		Email: user.Email,
 		Role:  user.Role,
@@ -54,11 +49,7 @@ func (s *AuthnService) SignupByEmail(ctx context.Context, req *authnpb.SignupByE
 }
 
 func (s *AuthnService) LoginByEmailPassword(ctx context.Context, req *authnpb.LoginByEmailPasswordRequest) (*authnpb.LoginByEmailPasswordResponse, error) {
-	user := &entity.User{
-		Email:    req.Email,
-		Password: req.Password,
-	}
-	tokenPair, err := s.uc.LoginByEmailPassword(ctx, user)
+	tokenPair, err := s.uc.LoginByEmailPassword(ctx, req.Email, req.Password)
 	if err != nil {
 		return nil, err
 	}
