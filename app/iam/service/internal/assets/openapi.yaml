@@ -48,6 +48,7 @@ paths:
         post:
             tags:
                 - ApplicationService
+            description: 创建应用需要平台管理员权限
             operationId: ApplicationService_CreateApplication
             requestBody:
                 content:
@@ -324,606 +325,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/VerifyEmailResponse'
-    /v1/organizations:
-        get:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_ListOrganizations
-            parameters:
-                - name: pagination.page.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.page.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.cursor.cursor
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.cursor.limit
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListOrganizationsResponse'
-        post:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_CreateOrganization
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateOrganizationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CreateOrganizationResponse'
-    /v1/organizations/{id}:
-        get:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_GetOrganization
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetOrganizationResponse'
-        put:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_UpdateOrganization
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateOrganizationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateOrganizationResponse'
-        delete:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_DeleteOrganization
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/DeleteOrganizationResponse'
-    /v1/organizations/{id}/purge:
-        delete:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_PurgeOrganization
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PurgeOrganizationResponse'
-    /v1/organizations/{id}/restore:
-        post:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_RestoreOrganization
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RestoreOrganizationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RestoreOrganizationResponse'
-    /v1/organizations/{organizationId}/members:
-        get:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_ListMembers
-            parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: pagination.page.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.page.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.cursor.cursor
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.cursor.limit
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListMembersResponse'
-        post:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_AddMember
-            parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AddMemberRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AddMemberResponse'
-    /v1/organizations/{organizationId}/members/{userId}:
-        delete:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_RemoveMember
-            parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: userId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RemoveMemberResponse'
-    /v1/organizations/{organizationId}/members/{userId}/role:
-        put:
-            tags:
-                - OrganizationService
-            operationId: OrganizationService_UpdateMemberRole
-            parameters:
-                - name: organizationId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: userId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateMemberRoleRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateMemberRoleResponse'
-    /v1/tenants:
-        get:
-            tags:
-                - TenantService
-            operationId: TenantService_ListTenants
-            parameters:
-                - name: pagination.page.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.page.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.cursor.cursor
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.cursor.limit
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListTenantsResponse'
-        post:
-            tags:
-                - TenantService
-            operationId: TenantService_CreateTenant
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/CreateTenantRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/CreateTenantResponse'
-    /v1/tenants/{id}:
-        get:
-            tags:
-                - TenantService
-            operationId: TenantService_GetTenant
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/GetTenantResponse'
-        put:
-            tags:
-                - TenantService
-            operationId: TenantService_UpdateTenant
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateTenantRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateTenantResponse'
-        delete:
-            tags:
-                - TenantService
-            operationId: TenantService_DeleteTenant
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/DeleteTenantResponse'
-    /v1/tenants/{tenantId}/invitations/accept:
-        post:
-            tags:
-                - TenantService
-            operationId: TenantService_AcceptInvitation
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AcceptTenantInvitationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AcceptTenantInvitationResponse'
-    /v1/tenants/{tenantId}/invitations/reject:
-        post:
-            tags:
-                - TenantService
-            operationId: TenantService_RejectInvitation
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RejectTenantInvitationRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RejectTenantInvitationResponse'
-    /v1/tenants/{tenantId}/members:
-        get:
-            tags:
-                - TenantService
-            operationId: TenantService_ListMembers
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: pagination.page.page
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.page.pageSize
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-                - name: pagination.cursor.cursor
-                  in: query
-                  schema:
-                    type: string
-                - name: pagination.cursor.limit
-                  in: query
-                  schema:
-                    type: integer
-                    format: int32
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/ListTenantMembersResponse'
-        post:
-            tags:
-                - TenantService
-            operationId: TenantService_InviteMember
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/InviteTenantMemberRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/InviteTenantMemberResponse'
-    /v1/tenants/{tenantId}/members/{userId}:
-        delete:
-            tags:
-                - TenantService
-            operationId: TenantService_RemoveMember
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: userId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RemoveTenantMemberResponse'
-    /v1/tenants/{tenantId}/members/{userId}/role:
-        put:
-            tags:
-                - TenantService
-            operationId: TenantService_UpdateMemberRole
-            parameters:
-                - name: tenantId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-                - name: userId
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/UpdateTenantMemberRoleRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/UpdateTenantMemberRoleResponse'
-    /v1/test/Hello:
-        post:
-            tags:
-                - TestService
-            operationId: TestService_Hello
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/HelloRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/HelloResponse'
-    /v1/test/private:
-        post:
-            tags:
-                - TestService
-            operationId: TestService_PrivateTest
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/PrivateTestRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PrivateTestResponse'
-    /v1/test/test:
-        post:
-            tags:
-                - TestService
-            operationId: TestService_Test
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/TestRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/TestResponse'
-    /v1/user/delete/{id}:
-        delete:
-            tags:
-                - UserService
-            operationId: UserService_DeleteUser
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/DeleteUserResponse'
     /v1/user/info:
         get:
             tags:
@@ -936,66 +337,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CurrentUserInfoResponse'
-    /v1/user/purge/{id}:
-        delete:
-            tags:
-                - UserService
-            operationId: UserService_PurgeUser
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/PurgeUserResponse'
-    /v1/user/restore/{id}:
-        post:
-            tags:
-                - UserService
-            operationId: UserService_RestoreUser
-            parameters:
-                - name: id
-                  in: path
-                  required: true
-                  schema:
-                    type: string
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/RestoreUserRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/RestoreUserResponse'
-    /v1/user/save:
-        post:
-            tags:
-                - UserService
-            operationId: UserService_SaveUser
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/SaveUserRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/SaveUserResponse'
     /v1/user/update:
         post:
             tags:
@@ -1046,6 +387,24 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ListUsersResponse'
+        post:
+            tags:
+                - UserService
+            description: 创建用户需要平台管理员权限
+            operationId: UserService_CreateUser
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/CreateUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/CreateUserResponse'
     /v1/users/{id}:
         get:
             tags:
@@ -1064,33 +423,68 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/GetUserResponse'
+        delete:
+            tags:
+                - UserService
+            operationId: UserService_DeleteUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/DeleteUserResponse'
+    /v1/users/{id}/purge:
+        delete:
+            tags:
+                - UserService
+            operationId: UserService_PurgeUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/PurgeUserResponse'
+    /v1/users/{id}/restore:
+        post:
+            tags:
+                - UserService
+            operationId: UserService_RestoreUser
+            parameters:
+                - name: id
+                  in: path
+                  required: true
+                  schema:
+                    type: string
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/RestoreUserRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/RestoreUserResponse'
 components:
     schemas:
-        AcceptTenantInvitationRequest:
-            type: object
-            properties:
-                tenantId:
-                    type: string
-        AcceptTenantInvitationResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        AddMemberRequest:
-            type: object
-            properties:
-                organizationId:
-                    type: string
-                userId:
-                    type: string
-                role:
-                    type: string
-        AddMemberResponse:
-            type: object
-            properties:
-                member:
-                    $ref: '#/components/schemas/OrganizationMemberInfo'
-        ApplicationInfo:
+        Application:
             type: object
             properties:
                 id:
@@ -1115,8 +509,9 @@ components:
                     type: string
                 accessTokenType:
                     type: string
-                tenantId:
+                type:
                     type: string
+                    description: type 区分应用类型：web | native | m2m
                 idTokenLifetime:
                     type: integer
                     format: int32
@@ -1126,6 +521,7 @@ components:
                 updatedAt:
                     type: string
                     format: date-time
+            description: Application 资源 message — 不含 client_secret_hash 等敏感字段
         ChangePasswordRequest:
             type: object
             properties:
@@ -1143,75 +539,32 @@ components:
         CreateApplicationRequest:
             type: object
             properties:
-                name:
-                    type: string
-                redirectUris:
-                    type: array
-                    items:
-                        type: string
-                scopes:
-                    type: array
-                    items:
-                        type: string
-                grantTypes:
-                    type: array
-                    items:
-                        type: string
-                applicationType:
-                    type: string
-                accessTokenType:
-                    type: string
-                idTokenLifetime:
-                    type: integer
-                    format: int32
+                data:
+                    $ref: '#/components/schemas/Application'
         CreateApplicationResponse:
             type: object
             properties:
                 application:
-                    $ref: '#/components/schemas/ApplicationInfo'
+                    $ref: '#/components/schemas/Application'
                 clientSecret:
                     type: string
-        CreateOrganizationRequest:
+        CreateUserRequest:
             type: object
             properties:
-                name:
+                data:
+                    $ref: '#/components/schemas/User'
+                password:
                     type: string
-                slug:
-                    type: string
-                displayName:
-                    type: string
-        CreateOrganizationResponse:
+        CreateUserResponse:
             type: object
             properties:
-                organization:
-                    $ref: '#/components/schemas/OrganizationInfo'
-        CreateTenantRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                slug:
-                    type: string
-                kind:
-                    type: string
-                domain:
-                    type: string
-        CreateTenantResponse:
-            type: object
-            properties:
-                tenant:
-                    $ref: '#/components/schemas/TenantInfo'
+                user:
+                    $ref: '#/components/schemas/User'
         CurrentUserInfoResponse:
             type: object
             properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                email:
-                    type: string
-                role:
-                    type: string
+                user:
+                    $ref: '#/components/schemas/User'
         CursorPaginationResponse:
             type: object
             properties:
@@ -1220,16 +573,6 @@ components:
                 hasMore:
                     type: boolean
         DeleteApplicationResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        DeleteOrganizationResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        DeleteTenantResponse:
             type: object
             properties:
                 success:
@@ -1243,46 +586,12 @@ components:
             type: object
             properties:
                 application:
-                    $ref: '#/components/schemas/ApplicationInfo'
-        GetOrganizationResponse:
-            type: object
-            properties:
-                organization:
-                    $ref: '#/components/schemas/OrganizationInfo'
-        GetTenantResponse:
-            type: object
-            properties:
-                tenant:
-                    $ref: '#/components/schemas/TenantInfo'
+                    $ref: '#/components/schemas/Application'
         GetUserResponse:
             type: object
             properties:
                 user:
-                    $ref: '#/components/schemas/UserInfo'
-        HelloRequest:
-            type: object
-            properties:
-                req:
-                    type: string
-        HelloResponse:
-            type: object
-            properties:
-                rep:
-                    type: string
-        InviteTenantMemberRequest:
-            type: object
-            properties:
-                tenantId:
-                    type: string
-                userId:
-                    type: string
-                role:
-                    type: string
-        InviteTenantMemberResponse:
-            type: object
-            properties:
-                member:
-                    $ref: '#/components/schemas/TenantMemberInfo'
+                    $ref: '#/components/schemas/User'
         KratosError:
             type: object
             properties:
@@ -1306,43 +615,7 @@ components:
                 applications:
                     type: array
                     items:
-                        $ref: '#/components/schemas/ApplicationInfo'
-                pagination:
-                    $ref: '#/components/schemas/PaginationResponse'
-        ListMembersResponse:
-            type: object
-            properties:
-                members:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/OrganizationMemberInfo'
-                pagination:
-                    $ref: '#/components/schemas/PaginationResponse'
-        ListOrganizationsResponse:
-            type: object
-            properties:
-                organizations:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/OrganizationInfo'
-                pagination:
-                    $ref: '#/components/schemas/PaginationResponse'
-        ListTenantMembersResponse:
-            type: object
-            properties:
-                members:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/TenantMemberInfo'
-                pagination:
-                    $ref: '#/components/schemas/PaginationResponse'
-        ListTenantsResponse:
-            type: object
-            properties:
-                tenants:
-                    type: array
-                    items:
-                        $ref: '#/components/schemas/TenantInfo'
+                        $ref: '#/components/schemas/Application'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
         ListUsersResponse:
@@ -1351,7 +624,7 @@ components:
                 users:
                     type: array
                     items:
-                        $ref: '#/components/schemas/UserInfo'
+                        $ref: '#/components/schemas/User'
                 pagination:
                     $ref: '#/components/schemas/PaginationResponse'
         LoginByEmailPasswordRequest:
@@ -1388,41 +661,6 @@ components:
             properties:
                 success:
                     type: boolean
-        OrganizationInfo:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                slug:
-                    type: string
-                displayName:
-                    type: string
-                createdAt:
-                    type: string
-                    format: date-time
-                updatedAt:
-                    type: string
-                    format: date-time
-        OrganizationMemberInfo:
-            type: object
-            properties:
-                id:
-                    type: string
-                organizationId:
-                    type: string
-                userId:
-                    type: string
-                userName:
-                    type: string
-                userEmail:
-                    type: string
-                role:
-                    type: string
-                createdAt:
-                    type: string
-                    format: date-time
         PagePaginationResponse:
             type: object
             properties:
@@ -1441,19 +679,6 @@ components:
                     $ref: '#/components/schemas/PagePaginationResponse'
                 cursor:
                     $ref: '#/components/schemas/CursorPaginationResponse'
-        PrivateTestRequest:
-            type: object
-            properties: {}
-        PrivateTestResponse:
-            type: object
-            properties:
-                message:
-                    type: string
-        PurgeOrganizationResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
         PurgeUserResponse:
             type: object
             properties:
@@ -1483,26 +708,6 @@ components:
             properties:
                 clientSecret:
                     type: string
-        RejectTenantInvitationRequest:
-            type: object
-            properties:
-                tenantId:
-                    type: string
-        RejectTenantInvitationResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        RemoveMemberResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
-        RemoveTenantMemberResponse:
-            type: object
-            properties:
-                success:
-                    type: boolean
         RequestEmailVerificationRequest:
             type: object
             properties:
@@ -1537,16 +742,6 @@ components:
             properties:
                 success:
                     type: boolean
-        RestoreOrganizationRequest:
-            type: object
-            properties:
-                id:
-                    type: string
-        RestoreOrganizationResponse:
-            type: object
-            properties:
-                organization:
-                    $ref: '#/components/schemas/OrganizationInfo'
         RestoreUserRequest:
             type: object
             properties:
@@ -1556,23 +751,7 @@ components:
             type: object
             properties:
                 user:
-                    $ref: '#/components/schemas/UserInfo'
-        SaveUserRequest:
-            type: object
-            properties:
-                name:
-                    type: string
-                email:
-                    type: string
-                password:
-                    type: string
-                role:
-                    type: string
-        SaveUserResponse:
-            type: object
-            properties:
-                id:
-                    type: string
+                    $ref: '#/components/schemas/User'
         SignupByEmailRequest:
             type: object
             properties:
@@ -1583,6 +762,8 @@ components:
                 passwordConfirm:
                     type: string
                 email:
+                    type: string
+                capToken:
                     type: string
         SignupByEmailResponse:
             type: object
@@ -1595,174 +776,85 @@ components:
                     type: string
                 role:
                     type: string
-        TenantInfo:
+        UpdateApplicationRequest:
             type: object
             properties:
                 id:
                     type: string
-                slug:
+                data:
+                    $ref: '#/components/schemas/Application'
+        UpdateApplicationResponse:
+            type: object
+            properties:
+                application:
+                    $ref: '#/components/schemas/Application'
+        UpdateUserRequest:
+            type: object
+            properties:
+                id:
                     type: string
-                name:
+                data:
+                    $ref: '#/components/schemas/User'
+        UpdateUserResponse:
+            type: object
+            properties:
+                user:
+                    $ref: '#/components/schemas/User'
+        User:
+            type: object
+            properties:
+                id:
                     type: string
-                kind:
+                username:
                     type: string
-                domain:
+                email:
+                    type: string
+                role:
                     type: string
                 status:
                     type: string
+                emailVerified:
+                    type: boolean
+                phone:
+                    type: string
+                phoneVerified:
+                    type: boolean
+                emailVerifiedAt:
+                    type: string
+                    format: date-time
+                profile:
+                    $ref: '#/components/schemas/UserProfile'
                 createdAt:
                     type: string
                     format: date-time
                 updatedAt:
                     type: string
                     format: date-time
-        TenantMemberInfo:
+            description: User 资源 message — 不含密码等敏感字段（通过 repo 独立参数传递）
+        UserProfile:
             type: object
             properties:
-                id:
-                    type: string
-                tenantId:
-                    type: string
-                userId:
-                    type: string
-                userName:
-                    type: string
-                userEmail:
-                    type: string
-                role:
-                    type: string
-                status:
-                    type: string
-                joinedAt:
-                    type: string
-                    format: date-time
-                createdAt:
-                    type: string
-                    format: date-time
-        TestRequest:
-            type: object
-            properties: {}
-        TestResponse:
-            type: object
-            properties:
-                message:
-                    type: string
-        UpdateApplicationRequest:
-            type: object
-            properties:
-                id:
-                    type: string
                 name:
                     type: string
-                redirectUris:
-                    type: array
-                    items:
-                        type: string
-                scopes:
-                    type: array
-                    items:
-                        type: string
-                grantTypes:
-                    type: array
-                    items:
-                        type: string
-                idTokenLifetime:
-                    type: integer
-                    format: int32
-        UpdateApplicationResponse:
-            type: object
-            properties:
-                application:
-                    $ref: '#/components/schemas/ApplicationInfo'
-        UpdateMemberRoleRequest:
-            type: object
-            properties:
-                organizationId:
+                givenName:
                     type: string
-                userId:
+                familyName:
                     type: string
-                role:
+                nickname:
                     type: string
-        UpdateMemberRoleResponse:
-            type: object
-            properties:
-                member:
-                    $ref: '#/components/schemas/OrganizationMemberInfo'
-        UpdateOrganizationRequest:
-            type: object
-            properties:
-                id:
+                picture:
                     type: string
-                name:
+                gender:
                     type: string
-                displayName:
+                birthdate:
                     type: string
-        UpdateOrganizationResponse:
-            type: object
-            properties:
-                organization:
-                    $ref: '#/components/schemas/OrganizationInfo'
-        UpdateTenantMemberRoleRequest:
-            type: object
-            properties:
-                tenantId:
+                zoneinfo:
                     type: string
-                userId:
+                locale:
                     type: string
-                role:
-                    type: string
-        UpdateTenantMemberRoleResponse:
-            type: object
-            properties:
-                member:
-                    $ref: '#/components/schemas/TenantMemberInfo'
-        UpdateTenantRequest:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                domain:
-                    type: string
-                status:
-                    type: string
-        UpdateTenantResponse:
-            type: object
-            properties:
-                tenant:
-                    $ref: '#/components/schemas/TenantInfo'
-        UpdateUserRequest:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                email:
-                    type: string
-                password:
-                    type: string
-                role:
-                    type: string
-        UpdateUserResponse:
-            type: object
-            properties:
-                user:
-                    $ref: '#/components/schemas/UserInfo'
-        UserInfo:
-            type: object
-            properties:
-                id:
-                    type: string
-                name:
-                    type: string
-                email:
-                    type: string
-                role:
-                    type: string
-                emailVerified:
-                    type: boolean
+            description: |-
+                UserProfile 对应 OIDC Standard Claims 中的 profile scope 字段。
+                 字段命名与 OIDC UserInfo profile 对齐，签发 ID Token 时直接映射。
         VerifyEmailRequest:
             type: object
             properties:
@@ -1783,7 +875,4 @@ components:
 tags:
     - name: ApplicationService
     - name: AuthnService
-    - name: OrganizationService
-    - name: TenantService
-    - name: TestService
     - name: UserService

@@ -774,10 +774,11 @@ var File_application_service_v1_application_proto protoreflect.FileDescriptor
 
 const file_application_service_v1_application_proto_rawDesc = "" +
 	"\n" +
-	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16mapper/v1/mapper.proto\x1a\x1epagination/v1/pagination.proto\"\xbf\x04\n" +
-	"\vApplication\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xca\xc1\x18\x04\n" +
-	"\x02IDR\x02id\x12+\n" +
+	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16mapper/v1/mapper.proto\x1a\x1epagination/v1/pagination.proto\"\xc3\x04\n" +
+	"\vApplication\x12\x1a\n" +
+	"\x02id\x18\x01 \x01(\tB\n" +
+	"\xca\xc1\x18\x06\n" +
+	"\x02ID\x10\x06R\x02id\x12+\n" +
 	"\tclient_id\x18\x02 \x01(\tB\x0e\xca\xc1\x18\n" +
 	"\n" +
 	"\bClientIDR\bclientId\x12\x12\n" +
@@ -788,10 +789,10 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"grantTypes\x12)\n" +
 	"\x10application_type\x18\a \x01(\tR\x0fapplicationType\x12*\n" +
 	"\x11access_token_type\x18\b \x01(\tR\x0faccessTokenType\x12\x12\n" +
-	"\x04type\x18\t \x01(\tR\x04type\x12A\n" +
+	"\x04type\x18\t \x01(\tR\x04type\x12C\n" +
 	"\x11id_token_lifetime\x18\n" +
-	" \x01(\x05B\x15\xca\xc1\x18\x11\n" +
-	"\x0fIDTokenLifetimeR\x0fidTokenLifetime\x12F\n" +
+	" \x01(\x05B\x17\xca\xc1\x18\x13\n" +
+	"\x0fIDTokenLifetime\x10\aR\x0fidTokenLifetime\x12F\n" +
 	"\n" +
 	"created_at\x18d \x01(\v2\x1a.google.protobuf.TimestampB\x06\xca\xc1\x18\x02\x10\x01H\x00R\tcreatedAt\x88\x01\x01\x12F\n" +
 	"\n" +

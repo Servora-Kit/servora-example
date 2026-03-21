@@ -37,6 +37,10 @@ const (
 	ConverterKind_CONVERTER_KIND_INT64_PTR ConverterKind = 4
 	// protobuf enum int32 <-> entity string
 	ConverterKind_CONVERTER_KIND_ENUM_STRING ConverterKind = 5
+	// uuid.UUID <-> string (ent UUID primary key <-> proto string)
+	ConverterKind_CONVERTER_KIND_UUID_STRING ConverterKind = 6
+	// int <-> int32 (ent int <-> proto int32)
+	ConverterKind_CONVERTER_KIND_INT_INT32 ConverterKind = 7
 )
 
 // Enum value maps for ConverterKind.
@@ -48,6 +52,8 @@ var (
 		3: "CONVERTER_KIND_STRING_PTR",
 		4: "CONVERTER_KIND_INT64_PTR",
 		5: "CONVERTER_KIND_ENUM_STRING",
+		6: "CONVERTER_KIND_UUID_STRING",
+		7: "CONVERTER_KIND_INT_INT32",
 	}
 	ConverterKind_value = map[string]int32{
 		"CONVERTER_KIND_UNSPECIFIED":    0,
@@ -56,6 +62,8 @@ var (
 		"CONVERTER_KIND_STRING_PTR":     3,
 		"CONVERTER_KIND_INT64_PTR":      4,
 		"CONVERTER_KIND_ENUM_STRING":    5,
+		"CONVERTER_KIND_UUID_STRING":    6,
+		"CONVERTER_KIND_INT_INT32":      7,
 	}
 )
 
@@ -261,14 +269,16 @@ const file_mapper_v1_mapper_proto_rawDesc = "" +
 	"\x06rename\x18\x01 \x01(\tR\x06rename\x126\n" +
 	"\tconverter\x18\x02 \x01(\x0e2\x18.mapper.v1.ConverterKindR\tconverter\x12\x16\n" +
 	"\x06custom\x18\x03 \x01(\tR\x06custom\x12\x16\n" +
-	"\x06ignore\x18\x04 \x01(\bR\x06ignore*\xcc\x01\n" +
+	"\x06ignore\x18\x04 \x01(\bR\x06ignore*\x8a\x02\n" +
 	"\rConverterKind\x12\x1e\n" +
 	"\x1aCONVERTER_KIND_UNSPECIFIED\x10\x00\x12!\n" +
 	"\x1dCONVERTER_KIND_TIMESTAMP_TIME\x10\x01\x12\x1b\n" +
 	"\x17CONVERTER_KIND_TIME_PTR\x10\x02\x12\x1d\n" +
 	"\x19CONVERTER_KIND_STRING_PTR\x10\x03\x12\x1c\n" +
 	"\x18CONVERTER_KIND_INT64_PTR\x10\x04\x12\x1e\n" +
-	"\x1aCONVERTER_KIND_ENUM_STRING\x10\x05:W\n" +
+	"\x1aCONVERTER_KIND_ENUM_STRING\x10\x05\x12\x1e\n" +
+	"\x1aCONVERTER_KIND_UUID_STRING\x10\x06\x12\x1c\n" +
+	"\x18CONVERTER_KIND_INT_INT32\x10\a:W\n" +
 	"\x06mapper\x12\x1f.google.protobuf.MessageOptions\x18\x98\x88\x03 \x01(\v2\x1c.mapper.v1.MapperMessageRuleR\x06mapper:^\n" +
 	"\fmapper_field\x12\x1d.google.protobuf.FieldOptions\x18\x99\x88\x03 \x01(\v2\x1a.mapper.v1.MapperFieldRuleR\vmapperFieldB\x9f\x01\n" +
 	"\rcom.mapper.v1B\vMapperProtoP\x01Z<github.com/Servora-Kit/servora/api/gen/go/mapper/v1;mapperpb\xa2\x02\x03MXX\xaa\x02\tMapper.V1\xca\x02\tMapper\\V1\xe2\x02\x15Mapper\\V1\\GPBMetadata\xea\x02\n" +
