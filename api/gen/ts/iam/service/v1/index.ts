@@ -153,23 +153,11 @@ export function createApplicationServiceClient(
   };
 }
 export type applicationservicev1_CreateApplicationRequest = {
-  name: string | undefined;
-  redirectUris: string[] | undefined;
-  scopes: string[] | undefined;
-  grantTypes: string[] | undefined;
-  applicationType?: string;
-  accessTokenType?: string;
-  idTokenLifetime?: number;
-  // type: "web" | "native" | "m2m"（默认 "web"）
-  type?: string;
+  data: applicationservicev1_Application | undefined;
 };
 
-export type applicationservicev1_CreateApplicationResponse = {
-  application: applicationservicev1_ApplicationInfo | undefined;
-  clientSecret: string | undefined;
-};
-
-export type applicationservicev1_ApplicationInfo = {
+// Application 资源 message — 不含 client_secret_hash 等敏感字段
+export type applicationservicev1_Application = {
   id: string | undefined;
   clientId: string | undefined;
   name: string | undefined;
@@ -181,8 +169,8 @@ export type applicationservicev1_ApplicationInfo = {
   // type 区分应用类型：web | native | m2m
   type: string | undefined;
   idTokenLifetime: number | undefined;
-  createdAt: wellKnownTimestamp | undefined;
-  updatedAt: wellKnownTimestamp | undefined;
+  createdAt?: wellKnownTimestamp;
+  updatedAt?: wellKnownTimestamp;
 };
 
 // Encoded using RFC 3339, where generated output will always be Z-normalized
@@ -190,12 +178,17 @@ export type applicationservicev1_ApplicationInfo = {
 // Offsets other than "Z" are also accepted.
 type wellKnownTimestamp = string;
 
+export type applicationservicev1_CreateApplicationResponse = {
+  application: applicationservicev1_Application | undefined;
+  clientSecret: string | undefined;
+};
+
 export type applicationservicev1_GetApplicationRequest = {
   id: string | undefined;
 };
 
 export type applicationservicev1_GetApplicationResponse = {
-  application: applicationservicev1_ApplicationInfo | undefined;
+  application: applicationservicev1_Application | undefined;
 };
 
 export type applicationservicev1_ListApplicationsRequest = {
@@ -218,7 +211,7 @@ export type paginationv1_CursorPaginationRequest = {
 };
 
 export type applicationservicev1_ListApplicationsResponse = {
-  applications: applicationservicev1_ApplicationInfo[] | undefined;
+  applications: applicationservicev1_Application[] | undefined;
   pagination: paginationv1_PaginationResponse | undefined;
 };
 
@@ -240,15 +233,11 @@ export type paginationv1_CursorPaginationResponse = {
 
 export type applicationservicev1_UpdateApplicationRequest = {
   id: string | undefined;
-  name: string | undefined;
-  redirectUris: string[] | undefined;
-  scopes: string[] | undefined;
-  grantTypes: string[] | undefined;
-  idTokenLifetime: number | undefined;
+  data: applicationservicev1_Application | undefined;
 };
 
 export type applicationservicev1_UpdateApplicationResponse = {
-  application: applicationservicev1_ApplicationInfo | undefined;
+  application: applicationservicev1_Application | undefined;
 };
 
 export type applicationservicev1_DeleteApplicationRequest = {

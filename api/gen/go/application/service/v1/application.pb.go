@@ -83,7 +83,8 @@ func (ErrorReason) EnumDescriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{0}
 }
 
-type ApplicationInfo struct {
+// Application 资源 message — 不含 client_secret_hash 等敏感字段
+type Application struct {
 	state           protoimpl.MessageState `protogen:"open.v1"`
 	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	ClientId        string                 `protobuf:"bytes,2,opt,name=client_id,json=clientId,proto3" json:"client_id,omitempty"`
@@ -96,26 +97,26 @@ type ApplicationInfo struct {
 	// type 区分应用类型：web | native | m2m
 	Type            string                 `protobuf:"bytes,9,opt,name=type,proto3" json:"type,omitempty"`
 	IdTokenLifetime int32                  `protobuf:"varint,10,opt,name=id_token_lifetime,json=idTokenLifetime,proto3" json:"id_token_lifetime,omitempty"`
-	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,11,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
-	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,12,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	CreatedAt       *timestamppb.Timestamp `protobuf:"bytes,100,opt,name=created_at,json=createdAt,proto3,oneof" json:"created_at,omitempty"`
+	UpdatedAt       *timestamppb.Timestamp `protobuf:"bytes,101,opt,name=updated_at,json=updatedAt,proto3,oneof" json:"updated_at,omitempty"`
 	unknownFields   protoimpl.UnknownFields
 	sizeCache       protoimpl.SizeCache
 }
 
-func (x *ApplicationInfo) Reset() {
-	*x = ApplicationInfo{}
+func (x *Application) Reset() {
+	*x = Application{}
 	mi := &file_application_service_v1_application_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
 
-func (x *ApplicationInfo) String() string {
+func (x *Application) String() string {
 	return protoimpl.X.MessageStringOf(x)
 }
 
-func (*ApplicationInfo) ProtoMessage() {}
+func (*Application) ProtoMessage() {}
 
-func (x *ApplicationInfo) ProtoReflect() protoreflect.Message {
+func (x *Application) ProtoReflect() protoreflect.Message {
 	mi := &file_application_service_v1_application_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
@@ -127,89 +128,89 @@ func (x *ApplicationInfo) ProtoReflect() protoreflect.Message {
 	return mi.MessageOf(x)
 }
 
-// Deprecated: Use ApplicationInfo.ProtoReflect.Descriptor instead.
-func (*ApplicationInfo) Descriptor() ([]byte, []int) {
+// Deprecated: Use Application.ProtoReflect.Descriptor instead.
+func (*Application) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{0}
 }
 
-func (x *ApplicationInfo) GetId() string {
+func (x *Application) GetId() string {
 	if x != nil {
 		return x.Id
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetClientId() string {
+func (x *Application) GetClientId() string {
 	if x != nil {
 		return x.ClientId
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetName() string {
+func (x *Application) GetName() string {
 	if x != nil {
 		return x.Name
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetRedirectUris() []string {
+func (x *Application) GetRedirectUris() []string {
 	if x != nil {
 		return x.RedirectUris
 	}
 	return nil
 }
 
-func (x *ApplicationInfo) GetScopes() []string {
+func (x *Application) GetScopes() []string {
 	if x != nil {
 		return x.Scopes
 	}
 	return nil
 }
 
-func (x *ApplicationInfo) GetGrantTypes() []string {
+func (x *Application) GetGrantTypes() []string {
 	if x != nil {
 		return x.GrantTypes
 	}
 	return nil
 }
 
-func (x *ApplicationInfo) GetApplicationType() string {
+func (x *Application) GetApplicationType() string {
 	if x != nil {
 		return x.ApplicationType
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetAccessTokenType() string {
+func (x *Application) GetAccessTokenType() string {
 	if x != nil {
 		return x.AccessTokenType
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetType() string {
+func (x *Application) GetType() string {
 	if x != nil {
 		return x.Type
 	}
 	return ""
 }
 
-func (x *ApplicationInfo) GetIdTokenLifetime() int32 {
+func (x *Application) GetIdTokenLifetime() int32 {
 	if x != nil {
 		return x.IdTokenLifetime
 	}
 	return 0
 }
 
-func (x *ApplicationInfo) GetCreatedAt() *timestamppb.Timestamp {
+func (x *Application) GetCreatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.CreatedAt
 	}
 	return nil
 }
 
-func (x *ApplicationInfo) GetUpdatedAt() *timestamppb.Timestamp {
+func (x *Application) GetUpdatedAt() *timestamppb.Timestamp {
 	if x != nil {
 		return x.UpdatedAt
 	}
@@ -217,16 +218,8 @@ func (x *ApplicationInfo) GetUpdatedAt() *timestamppb.Timestamp {
 }
 
 type CreateApplicationRequest struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Name            string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
-	RedirectUris    []string               `protobuf:"bytes,2,rep,name=redirect_uris,json=redirectUris,proto3" json:"redirect_uris,omitempty"`
-	Scopes          []string               `protobuf:"bytes,3,rep,name=scopes,proto3" json:"scopes,omitempty"`
-	GrantTypes      []string               `protobuf:"bytes,4,rep,name=grant_types,json=grantTypes,proto3" json:"grant_types,omitempty"`
-	ApplicationType *string                `protobuf:"bytes,5,opt,name=application_type,json=applicationType,proto3,oneof" json:"application_type,omitempty"`
-	AccessTokenType *string                `protobuf:"bytes,6,opt,name=access_token_type,json=accessTokenType,proto3,oneof" json:"access_token_type,omitempty"`
-	IdTokenLifetime *int32                 `protobuf:"varint,7,opt,name=id_token_lifetime,json=idTokenLifetime,proto3,oneof" json:"id_token_lifetime,omitempty"`
-	// type: "web" | "native" | "m2m"（默认 "web"）
-	Type          *string `protobuf:"bytes,8,opt,name=type,proto3,oneof" json:"type,omitempty"`
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Data          *Application           `protobuf:"bytes,1,opt,name=data,proto3" json:"data,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -261,65 +254,16 @@ func (*CreateApplicationRequest) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{1}
 }
 
-func (x *CreateApplicationRequest) GetName() string {
+func (x *CreateApplicationRequest) GetData() *Application {
 	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *CreateApplicationRequest) GetRedirectUris() []string {
-	if x != nil {
-		return x.RedirectUris
+		return x.Data
 	}
 	return nil
-}
-
-func (x *CreateApplicationRequest) GetScopes() []string {
-	if x != nil {
-		return x.Scopes
-	}
-	return nil
-}
-
-func (x *CreateApplicationRequest) GetGrantTypes() []string {
-	if x != nil {
-		return x.GrantTypes
-	}
-	return nil
-}
-
-func (x *CreateApplicationRequest) GetApplicationType() string {
-	if x != nil && x.ApplicationType != nil {
-		return *x.ApplicationType
-	}
-	return ""
-}
-
-func (x *CreateApplicationRequest) GetAccessTokenType() string {
-	if x != nil && x.AccessTokenType != nil {
-		return *x.AccessTokenType
-	}
-	return ""
-}
-
-func (x *CreateApplicationRequest) GetIdTokenLifetime() int32 {
-	if x != nil && x.IdTokenLifetime != nil {
-		return *x.IdTokenLifetime
-	}
-	return 0
-}
-
-func (x *CreateApplicationRequest) GetType() string {
-	if x != nil && x.Type != nil {
-		return *x.Type
-	}
-	return ""
 }
 
 type CreateApplicationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Application   *ApplicationInfo       `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
+	Application   *Application           `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
 	ClientSecret  string                 `protobuf:"bytes,2,opt,name=client_secret,json=clientSecret,proto3" json:"client_secret,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -355,7 +299,7 @@ func (*CreateApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *CreateApplicationResponse) GetApplication() *ApplicationInfo {
+func (x *CreateApplicationResponse) GetApplication() *Application {
 	if x != nil {
 		return x.Application
 	}
@@ -415,7 +359,7 @@ func (x *GetApplicationRequest) GetId() string {
 
 type GetApplicationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Application   *ApplicationInfo       `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
+	Application   *Application           `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -450,7 +394,7 @@ func (*GetApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{4}
 }
 
-func (x *GetApplicationResponse) GetApplication() *ApplicationInfo {
+func (x *GetApplicationResponse) GetApplication() *Application {
 	if x != nil {
 		return x.Application
 	}
@@ -503,7 +447,7 @@ func (x *ListApplicationsRequest) GetPagination() *v1.PaginationRequest {
 
 type ListApplicationsResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Applications  []*ApplicationInfo     `protobuf:"bytes,1,rep,name=applications,proto3" json:"applications,omitempty"`
+	Applications  []*Application         `protobuf:"bytes,1,rep,name=applications,proto3" json:"applications,omitempty"`
 	Pagination    *v1.PaginationResponse `protobuf:"bytes,2,opt,name=pagination,proto3" json:"pagination,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
@@ -539,7 +483,7 @@ func (*ListApplicationsResponse) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{6}
 }
 
-func (x *ListApplicationsResponse) GetApplications() []*ApplicationInfo {
+func (x *ListApplicationsResponse) GetApplications() []*Application {
 	if x != nil {
 		return x.Applications
 	}
@@ -554,15 +498,11 @@ func (x *ListApplicationsResponse) GetPagination() *v1.PaginationResponse {
 }
 
 type UpdateApplicationRequest struct {
-	state           protoimpl.MessageState `protogen:"open.v1"`
-	Id              string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	Name            string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
-	RedirectUris    []string               `protobuf:"bytes,3,rep,name=redirect_uris,json=redirectUris,proto3" json:"redirect_uris,omitempty"`
-	Scopes          []string               `protobuf:"bytes,4,rep,name=scopes,proto3" json:"scopes,omitempty"`
-	GrantTypes      []string               `protobuf:"bytes,5,rep,name=grant_types,json=grantTypes,proto3" json:"grant_types,omitempty"`
-	IdTokenLifetime int32                  `protobuf:"varint,6,opt,name=id_token_lifetime,json=idTokenLifetime,proto3" json:"id_token_lifetime,omitempty"`
-	unknownFields   protoimpl.UnknownFields
-	sizeCache       protoimpl.SizeCache
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Data          *Application           `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
 }
 
 func (x *UpdateApplicationRequest) Reset() {
@@ -602,44 +542,16 @@ func (x *UpdateApplicationRequest) GetId() string {
 	return ""
 }
 
-func (x *UpdateApplicationRequest) GetName() string {
+func (x *UpdateApplicationRequest) GetData() *Application {
 	if x != nil {
-		return x.Name
-	}
-	return ""
-}
-
-func (x *UpdateApplicationRequest) GetRedirectUris() []string {
-	if x != nil {
-		return x.RedirectUris
+		return x.Data
 	}
 	return nil
-}
-
-func (x *UpdateApplicationRequest) GetScopes() []string {
-	if x != nil {
-		return x.Scopes
-	}
-	return nil
-}
-
-func (x *UpdateApplicationRequest) GetGrantTypes() []string {
-	if x != nil {
-		return x.GrantTypes
-	}
-	return nil
-}
-
-func (x *UpdateApplicationRequest) GetIdTokenLifetime() int32 {
-	if x != nil {
-		return x.IdTokenLifetime
-	}
-	return 0
 }
 
 type UpdateApplicationResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Application   *ApplicationInfo       `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
+	Application   *Application           `protobuf:"bytes,1,opt,name=application,proto3" json:"application,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -674,7 +586,7 @@ func (*UpdateApplicationResponse) Descriptor() ([]byte, []int) {
 	return file_application_service_v1_application_proto_rawDescGZIP(), []int{8}
 }
 
-func (x *UpdateApplicationResponse) GetApplication() *ApplicationInfo {
+func (x *UpdateApplicationResponse) GetApplication() *Application {
 	if x != nil {
 		return x.Application
 	}
@@ -861,8 +773,8 @@ var File_application_service_v1_application_proto protoreflect.FileDescriptor
 
 const file_application_service_v1_application_proto_rawDesc = "" +
 	"\n" +
-	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xbd\x03\n" +
-	"\x0fApplicationInfo\x12\x0e\n" +
+	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xe1\x03\n" +
+	"\vApplication\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
 	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12#\n" +
@@ -874,52 +786,36 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"\x11access_token_type\x18\b \x01(\tR\x0faccessTokenType\x12\x12\n" +
 	"\x04type\x18\t \x01(\tR\x04type\x12*\n" +
 	"\x11id_token_lifetime\x18\n" +
-	" \x01(\x05R\x0fidTokenLifetime\x129\n" +
+	" \x01(\x05R\x0fidTokenLifetime\x12>\n" +
 	"\n" +
-	"created_at\x18\v \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
+	"created_at\x18d \x01(\v2\x1a.google.protobuf.TimestampH\x00R\tcreatedAt\x88\x01\x01\x12>\n" +
 	"\n" +
-	"updated_at\x18\f \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"\x8d\x03\n" +
-	"\x18CreateApplicationRequest\x12\x1e\n" +
-	"\x04name\x18\x01 \x01(\tB\n" +
-	"\xbaH\ar\x05\x10\x02\x18\x80\x01R\x04name\x12#\n" +
-	"\rredirect_uris\x18\x02 \x03(\tR\fredirectUris\x12\x16\n" +
-	"\x06scopes\x18\x03 \x03(\tR\x06scopes\x12\x1f\n" +
-	"\vgrant_types\x18\x04 \x03(\tR\n" +
-	"grantTypes\x12.\n" +
-	"\x10application_type\x18\x05 \x01(\tH\x00R\x0fapplicationType\x88\x01\x01\x12/\n" +
-	"\x11access_token_type\x18\x06 \x01(\tH\x01R\x0faccessTokenType\x88\x01\x01\x12/\n" +
-	"\x11id_token_lifetime\x18\a \x01(\x05H\x02R\x0fidTokenLifetime\x88\x01\x01\x12\x17\n" +
-	"\x04type\x18\b \x01(\tH\x03R\x04type\x88\x01\x01B\x13\n" +
-	"\x11_application_typeB\x14\n" +
-	"\x12_access_token_typeB\x14\n" +
-	"\x12_id_token_lifetimeB\a\n" +
-	"\x05_type\"\x8b\x01\n" +
-	"\x19CreateApplicationResponse\x12I\n" +
-	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\x12#\n" +
+	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampH\x01R\tupdatedAt\x88\x01\x01B\r\n" +
+	"\v_created_atB\r\n" +
+	"\v_updated_at\"S\n" +
+	"\x18CreateApplicationRequest\x127\n" +
+	"\x04data\x18\x01 \x01(\v2#.application.service.v1.ApplicationR\x04data\"\x87\x01\n" +
+	"\x19CreateApplicationResponse\x12E\n" +
+	"\vapplication\x18\x01 \x01(\v2#.application.service.v1.ApplicationR\vapplication\x12#\n" +
 	"\rclient_secret\x18\x02 \x01(\tR\fclientSecret\"1\n" +
 	"\x15GetApplicationRequest\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"c\n" +
-	"\x16GetApplicationResponse\x12I\n" +
-	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"[\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"_\n" +
+	"\x16GetApplicationResponse\x12E\n" +
+	"\vapplication\x18\x01 \x01(\v2#.application.service.v1.ApplicationR\vapplication\"[\n" +
 	"\x17ListApplicationsRequest\x12@\n" +
 	"\n" +
 	"pagination\x18\x01 \x01(\v2 .pagination.v1.PaginationRequestR\n" +
-	"pagination\"\xaa\x01\n" +
-	"\x18ListApplicationsResponse\x12K\n" +
-	"\fapplications\x18\x01 \x03(\v2'.application.service.v1.ApplicationInfoR\fapplications\x12A\n" +
+	"pagination\"\xa6\x01\n" +
+	"\x18ListApplicationsResponse\x12G\n" +
+	"\fapplications\x18\x01 \x03(\v2#.application.service.v1.ApplicationR\fapplications\x12A\n" +
 	"\n" +
 	"pagination\x18\x02 \x01(\v2!.pagination.v1.PaginationResponseR\n" +
-	"pagination\"\xd2\x01\n" +
+	"pagination\"m\n" +
 	"\x18UpdateApplicationRequest\x12\x18\n" +
-	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\x12#\n" +
-	"\rredirect_uris\x18\x03 \x03(\tR\fredirectUris\x12\x16\n" +
-	"\x06scopes\x18\x04 \x03(\tR\x06scopes\x12\x1f\n" +
-	"\vgrant_types\x18\x05 \x03(\tR\n" +
-	"grantTypes\x12*\n" +
-	"\x11id_token_lifetime\x18\x06 \x01(\x05R\x0fidTokenLifetime\"f\n" +
-	"\x19UpdateApplicationResponse\x12I\n" +
-	"\vapplication\x18\x01 \x01(\v2'.application.service.v1.ApplicationInfoR\vapplication\"4\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\x127\n" +
+	"\x04data\x18\x02 \x01(\v2#.application.service.v1.ApplicationR\x04data\"b\n" +
+	"\x19UpdateApplicationResponse\x12E\n" +
+	"\vapplication\x18\x01 \x01(\v2#.application.service.v1.ApplicationR\vapplication\"4\n" +
 	"\x18DeleteApplicationRequest\x12\x18\n" +
 	"\x02id\x18\x01 \x01(\tB\b\xbaH\x05r\x03\xb0\x01\x01R\x02id\"5\n" +
 	"\x19DeleteApplicationResponse\x12\x18\n" +
@@ -960,7 +856,7 @@ var file_application_service_v1_application_proto_enumTypes = make([]protoimpl.E
 var file_application_service_v1_application_proto_msgTypes = make([]protoimpl.MessageInfo, 13)
 var file_application_service_v1_application_proto_goTypes = []any{
 	(ErrorReason)(0),                       // 0: application.service.v1.ErrorReason
-	(*ApplicationInfo)(nil),                // 1: application.service.v1.ApplicationInfo
+	(*Application)(nil),                    // 1: application.service.v1.Application
 	(*CreateApplicationRequest)(nil),       // 2: application.service.v1.CreateApplicationRequest
 	(*CreateApplicationResponse)(nil),      // 3: application.service.v1.CreateApplicationResponse
 	(*GetApplicationRequest)(nil),          // 4: application.service.v1.GetApplicationRequest
@@ -978,31 +874,33 @@ var file_application_service_v1_application_proto_goTypes = []any{
 	(*v1.PaginationResponse)(nil),          // 16: pagination.v1.PaginationResponse
 }
 var file_application_service_v1_application_proto_depIdxs = []int32{
-	14, // 0: application.service.v1.ApplicationInfo.created_at:type_name -> google.protobuf.Timestamp
-	14, // 1: application.service.v1.ApplicationInfo.updated_at:type_name -> google.protobuf.Timestamp
-	1,  // 2: application.service.v1.CreateApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
-	1,  // 3: application.service.v1.GetApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
-	15, // 4: application.service.v1.ListApplicationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
-	1,  // 5: application.service.v1.ListApplicationsResponse.applications:type_name -> application.service.v1.ApplicationInfo
-	16, // 6: application.service.v1.ListApplicationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
-	1,  // 7: application.service.v1.UpdateApplicationResponse.application:type_name -> application.service.v1.ApplicationInfo
-	2,  // 8: application.service.v1.ApplicationService.CreateApplication:input_type -> application.service.v1.CreateApplicationRequest
-	4,  // 9: application.service.v1.ApplicationService.GetApplication:input_type -> application.service.v1.GetApplicationRequest
-	6,  // 10: application.service.v1.ApplicationService.ListApplications:input_type -> application.service.v1.ListApplicationsRequest
-	8,  // 11: application.service.v1.ApplicationService.UpdateApplication:input_type -> application.service.v1.UpdateApplicationRequest
-	10, // 12: application.service.v1.ApplicationService.DeleteApplication:input_type -> application.service.v1.DeleteApplicationRequest
-	12, // 13: application.service.v1.ApplicationService.RegenerateClientSecret:input_type -> application.service.v1.RegenerateClientSecretRequest
-	3,  // 14: application.service.v1.ApplicationService.CreateApplication:output_type -> application.service.v1.CreateApplicationResponse
-	5,  // 15: application.service.v1.ApplicationService.GetApplication:output_type -> application.service.v1.GetApplicationResponse
-	7,  // 16: application.service.v1.ApplicationService.ListApplications:output_type -> application.service.v1.ListApplicationsResponse
-	9,  // 17: application.service.v1.ApplicationService.UpdateApplication:output_type -> application.service.v1.UpdateApplicationResponse
-	11, // 18: application.service.v1.ApplicationService.DeleteApplication:output_type -> application.service.v1.DeleteApplicationResponse
-	13, // 19: application.service.v1.ApplicationService.RegenerateClientSecret:output_type -> application.service.v1.RegenerateClientSecretResponse
-	14, // [14:20] is the sub-list for method output_type
-	8,  // [8:14] is the sub-list for method input_type
-	8,  // [8:8] is the sub-list for extension type_name
-	8,  // [8:8] is the sub-list for extension extendee
-	0,  // [0:8] is the sub-list for field type_name
+	14, // 0: application.service.v1.Application.created_at:type_name -> google.protobuf.Timestamp
+	14, // 1: application.service.v1.Application.updated_at:type_name -> google.protobuf.Timestamp
+	1,  // 2: application.service.v1.CreateApplicationRequest.data:type_name -> application.service.v1.Application
+	1,  // 3: application.service.v1.CreateApplicationResponse.application:type_name -> application.service.v1.Application
+	1,  // 4: application.service.v1.GetApplicationResponse.application:type_name -> application.service.v1.Application
+	15, // 5: application.service.v1.ListApplicationsRequest.pagination:type_name -> pagination.v1.PaginationRequest
+	1,  // 6: application.service.v1.ListApplicationsResponse.applications:type_name -> application.service.v1.Application
+	16, // 7: application.service.v1.ListApplicationsResponse.pagination:type_name -> pagination.v1.PaginationResponse
+	1,  // 8: application.service.v1.UpdateApplicationRequest.data:type_name -> application.service.v1.Application
+	1,  // 9: application.service.v1.UpdateApplicationResponse.application:type_name -> application.service.v1.Application
+	2,  // 10: application.service.v1.ApplicationService.CreateApplication:input_type -> application.service.v1.CreateApplicationRequest
+	4,  // 11: application.service.v1.ApplicationService.GetApplication:input_type -> application.service.v1.GetApplicationRequest
+	6,  // 12: application.service.v1.ApplicationService.ListApplications:input_type -> application.service.v1.ListApplicationsRequest
+	8,  // 13: application.service.v1.ApplicationService.UpdateApplication:input_type -> application.service.v1.UpdateApplicationRequest
+	10, // 14: application.service.v1.ApplicationService.DeleteApplication:input_type -> application.service.v1.DeleteApplicationRequest
+	12, // 15: application.service.v1.ApplicationService.RegenerateClientSecret:input_type -> application.service.v1.RegenerateClientSecretRequest
+	3,  // 16: application.service.v1.ApplicationService.CreateApplication:output_type -> application.service.v1.CreateApplicationResponse
+	5,  // 17: application.service.v1.ApplicationService.GetApplication:output_type -> application.service.v1.GetApplicationResponse
+	7,  // 18: application.service.v1.ApplicationService.ListApplications:output_type -> application.service.v1.ListApplicationsResponse
+	9,  // 19: application.service.v1.ApplicationService.UpdateApplication:output_type -> application.service.v1.UpdateApplicationResponse
+	11, // 20: application.service.v1.ApplicationService.DeleteApplication:output_type -> application.service.v1.DeleteApplicationResponse
+	13, // 21: application.service.v1.ApplicationService.RegenerateClientSecret:output_type -> application.service.v1.RegenerateClientSecretResponse
+	16, // [16:22] is the sub-list for method output_type
+	10, // [10:16] is the sub-list for method input_type
+	10, // [10:10] is the sub-list for extension type_name
+	10, // [10:10] is the sub-list for extension extendee
+	0,  // [0:10] is the sub-list for field type_name
 }
 
 func init() { file_application_service_v1_application_proto_init() }
@@ -1010,7 +908,7 @@ func file_application_service_v1_application_proto_init() {
 	if File_application_service_v1_application_proto != nil {
 		return
 	}
-	file_application_service_v1_application_proto_msgTypes[1].OneofWrappers = []any{}
+	file_application_service_v1_application_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

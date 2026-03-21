@@ -9,7 +9,8 @@ export type ErrorReason =
   | "APPLICATION_UPDATE_FAILED"
   | "APPLICATION_DELETE_FAILED"
   | "INVALID_CLIENT_SECRET";
-export type ApplicationInfo = {
+// Application 资源 message — 不含 client_secret_hash 等敏感字段
+export type Application = {
   id: string | undefined;
   clientId: string | undefined;
   name: string | undefined;
@@ -21,8 +22,8 @@ export type ApplicationInfo = {
   // type 区分应用类型：web | native | m2m
   type: string | undefined;
   idTokenLifetime: number | undefined;
-  createdAt: wellKnownTimestamp | undefined;
-  updatedAt: wellKnownTimestamp | undefined;
+  createdAt?: wellKnownTimestamp;
+  updatedAt?: wellKnownTimestamp;
 };
 
 // Encoded using RFC 3339, where generated output will always be Z-normalized
@@ -31,19 +32,11 @@ export type ApplicationInfo = {
 type wellKnownTimestamp = string;
 
 export type CreateApplicationRequest = {
-  name: string | undefined;
-  redirectUris: string[] | undefined;
-  scopes: string[] | undefined;
-  grantTypes: string[] | undefined;
-  applicationType?: string;
-  accessTokenType?: string;
-  idTokenLifetime?: number;
-  // type: "web" | "native" | "m2m"（默认 "web"）
-  type?: string;
+  data: Application | undefined;
 };
 
 export type CreateApplicationResponse = {
-  application: ApplicationInfo | undefined;
+  application: Application | undefined;
   clientSecret: string | undefined;
 };
 
@@ -52,7 +45,7 @@ export type GetApplicationRequest = {
 };
 
 export type GetApplicationResponse = {
-  application: ApplicationInfo | undefined;
+  application: Application | undefined;
 };
 
 export type ListApplicationsRequest = {
@@ -75,7 +68,7 @@ export type paginationv1_CursorPaginationRequest = {
 };
 
 export type ListApplicationsResponse = {
-  applications: ApplicationInfo[] | undefined;
+  applications: Application[] | undefined;
   pagination: paginationv1_PaginationResponse | undefined;
 };
 
@@ -97,15 +90,11 @@ export type paginationv1_CursorPaginationResponse = {
 
 export type UpdateApplicationRequest = {
   id: string | undefined;
-  name: string | undefined;
-  redirectUris: string[] | undefined;
-  scopes: string[] | undefined;
-  grantTypes: string[] | undefined;
-  idTokenLifetime: number | undefined;
+  data: Application | undefined;
 };
 
 export type UpdateApplicationResponse = {
-  application: ApplicationInfo | undefined;
+  application: Application | undefined;
 };
 
 export type DeleteApplicationRequest = {

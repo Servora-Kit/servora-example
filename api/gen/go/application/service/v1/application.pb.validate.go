@@ -35,22 +35,22 @@ var (
 	_ = sort.Sort
 )
 
-// Validate checks the field values on ApplicationInfo with the rules defined
-// in the proto definition for this message. If any rules are violated, the
-// first error encountered is returned, or nil if there are no violations.
-func (m *ApplicationInfo) Validate() error {
+// Validate checks the field values on Application with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *Application) Validate() error {
 	return m.validate(false)
 }
 
-// ValidateAll checks the field values on ApplicationInfo with the rules
-// defined in the proto definition for this message. If any rules are
-// violated, the result is a list of violation errors wrapped in
-// ApplicationInfoMultiError, or nil if none found.
-func (m *ApplicationInfo) ValidateAll() error {
+// ValidateAll checks the field values on Application with the rules defined in
+// the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in ApplicationMultiError, or
+// nil if none found.
+func (m *Application) ValidateAll() error {
 	return m.validate(true)
 }
 
-func (m *ApplicationInfo) validate(all bool) error {
+func (m *Application) validate(all bool) error {
 	if m == nil {
 		return nil
 	}
@@ -71,78 +71,85 @@ func (m *ApplicationInfo) validate(all bool) error {
 
 	// no validation rules for IdTokenLifetime
 
-	if all {
-		switch v := interface{}(m.GetCreatedAt()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ApplicationInfoValidationError{
-					field:  "CreatedAt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	if m.CreatedAt != nil {
+
+		if all {
+			switch v := interface{}(m.GetCreatedAt()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ApplicationValidationError{
+						field:  "CreatedAt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ApplicationValidationError{
+						field:  "CreatedAt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ApplicationInfoValidationError{
+				return ApplicationValidationError{
 					field:  "CreatedAt",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetCreatedAt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ApplicationInfoValidationError{
-				field:  "CreatedAt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
-	if all {
-		switch v := interface{}(m.GetUpdatedAt()).(type) {
-		case interface{ ValidateAll() error }:
-			if err := v.ValidateAll(); err != nil {
-				errors = append(errors, ApplicationInfoValidationError{
-					field:  "UpdatedAt",
-					reason: "embedded message failed validation",
-					cause:  err,
-				})
+	if m.UpdatedAt != nil {
+
+		if all {
+			switch v := interface{}(m.GetUpdatedAt()).(type) {
+			case interface{ ValidateAll() error }:
+				if err := v.ValidateAll(); err != nil {
+					errors = append(errors, ApplicationValidationError{
+						field:  "UpdatedAt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
+			case interface{ Validate() error }:
+				if err := v.Validate(); err != nil {
+					errors = append(errors, ApplicationValidationError{
+						field:  "UpdatedAt",
+						reason: "embedded message failed validation",
+						cause:  err,
+					})
+				}
 			}
-		case interface{ Validate() error }:
+		} else if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
 			if err := v.Validate(); err != nil {
-				errors = append(errors, ApplicationInfoValidationError{
+				return ApplicationValidationError{
 					field:  "UpdatedAt",
 					reason: "embedded message failed validation",
 					cause:  err,
-				})
+				}
 			}
 		}
-	} else if v, ok := interface{}(m.GetUpdatedAt()).(interface{ Validate() error }); ok {
-		if err := v.Validate(); err != nil {
-			return ApplicationInfoValidationError{
-				field:  "UpdatedAt",
-				reason: "embedded message failed validation",
-				cause:  err,
-			}
-		}
+
 	}
 
 	if len(errors) > 0 {
-		return ApplicationInfoMultiError(errors)
+		return ApplicationMultiError(errors)
 	}
 
 	return nil
 }
 
-// ApplicationInfoMultiError is an error wrapping multiple validation errors
-// returned by ApplicationInfo.ValidateAll() if the designated constraints
-// aren't met.
-type ApplicationInfoMultiError []error
+// ApplicationMultiError is an error wrapping multiple validation errors
+// returned by Application.ValidateAll() if the designated constraints aren't met.
+type ApplicationMultiError []error
 
 // Error returns a concatenation of all the error messages it wraps.
-func (m ApplicationInfoMultiError) Error() string {
+func (m ApplicationMultiError) Error() string {
 	msgs := make([]string, 0, len(m))
 	for _, err := range m {
 		msgs = append(msgs, err.Error())
@@ -151,11 +158,11 @@ func (m ApplicationInfoMultiError) Error() string {
 }
 
 // AllErrors returns a list of validation violation errors.
-func (m ApplicationInfoMultiError) AllErrors() []error { return m }
+func (m ApplicationMultiError) AllErrors() []error { return m }
 
-// ApplicationInfoValidationError is the validation error returned by
-// ApplicationInfo.Validate if the designated constraints aren't met.
-type ApplicationInfoValidationError struct {
+// ApplicationValidationError is the validation error returned by
+// Application.Validate if the designated constraints aren't met.
+type ApplicationValidationError struct {
 	field  string
 	reason string
 	cause  error
@@ -163,22 +170,22 @@ type ApplicationInfoValidationError struct {
 }
 
 // Field function returns field value.
-func (e ApplicationInfoValidationError) Field() string { return e.field }
+func (e ApplicationValidationError) Field() string { return e.field }
 
 // Reason function returns reason value.
-func (e ApplicationInfoValidationError) Reason() string { return e.reason }
+func (e ApplicationValidationError) Reason() string { return e.reason }
 
 // Cause function returns cause value.
-func (e ApplicationInfoValidationError) Cause() error { return e.cause }
+func (e ApplicationValidationError) Cause() error { return e.cause }
 
 // Key function returns key value.
-func (e ApplicationInfoValidationError) Key() bool { return e.key }
+func (e ApplicationValidationError) Key() bool { return e.key }
 
 // ErrorName returns error name.
-func (e ApplicationInfoValidationError) ErrorName() string { return "ApplicationInfoValidationError" }
+func (e ApplicationValidationError) ErrorName() string { return "ApplicationValidationError" }
 
 // Error satisfies the builtin error interface
-func (e ApplicationInfoValidationError) Error() string {
+func (e ApplicationValidationError) Error() string {
 	cause := ""
 	if e.cause != nil {
 		cause = fmt.Sprintf(" | caused by: %v", e.cause)
@@ -190,14 +197,14 @@ func (e ApplicationInfoValidationError) Error() string {
 	}
 
 	return fmt.Sprintf(
-		"invalid %sApplicationInfo.%s: %s%s",
+		"invalid %sApplication.%s: %s%s",
 		key,
 		e.field,
 		e.reason,
 		cause)
 }
 
-var _ error = ApplicationInfoValidationError{}
+var _ error = ApplicationValidationError{}
 
 var _ interface {
 	Field() string
@@ -205,7 +212,7 @@ var _ interface {
 	Key() bool
 	Cause() error
 	ErrorName() string
-} = ApplicationInfoValidationError{}
+} = ApplicationValidationError{}
 
 // Validate checks the field values on CreateApplicationRequest with the rules
 // defined in the proto definition for this message. If any rules are
@@ -229,22 +236,33 @@ func (m *CreateApplicationRequest) validate(all bool) error {
 
 	var errors []error
 
-	// no validation rules for Name
-
-	if m.ApplicationType != nil {
-		// no validation rules for ApplicationType
-	}
-
-	if m.AccessTokenType != nil {
-		// no validation rules for AccessTokenType
-	}
-
-	if m.IdTokenLifetime != nil {
-		// no validation rules for IdTokenLifetime
-	}
-
-	if m.Type != nil {
-		// no validation rules for Type
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, CreateApplicationRequestValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, CreateApplicationRequestValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return CreateApplicationRequestValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
 	}
 
 	if len(errors) > 0 {
@@ -1015,9 +1033,34 @@ func (m *UpdateApplicationRequest) validate(all bool) error {
 
 	// no validation rules for Id
 
-	// no validation rules for Name
-
-	// no validation rules for IdTokenLifetime
+	if all {
+		switch v := interface{}(m.GetData()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, UpdateApplicationRequestValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, UpdateApplicationRequestValidationError{
+					field:  "Data",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetData()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return UpdateApplicationRequestValidationError{
+				field:  "Data",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
 
 	if len(errors) > 0 {
 		return UpdateApplicationRequestMultiError(errors)
