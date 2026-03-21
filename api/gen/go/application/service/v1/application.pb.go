@@ -8,6 +8,7 @@ package apppb
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "github.com/Servora-Kit/servora/api/gen/go/mapper/v1"
 	v1 "github.com/Servora-Kit/servora/api/gen/go/pagination/v1"
 	_ "github.com/go-kratos/kratos/v2/errors"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -773,10 +774,13 @@ var File_application_service_v1_application_proto protoreflect.FileDescriptor
 
 const file_application_service_v1_application_proto_rawDesc = "" +
 	"\n" +
-	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1epagination/v1/pagination.proto\"\xe1\x03\n" +
-	"\vApplication\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\x12\x1b\n" +
-	"\tclient_id\x18\x02 \x01(\tR\bclientId\x12\x12\n" +
+	"(application/service/v1/application.proto\x12\x16application.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\x13errors/errors.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16mapper/v1/mapper.proto\x1a\x1epagination/v1/pagination.proto\"\xbf\x04\n" +
+	"\vApplication\x12\x18\n" +
+	"\x02id\x18\x01 \x01(\tB\b\xca\xc1\x18\x04\n" +
+	"\x02IDR\x02id\x12+\n" +
+	"\tclient_id\x18\x02 \x01(\tB\x0e\xca\xc1\x18\n" +
+	"\n" +
+	"\bClientIDR\bclientId\x12\x12\n" +
 	"\x04name\x18\x03 \x01(\tR\x04name\x12#\n" +
 	"\rredirect_uris\x18\x04 \x03(\tR\fredirectUris\x12\x16\n" +
 	"\x06scopes\x18\x05 \x03(\tR\x06scopes\x12\x1f\n" +
@@ -784,13 +788,14 @@ const file_application_service_v1_application_proto_rawDesc = "" +
 	"grantTypes\x12)\n" +
 	"\x10application_type\x18\a \x01(\tR\x0fapplicationType\x12*\n" +
 	"\x11access_token_type\x18\b \x01(\tR\x0faccessTokenType\x12\x12\n" +
-	"\x04type\x18\t \x01(\tR\x04type\x12*\n" +
+	"\x04type\x18\t \x01(\tR\x04type\x12A\n" +
 	"\x11id_token_lifetime\x18\n" +
-	" \x01(\x05R\x0fidTokenLifetime\x12>\n" +
+	" \x01(\x05B\x15\xca\xc1\x18\x11\n" +
+	"\x0fIDTokenLifetimeR\x0fidTokenLifetime\x12F\n" +
 	"\n" +
-	"created_at\x18d \x01(\v2\x1a.google.protobuf.TimestampH\x00R\tcreatedAt\x88\x01\x01\x12>\n" +
+	"created_at\x18d \x01(\v2\x1a.google.protobuf.TimestampB\x06\xca\xc1\x18\x02\x10\x01H\x00R\tcreatedAt\x88\x01\x01\x12F\n" +
 	"\n" +
-	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampH\x01R\tupdatedAt\x88\x01\x01B\r\n" +
+	"updated_at\x18e \x01(\v2\x1a.google.protobuf.TimestampB\x06\xca\xc1\x18\x02\x10\x01H\x01R\tupdatedAt\x88\x01\x01:\x1b\xc2\xc1\x18\x17\b\x01\x12\x13common_proto_entityB\r\n" +
 	"\v_created_atB\r\n" +
 	"\v_updated_at\"S\n" +
 	"\x18CreateApplicationRequest\x127\n" +
