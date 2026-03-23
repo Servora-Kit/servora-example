@@ -8,7 +8,7 @@ package iampb
 
 import (
 	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authn/service/v1"
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/service/v1"
+	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -27,7 +27,7 @@ var File_servora_iam_service_v1_i_authn_proto protoreflect.FileDescriptor
 
 const file_servora_iam_service_v1_i_authn_proto_rawDesc = "" +
 	"\n" +
-	"$servora/iam/service/v1/i_authn.proto\x12\x16servora.iam.service.v1\x1a$servora/authn/service/v1/authn.proto\x1a\x1cgoogle/api/annotations.proto\x1a$servora/authz/service/v1/authz.proto2\xf8\f\n" +
+	"$servora/iam/service/v1/i_authn.proto\x12\x16servora.iam.service.v1\x1a$servora/authn/service/v1/authn.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cservora/authz/v1/authz.proto2\xf8\f\n" +
 	"\fAuthnService\x12\x9e\x01\n" +
 	"\rSignupByEmail\x12..servora.authn.service.v1.SignupByEmailRequest\x1a/.servora.authn.service.v1.SignupByEmailResponse\",\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02 :\x01*\"\x1b/v1/auth/signup/using-email\x12\xb5\x01\n" +
 	"\x14LoginByEmailPassword\x125.servora.authn.service.v1.LoginByEmailPasswordRequest\x1a6.servora.authn.service.v1.LoginByEmailPasswordResponse\".\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\":\x01*\"\x1d/v1/auth/login/email-password\x12\x96\x01\n" +

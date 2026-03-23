@@ -7,7 +7,7 @@
 package iampb
 
 import (
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/service/v1"
+	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/user/service/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -27,7 +27,7 @@ var File_servora_iam_service_v1_i_user_proto protoreflect.FileDescriptor
 
 const file_servora_iam_service_v1_i_user_proto_rawDesc = "" +
 	"\n" +
-	"#servora/iam/service/v1/i_user.proto\x12\x16servora.iam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a$servora/authz/service/v1/authz.proto\x1a\"servora/user/service/v1/user.proto2\xc9\t\n" +
+	"#servora/iam/service/v1/i_user.proto\x12\x16servora.iam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x1cservora/authz/v1/authz.proto\x1a\"servora/user/service/v1/user.proto2\xc9\t\n" +
 	"\vUserService\x12\x91\x01\n" +
 	"\x0fCurrentUserInfo\x12/.servora.user.service.v1.CurrentUserInfoRequest\x1a0.servora.user.service.v1.CurrentUserInfoResponse\"\x1b\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x0f\x12\r/v1/user/info\x12\x96\x01\n" +
 	"\aGetUser\x12'.servora.user.service.v1.GetUserRequest\x1a(.servora.user.service.v1.GetUserResponse\"8\xa2\xbb\x18\x1e\b\x02\x12\x10can_manage_users\x1a\bplatform\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/users/{id}\x12\x97\x01\n" +

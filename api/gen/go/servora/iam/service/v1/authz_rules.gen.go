@@ -3,7 +3,7 @@
 package iampb
 
 import (
-	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authz/service/v1"
+	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	authz "github.com/Servora-Kit/servora/pkg/authz"
 )
 

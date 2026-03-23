@@ -12,15 +12,15 @@ func ApplicationMapperPlan() *mapper.MapperPlan {
 	return &mapper.MapperPlan{
 		Presets: []string{"common_proto_entity"},
 		FieldMapping: map[string]string{
-			"ID":              "Id",
 			"ClientID":        "ClientId",
 			"IDTokenLifetime": "IdTokenLifetime",
+			"ID":              "Id",
 		},
 		FieldConverters: map[string]mapper.ConverterKind{
-			"Id":              mapper.ConverterUUIDString,
-			"IdTokenLifetime": mapper.ConverterIntInt32,
 			"CreatedAt":       mapper.ConverterTimestampTime,
 			"UpdatedAt":       mapper.ConverterTimestampTime,
+			"Id":              mapper.ConverterUUIDString,
+			"IdTokenLifetime": mapper.ConverterIntInt32,
 		},
 	}
 }

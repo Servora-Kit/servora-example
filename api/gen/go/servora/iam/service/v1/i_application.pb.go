@@ -8,7 +8,7 @@ package iampb
 
 import (
 	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/application/service/v1"
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/service/v1"
+	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -27,7 +27,7 @@ var File_servora_iam_service_v1_i_application_proto protoreflect.FileDescriptor
 
 const file_servora_iam_service_v1_i_application_proto_rawDesc = "" +
 	"\n" +
-	"*servora/iam/service/v1/i_application.proto\x12\x16servora.iam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a0servora/application/service/v1/application.proto\x1a$servora/authz/service/v1/authz.proto2\x8c\t\n" +
+	"*servora/iam/service/v1/i_application.proto\x12\x16servora.iam.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a0servora/application/service/v1/application.proto\x1a\x1cservora/authz/v1/authz.proto2\x8c\t\n" +
 	"\x12ApplicationService\x12\xbc\x01\n" +
 	"\x11CreateApplication\x128.servora.application.service.v1.CreateApplicationRequest\x1a9.servora.application.service.v1.CreateApplicationResponse\"2\xa2\xbb\x18\x13\b\x02\x12\x05admin\x1a\bplatform\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/v1/applications\x12\xa4\x01\n" +
 	"\x0eGetApplication\x125.servora.application.service.v1.GetApplicationRequest\x1a6.servora.application.service.v1.GetApplicationResponse\"#\xa2\xbb\x18\x02\b\x01\x82\xd3\xe4\x93\x02\x17\x12\x15/v1/applications/{id}\x12\xa5\x01\n" +
