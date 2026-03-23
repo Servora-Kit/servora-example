@@ -6,6 +6,7 @@
 *.dylib
 ./server
 /protoc-gen-servora-authz
+/protoc-gen-servora-audit
 
 # Test binary, built with `go test -c`
 *.test

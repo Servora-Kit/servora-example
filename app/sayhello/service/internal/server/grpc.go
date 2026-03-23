@@ -22,16 +22,10 @@ func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, re
 		WithoutRateLimit().
 		Build()
 
-	// Emit an audit event for every Hello call to demonstrate E2E audit pipeline.
+	// Audit rules are generated from proto annotations in sayhello.proto.
 	auditMw := audit.Audit(
 		audit.WithRecorder(recorder),
-		audit.WithRules(map[string]audit.Rule{
-			sayhellov1.SayHelloService_Hello_FullMethodName: {
-				EventType:     audit.EventTypeResourceMutation,
-				TargetType:    "greeting",
-				RecordOnError: true,
-			},
-		}),
+		audit.WithRulesFunc(sayhellov1.AuditRules),
 	)
 	mw = append(mw, auditMw)
 

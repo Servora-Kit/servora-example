@@ -25,8 +25,9 @@ API_DIR     := api
 PKG_DIR     := pkg
 
 # Buf generation templates (fixed filenames; OpenAPI uses per-service files via app.mk)
-BUF_GO_GEN_TEMPLATE := buf.go.gen.yaml
-BUF_TS_GEN_TEMPLATE := buf.typescript.gen.yaml
+BUF_GO_GEN_TEMPLATE   := buf.go.gen.yaml
+BUF_AUDIT_GEN_TEMPLATE := buf.audit.gen.yaml
+BUF_TS_GEN_TEMPLATE   := buf.typescript.gen.yaml
 
 # Find all service Makefiles in app directory; derive per-service buf.typescript.gen.yaml
 SRCS_MK := $(foreach dir, app, $(wildcard $(dir)/*/*/Makefile))
@@ -203,10 +204,12 @@ gen: api openapi wire ent
 api: api-go api-ts
 	@echo "$(GREEN)✓ Protobuf code generated $(RESET)"
 
-# generate protobuf api go code (includes authz rules + mapper plans via servora custom plugins)
+# generate protobuf api go code (includes authz rules + mapper plans + audit rules via servora custom plugins)
 api-go:
 	@echo "$(CYAN)Generating protobuf Go code via $(BUF_GO_GEN_TEMPLATE)...$(RESET)"
 	@buf generate --template $(BUF_GO_GEN_TEMPLATE)
+	@echo "$(CYAN)Generating audit rules via $(BUF_AUDIT_GEN_TEMPLATE)...$(RESET)"
+	@buf generate --template $(BUF_AUDIT_GEN_TEMPLATE)
 
 # generate protobuf api typescript code for web (shared api/gen/ts + per-service templates under app/*/service/api/)
 api-ts:
