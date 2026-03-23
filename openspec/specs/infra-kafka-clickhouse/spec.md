@@ -58,3 +58,17 @@ Service source code in `app/iam/service/` and `app/sayhello/service/` SHALL rema
 
 - **WHEN** `go build ./app/iam/service/...` is run
 - **THEN** compilation SHALL succeed (service code is preserved, only toolchain references removed)
+
+### Requirement: Audit service in docker-compose.dev
+
+`docker-compose.dev.yaml` SHALL include an audit service container that:
+- Builds from `app/audit/service/`
+- Depends on `kafka` (healthy) and `clickhouse` (healthy)
+- Mounts `app/audit/service/configs/` for configuration
+- Exposes gRPC and HTTP ports
+- Connects to `servora-network`
+
+#### Scenario: make compose.dev starts audit service
+
+- **WHEN** `make compose.dev` is run
+- **THEN** the audit service container SHALL start after kafka and clickhouse are healthy

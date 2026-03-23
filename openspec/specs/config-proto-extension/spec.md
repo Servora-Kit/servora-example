@@ -63,6 +63,9 @@ Defines requirements for the `config-proto-extension` capability.
 - `string emitter_type` — emitter 类型（"broker" / "log" / "noop"）
 - `string topic` — 审计事件 Kafka topic（默认 "servora.audit.events"）
 - `string service_name` — 覆盖 App.name 作为审计事件中的服务标识
+- `int32 consumer_batch_size` — consumer 批量写入大小（默认 100，由 app/audit/service 消费）
+- `google.protobuf.Duration consumer_flush_interval` — consumer 批量刷新间隔（默认 1s，由 app/audit/service 消费）
+- `int32 retention_days` — ClickHouse 数据保留天数（默认 90，由 app/audit/service 消费）
 
 #### Scenario: Audit enabled with broker emitter
 
@@ -78,6 +81,16 @@ Defines requirements for the `config-proto-extension` capability.
 
 - **WHEN** config has `audit.enabled: false` or `audit` is nil
 - **THEN** `NewRecorderOptional` SHALL create a `NoopEmitter`
+
+#### Scenario: Consumer batch config applies to audit service
+
+- **WHEN** config has `audit.consumer_batch_size: 200` and `audit.consumer_flush_interval: 2s`
+- **THEN** the audit service BatchWriter SHALL use batch size 200 and flush interval 2s
+
+#### Scenario: Retention days config applies to DDL
+
+- **WHEN** config has `audit.retention_days: 30`
+- **THEN** the ClickHouse DDL SHALL use `TTL occurred_at + INTERVAL 30 DAY`
 
 ### Requirement: Logger exposes underlying zap instance
 
