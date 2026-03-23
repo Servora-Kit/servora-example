@@ -77,5 +77,5 @@
 ## 11. 文档与收尾
 
 - [x] 11.1 更新 `docs/plans/2026-03-20-keycloak-openfga-audit-design.md`：Phase 3 状态更新、新增约束（去特化相关）
-- [ ] 11.2 E2E 验证：`make compose.dev` → 调用 sayhello Hello → 确认审计事件落库 → `GET /v1/audit/events` 可见
-- [ ] 11.3 提交代码（按原子性分组提交）
+- [x] 11.2 E2E 验证：`make compose.dev` → 调用 sayhello Hello → 确认审计事件落库 → `GET /v1/audit/events` 可见
+- [x] 11.3 提交代码（按原子性分组提交）
