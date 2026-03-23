@@ -6,7 +6,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/transport"
 
-	authzpb "github.com/Servora-Kit/servora/api/gen/go/servora/authz/service/v1"
+	authzpb "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
 	userpb "github.com/Servora-Kit/servora/api/gen/go/servora/user/service/v1"
 	"github.com/Servora-Kit/servora/pkg/actor"
 )
@@ -16,11 +16,11 @@ type fakeTransport struct {
 	operation string
 }
 
-func (f *fakeTransport) Kind() transport.Kind             { return transport.KindHTTP }
-func (f *fakeTransport) Endpoint() string                 { return "" }
-func (f *fakeTransport) Operation() string                { return f.operation }
-func (f *fakeTransport) RequestHeader() transport.Header  { return &fakeHeader{} }
-func (f *fakeTransport) ReplyHeader() transport.Header    { return &fakeHeader{} }
+func (f *fakeTransport) Kind() transport.Kind            { return transport.KindHTTP }
+func (f *fakeTransport) Endpoint() string               { return "" }
+func (f *fakeTransport) Operation() string              { return f.operation }
+func (f *fakeTransport) RequestHeader() transport.Header { return &fakeHeader{} }
+func (f *fakeTransport) ReplyHeader() transport.Header   { return &fakeHeader{} }
 
 type fakeHeader struct{}
 
@@ -40,9 +40,19 @@ func userActorCtx(ctx context.Context, userID string) context.Context {
 
 const testOp = "/test.service.v1.TestService/TestMethod"
 
-// TestAuthz_NoRule_Forbidden checks that operations with no rule are rejected (fail-closed).
-func TestAuthz_NoRule_Forbidden(t *testing.T) {
-	mw := Authz() // no rules configured
+// fakeAuthorizer is a minimal Authorizer for unit tests.
+type fakeAuthorizer struct {
+	allowed bool
+	err     error
+}
+
+func (f *fakeAuthorizer) IsAuthorized(_ context.Context, _, _, _, _ string) (bool, error) {
+	return f.allowed, f.err
+}
+
+// TestServer_NoRule_Forbidden checks that operations with no rule are rejected (fail-closed).
+func TestServer_NoRule_Forbidden(t *testing.T) {
+	mw := Server(nil) // no rules configured
 
 	handler := mw(func(ctx context.Context, req any) (any, error) {
 		t.Fatal("handler should not be called when no rule exists")
@@ -56,9 +66,9 @@ func TestAuthz_NoRule_Forbidden(t *testing.T) {
 	}
 }
 
-// TestAuthz_ModeNone_Passthrough checks that AUTHZ_MODE_NONE skips authorization.
-func TestAuthz_ModeNone_Passthrough(t *testing.T) {
-	mw := Authz(WithAuthzRules(map[string]AuthzRule{
+// TestServer_ModeNone_Passthrough checks that AUTHZ_MODE_NONE skips authorization.
+func TestServer_ModeNone_Passthrough(t *testing.T) {
+	mw := Server(nil, WithRules(map[string]AuthzRule{
 		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_NONE},
 	}))
 
@@ -81,9 +91,9 @@ func TestAuthz_ModeNone_Passthrough(t *testing.T) {
 	}
 }
 
-// TestAuthz_CheckMode_AnonymousActor_Forbidden checks that anonymous actors are denied.
-func TestAuthz_CheckMode_AnonymousActor_Forbidden(t *testing.T) {
-	mw := Authz(WithAuthzRules(map[string]AuthzRule{
+// TestServer_CheckMode_AnonymousActor_Forbidden checks that anonymous actors are denied.
+func TestServer_CheckMode_AnonymousActor_Forbidden(t *testing.T) {
+	mw := Server(&fakeAuthorizer{allowed: true}, WithRules(map[string]AuthzRule{
 		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
 	}))
 
@@ -92,7 +102,6 @@ func TestAuthz_CheckMode_AnonymousActor_Forbidden(t *testing.T) {
 		return nil, nil
 	})
 
-	// No actor in context (anonymous)
 	ctx := transportCtx(testOp)
 	_, err := handler(ctx, nil)
 	if err == nil {
@@ -100,18 +109,17 @@ func TestAuthz_CheckMode_AnonymousActor_Forbidden(t *testing.T) {
 	}
 }
 
-// TestAuthz_CheckMode_NoActor_Forbidden checks that missing actor is denied.
-func TestAuthz_CheckMode_NoActor_Forbidden(t *testing.T) {
-	mw := Authz(WithAuthzRules(map[string]AuthzRule{
+// TestServer_CheckMode_NoActor_Forbidden checks that an anonymous-type actor is denied.
+func TestServer_CheckMode_NoActor_Forbidden(t *testing.T) {
+	mw := Server(&fakeAuthorizer{allowed: true}, WithRules(map[string]AuthzRule{
 		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
 	}))
 
 	handler := mw(func(ctx context.Context, req any) (any, error) {
-		t.Fatal("handler should not be called with no actor")
+		t.Fatal("handler should not be called with anonymous-type actor")
 		return nil, nil
 	})
 
-	// Actor exists but is anonymous type
 	ctx := transport.NewServerContext(context.Background(), &fakeTransport{operation: testOp})
 	ctx = actor.NewContext(ctx, &anonymousActor{})
 	_, err := handler(ctx, nil)
@@ -120,30 +128,29 @@ func TestAuthz_CheckMode_NoActor_Forbidden(t *testing.T) {
 	}
 }
 
-// TestAuthz_CheckMode_NilFGA_ServiceUnavailable checks that nil FGA client returns 503.
-func TestAuthz_CheckMode_NilFGA_ServiceUnavailable(t *testing.T) {
-	mw := Authz(
-		WithAuthzRules(map[string]AuthzRule{
-			testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
-		}),
-		// no WithFGAClient → fga is nil
-	)
+// TestServer_CheckMode_NilAuthorizer_ServiceUnavailable checks that nil authorizer returns 503.
+func TestServer_CheckMode_NilAuthorizer_ServiceUnavailable(t *testing.T) {
+	mw := Server(nil, WithRules(map[string]AuthzRule{
+		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
+	}))
 
 	handler := mw(func(ctx context.Context, req any) (any, error) {
-		t.Fatal("handler should not be called with nil FGA client")
+		t.Fatal("handler should not be called with nil authorizer")
 		return nil, nil
 	})
 
 	ctx := userActorCtx(transportCtx(testOp), "user-123")
 	_, err := handler(ctx, nil)
 	if err == nil {
-		t.Fatal("expected error for nil FGA client")
+		t.Fatal("expected error for nil authorizer")
 	}
 }
 
-// TestAuthz_NoTransport_Passthrough checks that requests without server transport are passed through.
-func TestAuthz_NoTransport_Passthrough(t *testing.T) {
-	mw := Authz() // no rules needed — no transport means skip
+// TestServer_CheckMode_Allowed checks that an allowed subject passes through.
+func TestServer_CheckMode_Allowed(t *testing.T) {
+	mw := Server(&fakeAuthorizer{allowed: true}, WithRules(map[string]AuthzRule{
+		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
+	}))
 
 	called := false
 	handler := mw(func(ctx context.Context, req any) (any, error) {
@@ -151,7 +158,44 @@ func TestAuthz_NoTransport_Passthrough(t *testing.T) {
 		return "ok", nil
 	})
 
-	// Plain background context, no transport
+	ctx := userActorCtx(transportCtx(testOp), "user-123")
+	_, err := handler(ctx, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !called {
+		t.Fatal("handler was not called")
+	}
+}
+
+// TestServer_CheckMode_Denied checks that a denied subject gets 403.
+func TestServer_CheckMode_Denied(t *testing.T) {
+	mw := Server(&fakeAuthorizer{allowed: false}, WithRules(map[string]AuthzRule{
+		testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
+	}))
+
+	handler := mw(func(ctx context.Context, req any) (any, error) {
+		t.Fatal("handler should not be called for denied subject")
+		return nil, nil
+	})
+
+	ctx := userActorCtx(transportCtx(testOp), "user-123")
+	_, err := handler(ctx, nil)
+	if err == nil {
+		t.Fatal("expected error for denied subject")
+	}
+}
+
+// TestServer_NoTransport_Passthrough checks that requests without server transport are passed through.
+func TestServer_NoTransport_Passthrough(t *testing.T) {
+	mw := Server(nil) // no rules needed — no transport means skip
+
+	called := false
+	handler := mw(func(ctx context.Context, req any) (any, error) {
+		called = true
+		return "ok", nil
+	})
+
 	_, err := handler(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -161,8 +205,38 @@ func TestAuthz_NoTransport_Passthrough(t *testing.T) {
 	}
 }
 
-// TestAuthz_IDField_Empty_UsesDefault checks that an empty IDField results in "default" object ID.
-func TestAuthz_IDField_Empty_UsesDefault(t *testing.T) {
+// TestServer_DecisionLogger_Called checks that WithDecisionLogger is invoked.
+func TestServer_DecisionLogger_Called(t *testing.T) {
+	var logged *DecisionDetail
+	mw := Server(
+		&fakeAuthorizer{allowed: true},
+		WithRules(map[string]AuthzRule{
+			testOp: {Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, Relation: "admin", ObjectType: "platform"},
+		}),
+		WithDecisionLogger(func(_ context.Context, d DecisionDetail) {
+			logged = &d
+		}),
+	)
+
+	handler := mw(func(ctx context.Context, req any) (any, error) { return nil, nil })
+	ctx := userActorCtx(transportCtx(testOp), "user-123")
+	_, err := handler(ctx, nil)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if logged == nil {
+		t.Fatal("expected DecisionLogger to be called")
+	}
+	if !logged.Allowed {
+		t.Errorf("logged.Allowed = false, want true")
+	}
+	if logged.Operation != testOp {
+		t.Errorf("logged.Operation = %q, want %q", logged.Operation, testOp)
+	}
+}
+
+// TestResolveObject_IDField_Empty_UsesDefault checks that an empty IDField results in "default".
+func TestResolveObject_IDField_Empty_UsesDefault(t *testing.T) {
 	rule := AuthzRule{Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, ObjectType: "platform", IDField: ""}
 	objectType, objectID, err := resolveObject(rule, nil, "default")
 	if err != nil {
@@ -176,8 +250,8 @@ func TestAuthz_IDField_Empty_UsesDefault(t *testing.T) {
 	}
 }
 
-// TestAuthz_IDField_Empty_CustomDefault checks WithDefaultObjectID option.
-func TestAuthz_IDField_Empty_CustomDefault(t *testing.T) {
+// TestResolveObject_IDField_Empty_CustomDefault checks WithDefaultObjectID option.
+func TestResolveObject_IDField_Empty_CustomDefault(t *testing.T) {
 	rule := AuthzRule{Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, ObjectType: "platform", IDField: ""}
 	objectType, objectID, err := resolveObject(rule, nil, "global")
 	if err != nil {
@@ -191,8 +265,8 @@ func TestAuthz_IDField_Empty_CustomDefault(t *testing.T) {
 	}
 }
 
-// TestAuthz_IDField_Set_ExtractedFromProto checks that IDField is extracted from the proto request.
-func TestAuthz_IDField_Set_ExtractedFromProto(t *testing.T) {
+// TestResolveObject_IDField_Set_ExtractedFromProto checks that IDField is extracted from the proto request.
+func TestResolveObject_IDField_Set_ExtractedFromProto(t *testing.T) {
 	rule := AuthzRule{Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, ObjectType: "user", IDField: "id"}
 	req := &userpb.GetUserRequest{Id: "user-abc-123"}
 
@@ -208,8 +282,8 @@ func TestAuthz_IDField_Set_ExtractedFromProto(t *testing.T) {
 	}
 }
 
-// TestAuthz_IDField_NotFound_Error checks that a missing proto field returns an error.
-func TestAuthz_IDField_NotFound_Error(t *testing.T) {
+// TestResolveObject_IDField_NotFound_Error checks that a missing proto field returns an error.
+func TestResolveObject_IDField_NotFound_Error(t *testing.T) {
 	rule := AuthzRule{Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, ObjectType: "user", IDField: "nonexistent_field"}
 	req := &userpb.GetUserRequest{Id: "user-abc-123"}
 
@@ -219,8 +293,8 @@ func TestAuthz_IDField_NotFound_Error(t *testing.T) {
 	}
 }
 
-// TestAuthz_ObjectType_Empty_Error checks that an empty ObjectType in the rule returns an error.
-func TestAuthz_ObjectType_Empty_Error(t *testing.T) {
+// TestResolveObject_ObjectType_Empty_Error checks that an empty ObjectType returns an error.
+func TestResolveObject_ObjectType_Empty_Error(t *testing.T) {
 	rule := AuthzRule{Mode: authzpb.AuthzMode_AUTHZ_MODE_CHECK, ObjectType: ""}
 	_, _, err := resolveObject(rule, nil, "default")
 	if err == nil {
@@ -248,14 +322,14 @@ func TestExtractProtoField_EmptyFieldValue_Error(t *testing.T) {
 // anonymousActor is a test actor with TypeAnonymous.
 type anonymousActor struct{}
 
-func (a *anonymousActor) ID() string                  { return "" }
-func (a *anonymousActor) Type() actor.Type            { return actor.TypeAnonymous }
-func (a *anonymousActor) DisplayName() string         { return "anonymous" }
-func (a *anonymousActor) Email() string               { return "" }
-func (a *anonymousActor) Subject() string             { return "" }
-func (a *anonymousActor) ClientID() string            { return "" }
-func (a *anonymousActor) Realm() string               { return "" }
-func (a *anonymousActor) Roles() []string             { return []string{} }
-func (a *anonymousActor) Scopes() []string            { return []string{} }
-func (a *anonymousActor) Attrs() map[string]string    { return map[string]string{} }
-func (a *anonymousActor) Scope(_ string) string       { return "" }
+func (a *anonymousActor) ID() string               { return "" }
+func (a *anonymousActor) Type() actor.Type         { return actor.TypeAnonymous }
+func (a *anonymousActor) DisplayName() string      { return "anonymous" }
+func (a *anonymousActor) Email() string            { return "" }
+func (a *anonymousActor) Subject() string          { return "" }
+func (a *anonymousActor) ClientID() string         { return "" }
+func (a *anonymousActor) Realm() string            { return "" }
+func (a *anonymousActor) Roles() []string          { return []string{} }
+func (a *anonymousActor) Scopes() []string         { return []string{} }
+func (a *anonymousActor) Attrs() map[string]string { return map[string]string{} }
+func (a *anonymousActor) Scope(_ string) string    { return "" }
