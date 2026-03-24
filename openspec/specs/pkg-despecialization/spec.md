@@ -74,58 +74,36 @@ Defines requirements for the `pkg-despecialization` capability.
 - **WHEN** `NewSystemActor("my-svc")` is called
 - **THEN** `ID()` SHALL return `"my-svc"` (not `"system:my-svc"`)
 
-### Requirement: ScopeFromHeaders middleware is configurable
-
-`pkg/transport/server/middleware` SHALL provide a `ScopeFromHeaders(bindings ...ScopeBinding)` middleware that reads scope values from configurable headers. It SHALL NOT hardcode any specific header names or scope keys.
-
-`ScopeBinding` SHALL define: `Header string` (HTTP header name), `ScopeKey string` (actor scope key), and optional `Validate func(string) error` (e.g. UUID validation).
-
-#### Scenario: Custom scope bindings
-
-- **WHEN** `ScopeFromHeaders(ScopeBinding{Header: "X-Tenant-ID", ScopeKey: "tenant_id", Validate: uuidValidator})` is configured
-- **AND** a request arrives with header `X-Tenant-ID: abc-123-uuid`
-- **THEN** the actor's scope `"tenant_id"` SHALL be set to `"abc-123-uuid"`
-
-#### Scenario: Missing header is silently skipped
-
-- **WHEN** a binding for `X-Tenant-ID` is configured
-- **AND** the request does not contain that header
-- **THEN** the scope key SHALL remain unset and the middleware SHALL pass through
-
-#### Scenario: Validation failure returns error
-
-- **WHEN** a binding has a UUID validator
-- **AND** the header value is not a valid UUID
-- **THEN** the middleware SHALL return a 400 error
-
 ### Requirement: Authz middleware supports multi-actor-type principal construction
 
-`pkg/authz` SHALL dynamically construct the OpenFGA principal string based on `actor.Type()` and `actor.ID()`, using the pattern `string(a.Type()) + ":" + a.ID()`. It SHALL NOT hardcode `"user:"` prefix.
+`pkg/authz` middleware SHALL dynamically construct the OpenFGA principal string based on `actor.Type()` and `actor.ID()`, using the pattern `string(a.Type()) + ":" + a.ID()`. It SHALL NOT hardcode `"user:"` prefix.
+
+This logic SHALL reside in `pkg/authz/authz.go` (middleware layer), not in the `Authorizer` engine. The engine receives the fully constructed subject string.
 
 #### Scenario: User actor principal
 
 - **WHEN** a request from a user actor with Type `"user"` and ID `"alice"` is authorized
-- **THEN** the middleware SHALL construct principal `"user:alice"`
+- **THEN** the middleware SHALL construct principal `"user:alice"` and pass it to `authorizer.IsAuthorized`
 
 #### Scenario: Service actor principal
 
 - **WHEN** a request from a service actor with Type `"service"` and ID `"order-svc"` is authorized
-- **THEN** the middleware SHALL construct principal `"service:order-svc"` and proceed with the Check
+- **THEN** the middleware SHALL construct principal `"service:order-svc"` and pass it to `authorizer.IsAuthorized`
 
 ### Requirement: Authz middleware allows configurable non-checkable actor types
 
-`pkg/authz` SHALL NOT hardcode which actor types are rejected. By default, `anonymous` actors SHALL be rejected (no identity), but `user` and `service` actors SHALL both be allowed through to the Check. A `WithAllowedActorTypes(...actor.Type)` option MAY be added for fine-grained control.
+`pkg/authz` middleware SHALL NOT hardcode which actor types are rejected. By default, `anonymous` actors SHALL be rejected (no identity), but `user` and `service` actors SHALL both be allowed through to the `authorizer.IsAuthorized` call.
 
 #### Scenario: Service actor passes authz check
 
 - **WHEN** a service actor with ID `"order-svc"` makes a request to a CHECK operation
-- **AND** the OpenFGA check returns allowed
+- **AND** the `Authorizer.IsAuthorized` returns `true`
 - **THEN** the middleware SHALL allow the request
 
 #### Scenario: Anonymous actor is rejected
 
 - **WHEN** an anonymous actor makes a request to a CHECK operation
-- **THEN** the middleware SHALL return 403 AUTHZ_DENIED
+- **THEN** the middleware SHALL return 403 AUTHZ_DENIED without calling the `Authorizer`
 
 ### Requirement: Authz default object ID is configurable
 
