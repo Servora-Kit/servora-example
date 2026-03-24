@@ -1,332 +1,137 @@
-# 设计文档：Servora 接入 Keycloak 后的认证、授权、审计与框架演进
+# 设计文档：Servora Keycloak 接入
 
-**日期：** 2026-03-20
-**最后更新：** 2026-03-24
-**状态：** Phase 1–3.5 已完成 · Phase 4（Keycloak 接入）待启动
-
----
-
-## 进度总览
-
-| 阶段 | 名称 | 状态 | OpenSpec |
-|------|------|------|---------|
-| Phase 1 | 框架骨架 (framework-audit-skeleton) | ✅ 已完成 | `openspec/changes/archive/2026-03-20-framework-audit-skeleton/` |
-| Phase 2a | 审计 emit 接入（pkg 层） | ✅ 已完成 | `openspec/changes/archive/2026-03-22-audit-emit-integration/` |
-| Phase 2b | Audit Service + ClickHouse | ✅ 已完成 | `openspec/changes/archive/2026-03-20-audit-service-clickhouse/` |
-| Phase 3 | all-in-proto 代码生成 + pkg 去特化 | ✅ 已完成 | `openspec/changes/archive/2026-03-23-proto-codegen-audit-authz/` |
-| Phase 3.5 | authn/authz 接口化 + 可插拔引擎 | ✅ 已完成 | `openspec/changes/archive/2026-03-24-pkg-auth-pluggable/` |
-| Phase 4 | Keycloak 接入 | 📋 规划中 | — |
-| Phase 5 | Servora 生态扩展 | 📋 规划中 | — |
-
-**已沉淀 specs（21 个）：** `openspec/specs/` 下的 actor-v2、audit-clickhouse-storage、audit-codegen-integration、audit-kafka-consumer、audit-proto、audit-query-api、audit-runtime、audit-service-scaffold、authn-interface、authz-audit-emit、authz-interface、broker-abstraction、config-proto-extension、identity-header-enhancement、infra-kafka-clickhouse、logger-refactor、openfga-audit-emit、openfga-framework-api、pkg-despecialization、proto-package-governance、protoc-gen-servora-audit。
+**日期：** 2026-03-24
+**前身：** 2026-03-20 认证/授权/审计框架演进（Phase 1–3.5 已归档）
+**状态：** 规划中
 
 ---
 
-## 1. 背景与目标
+## 前置工作归档
 
-Servora 当前仓库同时承载了框架能力（`pkg/`、`cmd/`、`api/`）与一个早期自建 IAM 服务实现。现阶段已经明确：
-
-- 未来希望将 **Servora 打造成面向微服务快速开发的脚手架与框架生态**；
-- `pkg/` 中的能力会逐步框架化、通用化，并最终作为 **Servora 生态 Go 包** 对外发布；
-- 认证引入 **Keycloak**，授权继续采用 **OpenFGA**，审计采用 **Kafka + ClickHouse**；
-- 当前 IAM 和 sayhello 服务已从工具链（Makefile、docker-compose.dev）中移除，保留代码作为未来新服务的参考模板。
+Phase 1–3.5（框架骨架、审计全链路、代码生成、authn/authz 接口化）已全部完成，详见：
+- **归档文档**：`docs/plans/archive/2026-03-20-framework-audit-authz-phases.md`
+- **OpenSpec 归档**：`openspec/changes/archive/` 下的 5 个已归档 change
+- **沉淀 specs（21 个）**：`openspec/specs/` 目录
 
 ---
 
-## 2. 核心决策（不变）
+## 背景
+
+Servora 框架层的认证、授权、审计基础设施已就绪：
+- `pkg/authn`：可插拔 `Authenticator` 接口，现有 `jwt/` 和 `noop/` 引擎
+- `pkg/authz`：可插拔 `Authorizer` 接口，现有 `openfga/` 和 `noop/` 引擎
+- `pkg/audit`：全链路审计（Kafka → Audit Service → ClickHouse）
+- `pkg/actor`：通用 principal 模型（user/service/anonymous/system）
+
+下一步是接入 **Keycloak** 作为认证中心，完成从自建 IAM 到外部 IdP 的切换。
+
+---
+
+## 核心决策
 
 | 决策点 | 结论 |
 |---|---|
-| 认证中心 | 使用 **Keycloak** |
-| 网关认证策略 | 由 **Traefik / Gateway 统一验 token** |
-| 业务服务是否重复验 JWT | 默认 **不重复验**，优先信任网关注入的 principal header |
-| 授权底座 | 继续使用 **OpenFGA** |
-| 授权执行位置 | **各业务服务本地** 接入 `pkg/authz` |
-| 是否保留中央 IAM/AuthZ 在线代理 | **不保留**；最多保留薄的管理/后台能力 |
-| 审计架构 | **中心化 Audit Service + 非中心化 authz/audit emit** |
-| 审计总线 | 先支持 **Kafka**（franz-go），后续框架化支持更多 broker |
-| actor 模型 | **通用 principal 模型**，不直接镜像 Keycloak claims |
-| 审计规则配置方式 | 采用 **all-in-proto + 注解 + 代码生成 + middleware** |
-| broker / transport 演进方向 | 在 Servora 内部建设自有 `pkg` 生态，参考外部项目但不以其为核心依赖 |
+| 认证中心 | **Keycloak** |
+| 网关认证 | 网关统一验 token → 注入 principal header → 业务服务信任 header |
+| 网关选型 | 先用 **Traefik**，但保持可插拔（配置化，不硬绑） |
+| 业务服务验 JWT | 默认**不重复验**，信任网关 header；`pkg/authn/jwt/` 引擎保留用于需要直接验 JWT 的场景 |
+| IAM 服务 | **保留**作为示例服务，不清理 |
+| 前端 | **暂不对接**，当前无需运行前端 |
+| actor 模型 | `Keycloak claims → 网关 header → HeaderAuthenticator → actor.Actor`，业务服务只依赖 actor |
 
 ---
 
-## 3. 职责分工（不变）
+## 职责分工
 
-### 3.1 Keycloak
-负责用户认证、OIDC/OAuth2 标准流程、token 签发、JWKS/discovery、client/realm/role 管理。
-不负责业务资源级授权、OpenFGA 关系建模、审计存储。
-
-### 3.2 网关（Traefik）
-负责统一入口、对接 Keycloak、验证 token、将 principal 注入上游请求头、粗粒度入口控制。
-不负责细粒度授权判断、业务资源审计。
-
-### 3.3 各业务服务
-从 gateway header 构建 actor → 本地 `pkg/authz` → 直接调用 OpenFGA → 产出审计事件。
-
-### 3.4 OpenFGA
-关系模型存储、Check/ListObjects/tuple write/delete。
-
-### 3.5 Audit Service（✅ Phase 2b 已建）
-消费审计 topic → 校验反序列化 → 落库（ClickHouse） → 提供查询统计能力。
-
----
-
-## 4. Phase 1 已完成：框架骨架
-
-> 详细设计、spec 与实现索引见 `openspec/changes/archive/2026-03-20-framework-audit-skeleton/`。
-
-| 交付物 | 关键决策 |
-|--------|---------|
-| pkg/logger v2 ⚡ | 暴力重构：`New(app)` / `For(l,"mod")` / `With(l,"mod")` / `Zap()` / `Sync()` |
-| Actor v2 ⚡ | 扩展为完整身份模型（Subject/ClientID/Realm/Roles/Scopes/Attrs），新增 ServiceActor |
-| IdentityFromHeader v2 | 8 种 gateway header → Actor v2，支持 WithHeaderMapping |
-| audit.proto + annotations.proto | AuditEvent、4 typed detail、AuditRule method option |
-| conf.proto 扩展 | Kafka（含 SASL）、ClickHouse、Audit 配置 |
-| pkg/broker + kafka | **franz-go**（非 sarama）；Broker/Event/Subscriber/MiddlewareFunc 接口；参考 kratos-transport |
-| pkg/audit 骨架 | Emitter → Recorder → Middleware；3 种 emitter（Noop/Log/Broker） |
-| 基础设施 | Kafka KRaft + ClickHouse；IAM/sayhello 从工具链移除 |
-
-### 实现约束收敛（Phase 1 + 2a 合并）
-
-以下约束在 Phase 1–2a 实现过程中确立，后续阶段必须遵循：
-
-1. **Optional-init 模式统一**：所有可选基础设施组件（Kafka、ClickHouse、OpenFGA）使用 `NewXxxOptional` 函数，nil 配置返回 nil 而非 panic，调用方 nil-check 后使用
-2. **Proto 集中配置**：所有框架级配置（Kafka/ClickHouse/Audit）通过 `api/protos/servora/conf/v1/conf.proto` 统一管理，不做分散的 Go config struct
-3. **Logger 桥接模式**：第三方库（franz-go kzap、GORM、Ent）通过 `logger.Zap()` 获取底层 `*zap.Logger`，不直接传递 Kratos `log.Logger`
-4. **Module 命名规范**：`logger.For(l, "module")` 中 module 使用 `component/layer/service` 格式（如 `"clickhouse/data/audit"`、`"kafka/broker/pkg"`、`"core/data/iam"`），不带 `-service` 后缀。pkg 层用 `pkg` 作 service 段（如 `"kafka/broker/pkg"`），app 层用服务名（如 `"clickhouse/data/audit"`）
-5. **broker 接口扩展点**：新增 broker 实现（NATS、RabbitMQ 等）只需实现 `broker.Broker` interface，不需修改 `pkg/broker` 核心
-6. **OpenSpec 主 spec 格式**：必须包含 `## Purpose` section、`## Requirements`（非 `ADDED Requirements`）、每条 requirement 第一行含 SHALL/MUST、至少一个 `#### Scenario`
-7. **Proto 包治理规范**：新增或迁移后的 proto 必须使用 `servora.*` package、目录需与 package 命名空间对齐、`go_package` 必须落到 `api/gen/go/servora/**`，对应主 spec 为 `openspec/specs/proto-package-governance/spec.md`
-8. **pkg 框架包去特化原则**：`pkg/` 下的框架包不得包含任何业务特化逻辑（如硬编码 `"user:"` 前缀、硬编码业务 model 的 computed relations）。业务特定配置通过 functional option 由调用方注入。`pkg/authn` 和 `pkg/authz` 仅定义接口，具体引擎实现位于子目录（如 `jwt/`、`openfga/`、`noop/`）
-9. **ClientOption 模式**：`pkg/openfga.NewClient(cfg, opts...)` 接受 `ClientOption`（`WithAuditRecorder`、`WithComputedRelations`）；`NewClientOptional` 透传 opts。服务层通过 wrapper 函数注入特定 options（如 IAM 的 `NewOpenFGAClient`），再注册到 Wire ProviderSet
-10. **core/public 分层模式**：涉及 cross-cutting concern（audit、metrics、tracing）的方法，拆为 unexported core 方法（纯操作）+ 导出 wrapper（组合 cross-cutting 逻辑）。后续新增 cross-cutting 只修改 wrapper，不碰 core
-11. **Kafka 双 listener**：docker-compose 中 Kafka 配置 PLAINTEXT (9092, 容器间) + EXTERNAL (29092, 宿主机)，确保开发环境测试与容器间通信均可用
-12. **Kafka topic 预创建**：`KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"` 已启用，但 franz-go 客户端首次发布时不等待 auto-create 完成，可能导致第一条消息失败（`UNKNOWN_TOPIC_OR_PARTITION`）。开发环境 topic 已持久化后无影响；生产环境应在服务启动前通过 admin API 或 init job 确保 topic 存在
-13. **nil Timestamp 空值处理**：protobuf `*timestamppb.Timestamp` 在字段未设置时为 nil；调用 `.AsTime()` 返回 `time.Unix(0,0).UTC()`（非 Go zero value），`!t.IsZero()` 为 true 会产生意外 WHERE 条件。规范：凡接收 proto timestamp 参数并转 `time.Time` 的地方，必须先判断 nil
-14. **Data 层结构统一**：每个微服务的 `internal/data/` 必须包含 `Data` struct + `NewData` 函数（持有底层连接、管 cleanup、跑 DDL）；各 repo 通过 `*Data` 访问连接（如 `d.ClickHouse()`、`d.Ent(ctx)`），不直接依赖裸连接。连接建立由独立函数完成（如 `NewClickHouseClient`、`NewDBClient`），`NewData` 负责组装
-15. **分层依赖与接口返回**：`service` → `biz`（use case）→ `data`（repo），禁止跨层依赖。data 层构造函数直接返回 biz 层接口类型（如 `func NewAuditRepo(...) biz.AuditRepo`），Wire 自动解析，不使用 `wire.Bind`。数据接入管道（如 Kafka consumer）属于 data 层而非 biz 层；同 package 内组件（如 consumer → batch writer）直接依赖具体类型
-16. **Codegen 不可变规则**：生成的 `audit_rules.gen.go` 和 `authz_rules.gen.go` 使用 unexported `var _xxxRules` + exported `func XxxRules()` 返回 copy 模式，保证并发安全与不可变性，防止调用方运行时修改规则 map
-17. **pkg/actor 去特化原则**：`pkg/actor` 不得包含任何业务特定 scope key 常量（如 `ScopeKeyTenantID`）、便捷方法（如 `TenantID()`）或具名 context helper（如 `TenantIDFromContext`）。通用 API 为 `Scope(key)`/`SetScope(key,val)`/`ScopeFromContext(ctx,key)`；调用方在本地定义业务 scope key 常量
-18. **ScopeFromHeaders 可配置化**：`pkg/transport/server/middleware.ScopeFromHeaders` 接受 `ScopeBinding` 切片参数，不硬编码任何 header 名称。调用方传入具体 binding 列表
-19. **SystemActor ID 调用方提供**：`pkg/actor.NewSystemActor(id, serviceName)` 接受调用方提供的完整 ID（如 `"system:my-svc"`），不自动添加 `"system:"` 前缀。OpenFGA tuple 语法约定由调用方管理
-20. **authz principal 动态构造**：`pkg/authz` 中间件层使用 `string(actor.Type())+":"+actor.ID()` 构造 OpenFGA principal，不硬编码 `"user:"` 前缀；拒绝 `anonymous` 类型 actor，允许 `user`/`service`/`system` 通过。构造后的 subject 字符串传入 `Authorizer.IsAuthorized()` 接口，引擎无需关心 principal 构造逻辑
-21. **authn/authz 接口驱动架构**：`pkg/authn` 定义 `Authenticator` 接口 + `Server()` 中间件，`pkg/authz` 定义 `Authorizer` 接口 + `Server()` 中间件。引擎实现放在子目录（`jwt/`、`openfga/`、`noop/`）。审计从 authz 引擎解耦为中间件层的 `WithDecisionLogger` 回调，替代原 `WithAuditRecorder`
-22. **AuthzMode 共享 proto**：`AuthzMode` 枚举和 `AuthzRule` message 定义在 `api/protos/servora/authz/v1/authz.proto`（共享 proto），不在 IAM 服务 proto 中。`protoc-gen-servora-authz` 生成代码引用 `servora/authz/v1`
-
----
-
-## 5. 架构边界补充
-
-**不保留中央 IAM/AuthZ 在线代理**（见 Section 2 决策表）。允许保留薄中心能力：OpenFGA model/store 管理、后台 tuple 管理、审计查询、运维控制台。
-
-**actor 模型**（Phase 1 已实现，详见 `openspec/specs/actor-v2/spec.md`）：`Keycloak claims / gateway headers → adapter → actor.Actor`。所有框架包（`pkg/authz`、`pkg/audit`）和业务服务只依赖 `actor.Actor`，不依赖 Keycloak 原始 claims 结构。Keycloak 集成通过 OIDC discovery、JWKS、Admin REST。
-
----
-
-## 6. 审计架构（Phase 1–2b 全链路已实现）
-
-### 7.1 总体架构
-
-```text
-业务服务本地产生审计事件 → pkg/broker (Kafka) → Audit Service → ClickHouse → 查询 API
+```
+┌──────────┐    OIDC     ┌──────────┐   principal   ┌────────────────┐
+│ Keycloak │◄───────────►│  网关     │──headers──────►│  业务服务       │
+│          │  验 token    │(Traefik) │               │ pkg/authn/header│
+└──────────┘             └──────────┘               │ → actor.Actor  │
+                                                     │ pkg/authz      │
+                                                     │ → OpenFGA      │
+                                                     │ pkg/audit      │
+                                                     │ → Kafka        │
+                                                     └────────────────┘
 ```
 
-### 7.2 四类事件来源
-
-| 事件类型 | 锚点 | 状态 | 说明 |
-|----------|------|------|------|
-| `authn.result` | `pkg/authn` / identity adapter | proto 已定义 | Phase 4 接入（随 Keycloak 改造） |
-| `authz.decision` | `pkg/authz.Server` middleware | ✅ Phase 2a 接入，Phase 3.5 解耦 | `WithDecisionLogger` 回调模式，服务层闭包桥接 `audit.Recorder` |
-| `tuple.changed` | `pkg/openfga` tuple write/delete | ✅ Phase 2a 已接入 | 方法内置自动 emit，core/public 分层 |
-| `resource.mutation` | 业务服务 handler | ✅ Phase 3 annotation 自动化已实现 | `audit_rule` 注解 → codegen → `WithRulesFunc` 注入 |
-
-### 7.3 all-in-proto 路线
-
-```text
-proto 注解 → protoc-gen-servora-audit → middleware 自动执行
-```
-
-结构：
-- `api/protos/servora/audit/v1/audit.proto` — ✅ 已定义
-- `api/protos/servora/audit/v1/annotations.proto` — ✅ 已定义（AuditRule + audit_rule method option）
-- `cmd/protoc-gen-servora-audit` — ✅ Phase 3 已实现
-- `pkg/audit` runtime — ✅ 骨架已实现
+- **Keycloak**：用户认证、OIDC/OAuth2、token 签发、JWKS、realm/client/role 管理
+- **网关**：统一入口、对接 Keycloak 验 token、将 principal 注入上游 header
+- **业务服务**：从 header 构建 actor → `pkg/authz` 本地授权 → OpenFGA → 审计 emit
 
 ---
 
-## 7. 框架化演进方向
+## 分阶段计划
 
-### 8.1 pkg 生态当前状态
+### Phase 1：Keycloak 基础设施
 
-| 包 | 状态 | 说明 |
-|----|------|------|
-| `pkg/actor` | ✅ v2 | 通用 principal 模型，4 种 actor type |
-| `pkg/authn` | ✅ 接口化完成 | `Authenticator` 接口 + `Server()` 中间件；引擎：`jwt/`（JWT 验证 + ClaimsMapper）、`noop/`（anonymous） |
-| `pkg/authz` | ✅ 接口化完成 | `Authorizer` 接口 + `Server()` 中间件；引擎：`openfga/`（封装缓存）、`noop/`（放行）；审计通过 `WithDecisionLogger` 回调解耦 |
-| `pkg/audit` | ✅ 主链已接入 | Recorder + LogEmitter/BrokerEmitter；e2e Kafka round-trip 已验证 |
-| `pkg/broker` | ✅ 接口 + kafka 实现 | franz-go，kzap + kotel |
-| `pkg/db/clickhouse` | ✅ 框架级封装 | `NewConnOptional`：proto conf → native driver，TLS/压缩/连接池 |
-| `pkg/logger` | ✅ v2 | 暴力重构后的简洁 API |
-| `pkg/openfga` | ✅ 框架化完成 | ClientOption 模式、API 去特化、core/public 分层、tuple audit emit |
-| `pkg/transport` | ✅ 可用 | IdentityFromHeader v2 已升级 |
+**目标**：开发环境一键启动 Keycloak，OIDC endpoints 可用。
 
-### 8.2 关于参考项目
+**核心任务**：
+1. docker-compose 新增 Keycloak 服务（`quay.io/keycloak/keycloak`，`start-dev` 模式）
+2. 创建 realm 初始化文件 `manifests/keycloak/servora-realm.json`：
+   - `servora` realm
+   - OAuth2 client（如 `servora-gateway`、`servora-web`）
+   - 测试用户（admin、普通用户）
+   - 基本 realm roles 配置
+3. 使用 `--import-realm` 挂载到 `/opt/keycloak/data/import/` 实现自动初始化
+4. 验证 OIDC discovery endpoint (`/.well-known/openid-configuration`) 和 JWKS endpoint 可用
 
-| 项目 | 本地路径 | 参考内容 | 不参考内容 |
-|------|---------|---------|-----------|
-| kratos-transport | `/Users/horonlee/projects/go/kratos-transport` | broker 接口设计、Event/Subscriber/Handler 类型签名、option 组织、middleware 模式 | 整套外部抽象边界、直接作为依赖 |
-| Kemate | `/Users/horonlee/projects/go/Kemate` | docker-compose 配置（Kafka KRaft）、optional-init 模式 | sarama 选型、Kafka Go 库代码 |
+**不做**：
+- 不对接网关
+- 不改动 pkg 代码
+- 不修改现有服务
 
-### 8.3 目录边界
+### Phase 2：pkg/authn/header/ 引擎
 
-- `pkg/transport`：请求/响应型能力（HTTP/gRPC/SSE/WebSocket），middleware，metadata 透传
-- `pkg/broker`：消息型、事件型能力，broker interface，producer/consumer lifecycle
-- `pkg/task` 或 `pkg/queue`（未来）：任务队列（Asynq 等），不强塞进 broker
+**目标**：实现 `HeaderAuthenticator`，从网关注入的 header 构造 `actor.Actor`。
 
----
+**核心任务**：
+1. 创建 `pkg/authn/header/` 子目录
+2. 实现 `HeaderAuthenticator` 实现 `authn.Authenticator` 接口
+3. 从 header 映射 actor 字段：
+   - `X-User-ID` → `Actor.ID()`
+   - `X-Subject` → `Actor.Subject()`
+   - `X-Client-ID` → `Actor.ClientID()`
+   - `X-Principal-Type` → `Actor.Type()`
+   - `X-Realm` → `Actor.Realm()`
+   - `X-Email` → `Actor.Email()`
+   - `X-Roles` → `Actor.Roles()`
+   - `X-Scopes` → `Actor.Scopes()`
+4. 支持 `WithHeaderMapping` 自定义 header 名称
+5. `X-Principal-Type` 决定 actor 类型（user/service/anonymous）
 
-## 8. 该删什么、留什么、换什么
+**已有 spec**：`openspec/specs/identity-header-enhancement/spec.md`（已更新为 HeaderAuthenticator 方向）
 
-### 9.1 已执行的变更
+**不做**：
+- 不迁移或删除现有代码
+- 不修改网关配置
 
-| 组件 | 操作 | 状态 |
-|------|------|------|
-| IAM/sayhello 工具链入口 | 从 Makefile MICROSERVICES/GO_WORKSPACE_MODULES 移除 | ✅ Phase 1 |
-| IAM/sayhello 源代码 | 保留作为新服务参考模板，可独立编译 | ✅ 保留 |
-| `pkg/actor` | v2 破坏性升级 | ✅ Phase 1 |
-| `pkg/logger` | 暴力重构 | ✅ Phase 1 |
-| `pkg/transport/.../identity` | v2 多 header 支持 | ✅ Phase 1 |
-| `pkg/openfga` | API 框架化 + ClientOption + core/public 分层 + audit emit | ✅ Phase 2a |
-| `pkg/authz` | Phase 2a: `WithAuditRecorder` + emit；Phase 3.5: 接口化 + `WithDecisionLogger` 解耦 | ✅ Phase 2a → 3.5 |
-| `pkg/audit` | 主链接入 + e2e 验证（LogEmitter + BrokerEmitter Kafka） | ✅ Phase 2a |
-| `app/iam/service` | 适配 openfga 去特化 API + iamComputedRelations | ✅ Phase 2a |
-| Kafka docker-compose | 新增 EXTERNAL listener (port 29092) 支持宿主机连接 | ✅ Phase 2a |
-| `app/audit/service` | 新建审计微服务（Kafka consumer → ClickHouse → 查询 API） | ✅ Phase 2b |
-| `pkg/db/clickhouse` | 新建框架级 ClickHouse 连接 helper，Optional-init 模式 | ✅ Phase 2b |
-| sayhello docker-compose.dev | 重新加入作为审计 E2E 发布者（port 10002），不纳入 Makefile 工具链 | ✅ Phase 2b |
-| `pkg/authn` 接口化 | `Authenticator` 接口 + `Server()` 中间件 + `jwt/`/`noop/` 引擎子目录 | ✅ Phase 3.5 |
-| `pkg/authz` 接口化 | `Authorizer` 接口 + `Server()` 中间件 + `openfga/`/`noop/` 引擎子目录 | ✅ Phase 3.5 |
-| `AuthzMode` proto 迁移 | 从 IAM 服务 proto 移至 `api/protos/servora/authz/v1/authz.proto` | ✅ Phase 3.5 |
-| 审计解耦 | `WithAuditRecorder` → `WithDecisionLogger` 回调模式 | ✅ Phase 3.5 |
-| 服务适配 | IAM/sayhello/audit 适配新 authn/authz API | ✅ Phase 3.5 |
+### Phase 3：网关认证集成
 
-### 9.2 待执行（Phase 4+）
+**目标**：网关对接 Keycloak，完成 token 验证 → principal header 注入 → 业务服务 authn 的完整链路。
 
-| 组件 | 操作 | 阶段 |
-|------|------|------|
-| IAM issuer 能力（JWKS/OIDC/登录/注册） | 下线，认证交给 Keycloak | Phase 4 |
-| Traefik → IAM /v1/auth/verify 链路 | 改为网关直接对接 Keycloak | Phase 4 |
-| `pkg/authn/header/` 引擎 | 实现 `HeaderAuthenticator`（从网关 header 构造 actor） | Phase 4 |
+**核心任务**：
+1. Traefik 配置对接 Keycloak OIDC（ForwardAuth 或 OIDC plugin）
+2. 验证链路：用户登录 → Keycloak 签发 token → 请求带 token → 网关验证 → 注入 principal header → 业务服务 `authn.Server(headerAuth)` → actor in context
+3. 保持网关可插拔：认证配置不硬编码在业务服务或 pkg 中
+
+**依赖**：Phase 1（Keycloak 可用）+ Phase 2（HeaderAuthenticator 可用）
+
+**不做**：
+- 不清理 IAM 中的 issuer 能力
+- 不对接前端
 
 ---
 
-## 9. 分阶段演进计划
+## 未来方向
 
-### Phase 1：框架骨架 ✅ 已完成
-
-> 交付物见 Section 4 表格。
-
-### Phase 2a：审计 emit 接入（pkg 层） ✅ 已完成
-
-> 详细设计、spec 与实现索引见 `openspec/changes/archive/2026-03-22-audit-emit-integration/`。
-
-| 交付物 | 关键决策 |
-|--------|---------|
-| pkg/openfga API 框架化 ⚡ | `Check`/`ListObjects`/`CachedCheck` 参数从 `userID` 改为 `user`（完整 principal），移除 `"user:"` 硬编码；`parseTupleComponents` 通用化 |
-| pkg/openfga ClientOption 模式 | `NewClient(cfg, opts...)` + `WithAuditRecorder` + `WithComputedRelations`；`NewClientOptional` 透传 |
-| pkg/openfga core/public 分层 | `WriteTuples`/`DeleteTuples` 拆为 `writeTuplesCore`/`deleteTuplesCore` + public wrapper，成功后自动 emit `tuple.changed` |
-| pkg/openfga CachedCheck 扩展 | 返回值 `(bool, error)` → `(bool, bool, error)`，新增 `cacheHit` |
-| pkg/openfga 缓存层去特化 | `affectedRelations` 硬编码移除，改为 `Client.computedRelations`（通过 `WithComputedRelations` 注入）；`InvalidateForTuples` 改为 `Client` 方法 |
-| pkg/authz audit 集成 | `WithAuditRecorder(r)` option + Check 后自动 emit `authz.decision`（含 CacheHit，allowed/denied/error 三种 decision） |
-| app/iam/service 适配 | 全局适配 openfga 去特化 API；`NewOpenFGAClient` wrapper 注入 `iamComputedRelations` |
-| Kafka EXTERNAL listener | docker-compose 新增 port 29092 供宿主机连接 |
-| e2e 验证 | `pkg/audit/e2e_test.go`：LogEmitter JSON 输出 + BrokerEmitter Kafka round-trip（含 proto 反序列化） |
-
-### Phase 2b：Audit Service + ClickHouse ✅ 已完成
-
-> 详细设计、spec 与实现索引见 `openspec/changes/archive/2026-03-20-audit-service-clickhouse/`。
-
-| 交付物 | 关键决策 |
-|--------|---------|
-| `app/audit/service` 微服务 | 严格分层（service→biz→data）；data 构造函数返回 biz 接口，不用 `wire.Bind`；consumer/batch-writer 归 data 层；proto 拆 `audit.proto` + `i_audit.proto`；hot-reload via `Dockerfile.air` |
-| ClickHouse 存储 | 官方 native driver `clickhouse-go/v2`；`detail` 纯 JSON 列；DDL 内嵌 `CREATE TABLE IF NOT EXISTS`（启动时 idempotent） |
-| `pkg/db/clickhouse` | 框架级连接 helper `NewConnOptional`（TLS/压缩/连接池），遵循 Optional-init 模式 |
-| Kafka consumer | 复用 `pkg/broker.Subscribe`（不直接依赖 franz-go）；BatchWriter 按 `consumer_batch_size`/`consumer_flush_interval` 刷盘 |
-| 查询 API | `ListAuditEvents`（cursor 分页 + 时间/类型/actor/service 筛选）、`CountAuditEvents`；gRPC + HTTP 转码 |
-| 服务治理 | Consul 注册 + Traefik 路由（`/v1/audit`）+ OTel；端口 10000(HTTP)/10001(gRPC) |
-| Data 层结构 | IAM 模式 `Data` struct：`NewClickHouseClient` 建连接 → `NewData` 持有 conn + 跑 DDL + cleanup → repo 依赖 `*Data` |
-| E2E 验证 | sayhello（port 10002）作为发布者：Hello RPC → audit middleware → Kafka → audit service → ClickHouse → `GET /v1/audit/events` 可见 |
-| ClickHouse schema | `PARTITION BY toDate(occurred_at)` · `ORDER BY (service, event_type, occurred_at, event_id)` · `TTL occurred_at + INTERVAL N DAY`（retention_days 默认 90） |
-| conf.proto 扩展 | `App.Audit` 新增 `consumer_batch_size` / `consumer_flush_interval` / `retention_days`；`Data.ClickHouse` 新增 `tls` / `tls_skip_verify` / `compress` |
-
-### Phase 3：all-in-proto 代码生成 + pkg 去特化 ✅ 已完成
-
-> 详细设计、spec 与实现索引见 `openspec/changes/archive/2026-03-23-proto-codegen-audit-authz/`。
-
-| 交付物 | 关键决策 |
-|--------|---------|
-| `cmd/protoc-gen-servora-audit` | 新建：解析 `audit_rule` 注解 → 生成 `audit_rules.gen.go`（`var _auditRules` + `func AuditRules()` copy 返回）；支持 `target_id_field`（codegen 提取函数 `_extract<Method>TargetID`） |
-| `annotations.proto` 变更 | `string operation` → `ResourceMutationType mutation_type`（编译期 CRUD 语义枚举） |
-| `protoc-gen-servora-authz` 改造 | `var AuthzRules` → `func AuthzRules()` 返回 copy（不可变，并发安全） |
-| `pkg/audit.Rule` 扩展 | 新增 `TargetIDFunc func(req, resp any) string`；新增 `WithRulesFunc` option |
-| `pkg/authz` 去特化 | principal 构造从 `"user:"+userID` 改为 `string(a.Type())+":"+a.ID()`；拒绝 `anonymous` 而非仅接受 `user`；新增 `WithDefaultObjectID`、`WithAuthzRulesFunc` option |
-| `pkg/actor` 去特化 | 删除业务 scope 常量（`ScopeKeyTenantID` 等）、6 个便捷方法、legacy `Metadata`；新增通用 `ScopeFromContext`；`SystemActor.ID()` 返回调用方提供的完整 id |
-| `pkg/transport/middleware/scope` 可配置化 | `ScopeFromHeaders(bindings ...ScopeBinding)` 替代硬编码 3 个 header；删除 `TenantIDHeader` 等常量 |
-| `buf.audit.gen.yaml` + Makefile | `make api` 增加第三步 `buf generate --template buf.audit.gen.yaml` |
-| sayhello 验证 | `sayhello.proto` 添加 `audit_rule` 注解 → `make api` → 生成 `audit_rules.gen.go` → 替换手写 `WithRules` → sayhello 编译通过 |
-
-### Phase 3.5：authn/authz 接口化 + 可插拔引擎 ✅ 已完成
-
-> 详细设计、spec 与实现索引见 `openspec/changes/archive/2026-03-24-pkg-auth-pluggable/`。
-
-| 交付物 | 关键决策 |
-|--------|---------|
-| `pkg/authn` 接口化 | `Authenticator` 接口（`Authenticate(ctx) (Actor, error)`）+ `Server()` 中间件；参考 tx7do 但保持 Servora 风格（不含签发功能） |
-| `pkg/authn/jwt/` 引擎 | JWT 验证逻辑迁入子目录；`ClaimsMapper` 体系：`DefaultClaimsMapper`（标准 OIDC）+ `KeycloakClaimsMapper`（`iss→Realm`） |
-| `pkg/authn/noop/` 引擎 | 返回 anonymous actor |
-| `pkg/authz` 接口化 | `Authorizer` 接口（`IsAuthorized(ctx, subject, relation, objectType, objectID) (bool, error)`）+ `Server()` 中间件 |
-| `pkg/authz/openfga/` 引擎 | 封装 `*openfga.Client` + 可选 Redis 缓存（`WithRedisCache`）；`CacheHit` 通过 `DecisionDetail` 透传 |
-| `pkg/authz/noop/` 引擎 | 总是放行 |
-| 审计解耦 ⚡ | `WithAuditRecorder(r)` → `WithDecisionLogger(fn)` 回调模式，`pkg/authz` 不再依赖 `pkg/audit` |
-| `AuthzMode` proto 迁移 | 从 IAM 服务 proto 移至 `api/protos/servora/authz/v1/authz.proto` |
-| `protoc-gen-servora-authz` 适配 | 生成代码 import path 更新为 `servora/authz/v1` |
-
-### Phase 4：Keycloak 接入
-
-**目标：** 完成认证链路切换，下线自建 IAM issuer 能力。
-
-**核心任务：**
-1. 部署 Keycloak（docker-compose 新增 keycloak 服务）
-2. 配置 Traefik 对接 Keycloak（ForwardAuth 或 OIDC middleware）
-3. 实现 `pkg/authn/header/` 引擎（`HeaderAuthenticator`）：
-   - 从网关 header 构造 actor，实现 `Authenticator` 接口
-   - 支持 `WithHeaderMapping` 自定义 header 映射
-4. 清理 IAM 中的 issuer/verify/JWKS/OIDC/登录注册能力
-5. 前端对接 Keycloak 登录流程
-
-### Phase 5：Servora 生态扩展
-
-**目标：** 框架能力泛化，为对外发布做准备。
-
-**方向：**
-1. `pkg/broker` 补更多实现（NATS / RabbitMQ / Redis Streams）
-2. 设计 `pkg/task` / `pkg/queue`（Asynq 等任务队列）
-3. 统一框架级 observability、eventbus、identity、audit、authz 能力
-4. 将 Servora 逐步沉淀为对外发布的微服务框架生态
+- **Servora 生态扩展**：`pkg/broker` 补更多实现（NATS/RabbitMQ）、`pkg/task`/`pkg/queue` 任务队列、统一 observability
+- **前端对接**：Keycloak 登录流程（当需要前端时再规划）
+- **IAM 演进**：保留作为示例服务，可能逐步演化为管理控制台
 
 ---
 
-## 10. 最终结论
+## 约束继承
 
-本次设计的核心不是"替换一个认证服务"，而是为 Servora 确立一套长期有效的边界：
-
-- 认证交给 **Keycloak**
-- 网关负责 **统一认证与 principal 注入**
-- 授权由 **各业务服务本地执行 `pkg/authz` + OpenFGA**
-- 审计采用 **本地 emit + Kafka + 中心 Audit Service**
-- actor 设计为 **通用 principal 模型**
-- 审计与授权逐步走向 **all-in-proto + 注解 + 代码生成 + middleware**
-- broker / transport / audit / authz / actor 构成 **Servora 的 pkg 框架生态**
-
-Servora 未来围绕明确的基础设施边界、清晰的框架能力分层、通用的 proto 驱动与代码生成能力、面向微服务脚手架的长期 pkg 生态持续演进。
+本阶段继承 Phase 1–3.5 确立的所有实现约束（详见归档文档 `docs/plans/archive/2026-03-20-framework-audit-authz-phases.md` 中的"实现约束"章节）。Keycloak 接入相关的新约束将在各 Phase 实现时补充。
