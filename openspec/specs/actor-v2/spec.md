@@ -17,8 +17,6 @@ Defines requirements for the `actor-v2` capability.
 - `Scopes() []string` — OAuth2 scope 列表
 - `Attrs() map[string]string` — 扩展属性 bag
 
-现有的 `Scope(key string) string` 方法 SHALL 保留，用于请求级维度（由调用方定义 key，框架不预设具体 key）。
-
 #### Scenario: UserActor carries all identity fields
 
 - **WHEN** a `UserActor` is constructed with id, displayName, email, subject, clientID, realm, roles, scopes, and attrs
@@ -32,7 +30,7 @@ Defines requirements for the `actor-v2` capability.
 #### Scenario: No business-specific scope convenience methods
 
 - **WHEN** `UserActor` is inspected
-- **THEN** it SHALL NOT expose `TenantID()`, `OrganizationID()`, `ProjectID()` or their setters — only generic `Scope(key)` / `SetScope(key, val)`
+- **THEN** it SHALL NOT expose `TenantID()`, `OrganizationID()`, `ProjectID()` or their setters
 
 #### Scenario: No Metadata legacy field
 
@@ -51,5 +49,8 @@ All existing code that creates `UserActor` or consumes `Actor` interface SHALL b
 ## REMOVED Requirements
 
 ### Requirement: Actor scope key constants for tenant/org/project
-**Reason**: Business-specific scope key constants (`ScopeKeyTenantID`, `ScopeKeyOrganizationID`, `ScopeKeyProjectID`) violate the pkg despecialization principle. The generic `Scope(key)` API is sufficient.
-**Migration**: Callers define their own scope key constants and use `actor.Scope("tenant_id")` directly.
+**Reason**: Business-specific scope key constants (`ScopeKeyTenantID`, `ScopeKeyOrganizationID`, `ScopeKeyProjectID`) violate the pkg despecialization principle.
+**Migration**: Callers use `actor.Attrs()` for open extension data.
+
+### Requirement: Scope(key) / SetScope(key, val) request-scope dimension bag
+**Reason**: `Scope(key)` / `SetScope(key, val)` / `ScopeFromContext()` were dead code with no callers. The `Attrs()` bag and `Realm()` field cover the relevant use cases. Removed to simplify the Actor interface.

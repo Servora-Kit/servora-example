@@ -19,7 +19,7 @@ pkg/ent/
 ## 当前实现事实
 
 - `driver.go` 根据共享 `conf.Data` 构造 Ent SQL driver
-- `mixin/` 当前承载 `timestamp`、`soft_delete`、`org_scope` 等通用 schema mixin
+- `mixin/` 当前承载 `timestamp`、`soft_delete` 等通用 schema mixin
 - `scope/` 承载 Ent 访问范围相关辅助
 - 本级目录负责“Ent 共享支撑”，不是某个具体服务的数据层实现目录
 

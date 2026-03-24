@@ -15,8 +15,6 @@ type UserActorParams struct {
 }
 
 // UserActor is the concrete actor for an authenticated user.
-// Use Scope(key)/SetScope(key, val) for arbitrary request-scoped dimensions.
-// Callers define their own scope key constants (e.g. const ScopeKeyTenantID = "tenant_id").
 type UserActor struct {
 	id          string
 	displayName string
@@ -27,7 +25,6 @@ type UserActor struct {
 	roles       []string
 	scopes      []string
 	attrs       map[string]string
-	scope       map[string]string
 }
 
 // NewUserActor creates a UserActor from params. All fields are optional except ID.
@@ -42,7 +39,6 @@ func NewUserActor(p UserActorParams) *UserActor {
 		roles:       p.Roles,
 		scopes:      p.Scopes,
 		attrs:       p.Attrs,
-		scope:       make(map[string]string),
 	}
 }
 
@@ -75,16 +71,3 @@ func (u *UserActor) Attrs() map[string]string {
 	return u.attrs
 }
 
-func (u *UserActor) Scope(key string) string {
-	if u.scope == nil {
-		return ""
-	}
-	return u.scope[key]
-}
-
-func (u *UserActor) SetScope(key, value string) {
-	if u.scope == nil {
-		u.scope = make(map[string]string)
-	}
-	u.scope[key] = value
-}

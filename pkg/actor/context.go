@@ -22,16 +22,3 @@ func MustFromContext(ctx context.Context) Actor {
 	return a
 }
 
-// ScopeFromContext returns a generic scope value from the actor in context.
-// Callers define their own scope key constants (e.g. const ScopeKeyTenantID = "tenant_id").
-func ScopeFromContext(ctx context.Context, key string) (string, bool) {
-	a, ok := FromContext(ctx)
-	if !ok {
-		return "", false
-	}
-	val := a.Scope(key)
-	if val == "" {
-		return "", false
-	}
-	return val, true
-}

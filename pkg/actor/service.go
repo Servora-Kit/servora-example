@@ -44,7 +44,5 @@ func (s *ServiceActor) Attrs() map[string]string {
 	return s.attrs
 }
 
-func (s *ServiceActor) Scope(_ string) string { return "" }
-
 func (s *ServiceActor) SetRealm(realm string)    { s.realm = realm }
 func (s *ServiceActor) SetScopes(scopes []string) { s.scopes = scopes }

@@ -22,4 +22,3 @@ func (s *SystemActor) Realm() string               { return "" }
 func (s *SystemActor) Roles() []string             { return []string{} }
 func (s *SystemActor) Scopes() []string            { return []string{} }
 func (s *SystemActor) Attrs() map[string]string    { return map[string]string{} }
-func (s *SystemActor) Scope(_ string) string       { return "" }

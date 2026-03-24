@@ -6,50 +6,24 @@ Defines requirements for the `pkg-despecialization` capability.
 
 ## Requirements
 
-### Requirement: Actor scope keys are caller-defined, not framework-hardcoded
+### Requirement: No business-specific scope or identity methods on Actor
 
-`pkg/actor` SHALL NOT define any business-specific scope key constants (e.g. `ScopeKeyTenantID`, `ScopeKeyOrganizationID`, `ScopeKeyProjectID`). The generic `Scope(key string) string` and `SetScope(key, value string)` API SHALL be the only scope access mechanism.
+`pkg/actor` SHALL NOT define any business-specific scope key constants, convenience methods (`TenantID()`, `OrganizationID()`, etc.), or request-scope dimension bags (`Scope(key)` / `SetScope()`). The `Attrs() map[string]string` serves as the open extension mechanism.
 
 #### Scenario: No scope key constants in pkg/actor
 
 - **WHEN** `pkg/actor/user.go` is inspected
 - **THEN** it SHALL NOT contain any exported `ScopeKey*` constants
 
-#### Scenario: Caller defines own scope keys
-
-- **WHEN** a service needs tenant scope
-- **THEN** the service SHALL define its own constant (e.g. `const ScopeKeyTenantID = "tenant_id"`) and use `actor.Scope("tenant_id")` / `actor.SetScope("tenant_id", id)`
-
-### Requirement: No business-specific convenience methods on UserActor
-
-`UserActor` SHALL NOT expose domain-specific convenience methods such as `TenantID()`, `SetTenantID()`, `OrganizationID()`, `SetOrganizationID()`, `ProjectID()`, `SetProjectID()`. These are syntactic sugar over generic `Scope()` / `SetScope()` and embed business assumptions.
-
 #### Scenario: UserActor has no TenantID method
 
 - **WHEN** code attempts to call `ua.TenantID()`
 - **THEN** compilation SHALL fail (method removed)
 
-### Requirement: Generic ScopeFromContext helper
+#### Scenario: No Scope(key) method on Actor interface
 
-`pkg/actor` SHALL provide a generic `ScopeFromContext(ctx context.Context, key string) (string, bool)` function that extracts a scope value from the actor in context by key.
-
-#### Scenario: Scope value present
-
-- **WHEN** an actor in context has scope key `"tenant_id"` set to `"abc-123"`
-- **AND** `ScopeFromContext(ctx, "tenant_id")` is called
-- **THEN** it SHALL return `("abc-123", true)`
-
-#### Scenario: Scope value absent
-
-- **WHEN** an actor in context has no scope key `"tenant_id"`
-- **AND** `ScopeFromContext(ctx, "tenant_id")` is called
-- **THEN** it SHALL return `("", false)`
-
-#### Scenario: No actor in context
-
-- **WHEN** no actor is in the context
-- **AND** `ScopeFromContext(ctx, "tenant_id")` is called
-- **THEN** it SHALL return `("", false)`
+- **WHEN** `Actor` interface is inspected
+- **THEN** it SHALL NOT expose `Scope(key string) string`
 
 ### Requirement: No legacy Metadata on UserActor
 

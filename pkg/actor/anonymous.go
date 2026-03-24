@@ -14,4 +14,3 @@ func (a *AnonymousActor) Realm() string               { return "" }
 func (a *AnonymousActor) Roles() []string             { return []string{} }
 func (a *AnonymousActor) Scopes() []string            { return []string{} }
 func (a *AnonymousActor) Attrs() map[string]string    { return map[string]string{} }
-func (a *AnonymousActor) Scope(_ string) string       { return "" }

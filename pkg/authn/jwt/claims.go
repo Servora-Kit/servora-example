@@ -65,8 +65,17 @@ func mapKeycloakClaims(claims gojwt.MapClaims) (actor.Actor, error) {
 	}
 
 	realm := claimString(claims, "iss")
-	if realm == "" {
-		return ua, nil
+	roles := ua.Roles()
+	if realmRoles := keycloakRealmRoles(claims); len(realmRoles) > 0 {
+		seen := make(map[string]struct{}, len(roles))
+		for _, r := range roles {
+			seen[r] = struct{}{}
+		}
+		for _, r := range realmRoles {
+			if _, dup := seen[r]; !dup {
+				roles = append(roles, r)
+			}
+		}
 	}
 
 	return actor.NewUserActor(actor.UserActorParams{
@@ -76,10 +85,24 @@ func mapKeycloakClaims(claims gojwt.MapClaims) (actor.Actor, error) {
 		Subject:     ua.Subject(),
 		ClientID:    ua.ClientID(),
 		Realm:       realm,
-		Roles:       ua.Roles(),
+		Roles:       roles,
 		Scopes:      ua.Scopes(),
 		Attrs:       ua.Attrs(),
 	}), nil
+}
+
+// keycloakRealmRoles extracts roles from the Keycloak-specific
+// "realm_access" -> "roles" nested claim.
+func keycloakRealmRoles(claims gojwt.MapClaims) []string {
+	ra, ok := claims["realm_access"]
+	if !ok {
+		return nil
+	}
+	raMap, ok := ra.(map[string]any)
+	if !ok {
+		return nil
+	}
+	return claimStringSlice(gojwt.MapClaims(raMap), "roles")
 }
 
 func claimString(claims gojwt.MapClaims, key string) string {
