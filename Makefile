@@ -53,8 +53,10 @@ WEB_DEV_APP ?= iam
 GO_WORKSPACE_MODULES := app/iam/service app/sayhello/service
 
 WEB_PNPM_FILTERS := $(foreach app,$(WEB_APPS),--filter "./web/$(app)")
-INFRA_SERVICES := consul db redis openfga
+INFRA_SERVICES := consul db redis openfga otel-collector jaeger loki prometheus grafana traefik
 COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
+COMPOSE_STACK_DOWN := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans
+COMPOSE_STACK_RESET := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes
 
 SERVORA_PKG := github.com/Servora-Kit/servora
 
@@ -66,10 +68,10 @@ endef
 # MAIN TARGETS
 # ============================================================================
 
-.PHONY: help env init plugin cli dep tidy test cover vet lint lint.go lint.proto lint.ts web.dev buf-update
+.PHONY: help env init plugin cli dep tidy test cover vet lint lint.go lint.proto lint.ts web.dev buf-update buf-push tag
 .PHONY: wire ent gen api api-go api-ts openapi build clean
-.PHONY: compose.up compose.stop compose.down compose.reset compose.ps compose.logs
-.PHONY: compose.dev compose.dev.up compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
+.PHONY: compose.build compose.up compose.rebuild compose.stop compose.down compose.reset compose.ps compose.logs
+.PHONY: compose.dev compose.dev.build compose.dev.up compose.dev.restart compose.dev.ps compose.dev.stop compose.dev.down compose.dev.reset compose.dev.logs
 .PHONY: openfga.init openfga.model.validate openfga.model.test openfga.model.apply
 
 env:
@@ -193,52 +195,117 @@ build: gen
 	$(call run-in-service-dirs,_build)
 	@echo "$(GREEN)✓ All services built$(RESET)"
 
+# Tag root module and api/gen sub-module with the same version.
+# Usage: make tag TAG=v0.2.0
+tag:
+ifndef TAG
+	$(error TAG is required. Usage: make tag TAG=v0.2.0)
+endif
+	@echo "$(CYAN)Tagging $(TAG)...$(RESET)"
+	@git tag $(TAG)
+	@git tag api/gen/$(TAG)
+	@echo "$(GREEN)✓ Tagged: $(TAG), api/gen/$(TAG)$(RESET)"
+	@echo "  Run 'git push --tags' to push"
+
+# Push proto to BSR, auto-labeling with current Git tag if available
+buf-push:
+	@echo "$(CYAN)Pushing proto to BSR...$(RESET)"
+	@GIT_TAG=$$(git tag --points-at HEAD 2>/dev/null | grep -E '^v[0-9]' | head -1); \
+	if [ -n "$$GIT_TAG" ]; then \
+		echo "  Using Git tag as BSR label: $$GIT_TAG"; \
+		buf push --exclude-unnamed --label "$$GIT_TAG"; \
+	else \
+		echo "  $(YELLOW)No Git version tag on HEAD, pushing without label$(RESET)"; \
+		buf push --exclude-unnamed; \
+	fi
+	@echo "$(GREEN)✓ Proto pushed to BSR$(RESET)"
+
 # ============================================================================
 # COMPOSE TARGETS
 # ============================================================================
 
+# build production images for microservices
+compose.build:
+	@echo "$(CYAN)Build production images: $(MICROSERVICES) (version: $(VERSION))$(RESET)"
+	@$(foreach svc,$(MICROSERVICES),docker build --build-arg SERVICE_NAME=$(svc) --build-arg VERSION=$(VERSION) -t servora-$(svc):$(VERSION) . &&) true
+	@echo "$(GREEN)✓ Production images built$(RESET)"
+
+# start infrastructure compose stack
 compose.up:
 	@echo "$(CYAN)Compose infra up: $(INFRA_SERVICES)$(RESET)"
 	@$(COMPOSE) $(COMPOSE_FILES) up -d $(INFRA_SERVICES)
 	@echo "$(GREEN)✓ Infrastructure services started$(RESET)"
 
+# rebuild production images and ensure infrastructure is running
+compose.rebuild:
+	@$(MAKE) compose.build
+	@$(MAKE) compose.up
+	@echo "$(GREEN)✓ Production images rebuilt and infrastructure started$(RESET)"
+
+# stop infrastructure compose stack
 compose.stop:
 	@$(COMPOSE) $(COMPOSE_FILES) stop $(INFRA_SERVICES)
 
+# remove local compose stack containers/networks
 compose.down:
-	@$(COMPOSE) $(COMPOSE_FILES) down --remove-orphans
+	@$(COMPOSE_STACK_DOWN)
 
+# remove local compose stack containers/networks/volumes
 compose.reset:
-	@$(COMPOSE) $(COMPOSE_FILES) down --remove-orphans --volumes
+	@$(COMPOSE_STACK_RESET)
 
+# show infrastructure compose stack status
 compose.ps:
 	@$(COMPOSE) $(COMPOSE_FILES) ps $(INFRA_SERVICES)
 
+# tail logs for infrastructure compose stack
 compose.logs:
 	@$(COMPOSE) $(COMPOSE_FILES) logs -f $(INFRA_SERVICES)
 
+# build Air-based development images for microservices
+compose.dev.build:
+	@echo "$(CYAN)Compose dev build: $(MICROSERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) build $(MICROSERVICES)
+	@echo "$(GREEN)✓ Compose dev images built$(RESET)"
+
+# start full development compose stack (infra + Air microservices) and tail logs
 compose.dev:
 	@echo "$(CYAN)Compose dev start: $(COMPOSE_STACK_SERVICES)$(RESET)"
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(COMPOSE_STACK_SERVICES)
 	@echo "$(GREEN)✓ Compose dev stack started, tailing logs...$(RESET)"
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(COMPOSE_STACK_SERVICES)
 
+# start Air-based development stack in background
 compose.dev.up:
 	@echo "$(CYAN)Compose dev up: $(COMPOSE_STACK_SERVICES)$(RESET)"
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) up -d $(COMPOSE_STACK_SERVICES)
 	@echo "$(GREEN)✓ Compose dev stack started$(RESET)"
 
+# restart Air-based development containers to force fresh startup build
+compose.dev.restart:
+	@echo "$(CYAN)Compose dev restart (Air): $(MICROSERVICES)$(RESET)"
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) restart $(MICROSERVICES)
+	@echo "$(GREEN)✓ Compose dev services restarted$(RESET)"
+
+# tail logs for Air-based development stack
+compose.dev.logs:
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(MICROSERVICES)
+
+# show Air-based development stack status
+compose.dev.ps:
+	@$(COMPOSE) $(COMPOSE_DEV_FILES) ps $(COMPOSE_STACK_SERVICES)
+
+# stop dev microservice containers (infrastructure keeps running)
 compose.dev.stop:
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) stop $(MICROSERVICES)
 
+# remove dev microservice containers (infrastructure keeps running)
 compose.dev.down:
 	@$(COMPOSE) $(COMPOSE_DEV_FILES) rm -sf $(MICROSERVICES)
 
+# remove all compose stack containers/networks/volumes (infra + dev)
 compose.dev.reset:
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes
-
-compose.dev.logs:
-	@$(COMPOSE) $(COMPOSE_DEV_FILES) logs -f $(MICROSERVICES)
+	@$(COMPOSE_STACK_RESET)
 
 # ============================================================================
 # OPENFGA TARGETS

@@ -874,5 +874,14 @@ components:
                         $ref: '#/components/schemas/KratosError'
 tags:
     - name: ApplicationService
+      description: |-
+        ApplicationService exposes ApplicationService methods over HTTP.
+         Authorization rules are declared on the underlying servora.application.service.v1.ApplicationService.
     - name: AuthnService
+      description: |-
+        AuthnService exposes AuthnService methods over HTTP.
+         Authorization rules are declared on the underlying servora.authn.service.v1.AuthnService.
     - name: UserService
+      description: |-
+        UserService exposes UserService methods over HTTP.
+         Authorization rules are declared on the underlying servora.user.service.v1.UserService.

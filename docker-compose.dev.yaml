@@ -7,10 +7,12 @@ services:
       dockerfile: Dockerfile.air
     working_dir: /workspace/app/iam/service
     command: ["air", "-c", ".air.toml"]
+    env_file: .env
     environment:
       TZ: Asia/Shanghai
       GOMODCACHE: /go/pkg/mod
       GOCACHE: /go/cache
+      GOWORK: /workspace/go.work
     volumes:
       - ./:/workspace
       - ./.cache/go-mod:/go/pkg/mod
@@ -24,7 +26,7 @@ services:
       consul:
         condition: service_healthy
     networks:
-      - servora-network
+      - iam-network
 
   sayhello:
     container_name: sayhello
@@ -38,6 +40,7 @@ services:
       TZ: Asia/Shanghai
       GOMODCACHE: /go/pkg/mod
       GOCACHE: /go/cache
+      GOWORK: /workspace/go.work
     volumes:
       - ./:/workspace
       - ./.cache/go-mod:/go/pkg/mod
@@ -50,7 +53,7 @@ services:
       consul:
         condition: service_healthy
     networks:
-      - servora-network
+      - iam-network
 
 volumes:
   iam-logs:

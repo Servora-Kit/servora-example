@@ -7,9 +7,9 @@ managed:
     enabled: false
 
 inputs:
-    - directory: api/protos
+    - module: buf.build/servora/servora
       paths:
-          - api/protos/servora/pagination/v1
+          - servora/pagination/v1
 
 plugins:
     - local: protoc-gen-typescript-http

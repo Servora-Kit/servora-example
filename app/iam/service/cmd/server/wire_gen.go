@@ -7,13 +7,13 @@
 package main
 
 import (
-	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	conf2 "github.com/Servora-Kit/servora-iam/api/gen/go/servora/iam/conf/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/oidc"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/server"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/service"
+	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	"github.com/Servora-Kit/servora/pkg/bootstrap"
 	cap2 "github.com/Servora-Kit/servora/pkg/cap"
 	"github.com/Servora-Kit/servora/pkg/governance/registry"
