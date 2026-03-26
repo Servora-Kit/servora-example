@@ -1,60 +1,59 @@
 services:
-  iam:
-    container_name: iam
-    pull_policy: never
-    build:
-      context: .
-      dockerfile: Dockerfile.air
-    working_dir: /workspace/app/iam/service
-    command: ["air", "-c", ".air.toml"]
-    env_file: .env
-    environment:
-      TZ: Asia/Shanghai
-      GOMODCACHE: /go/pkg/mod
-      GOCACHE: /go/cache
-      GOWORK: /workspace/go.work
-    volumes:
-      - ./:/workspace
-      - ./.cache/go-mod:/go/pkg/mod
-      - ./.cache/go-build:/go/cache
-      - ./app/iam/service/configs/docker/:/app/configs/
-      - iam-logs:/app/logs
-    ports:
-      - "10000:8000"
-      - "10001:8001"
-    depends_on:
-      consul:
-        condition: service_healthy
-    networks:
-      - iam-network
+    master:
+        container_name: master
+        pull_policy: never
+        build:
+            context: .
+            dockerfile: Dockerfile.air
+        working_dir: /workspace/app/master/service
+        command: ["air", "-c", ".air.toml"]
+        env_file: .env
+        environment:
+            TZ: Asia/Shanghai
+            GOMODCACHE: /go/pkg/mod
+            GOCACHE: /go/cache
+            GOWORK: /workspace/go.work
+        volumes:
+            - ./:/workspace
+            - ./.cache/go-mod:/go/pkg/mod
+            - ./.cache/go-build:/go/cache
+            - ./app/master/service/configs/docker/:/app/configs/
+            - master-logs:/app/logs
+        ports:
+            - "10000:8000"
+        depends_on:
+            consul:
+                condition: service_healthy
+        networks:
+            - master-network
 
-  sayhello:
-    container_name: sayhello
-    pull_policy: never
-    build:
-      context: .
-      dockerfile: Dockerfile.air
-    working_dir: /workspace/app/sayhello/service
-    command: ["air", "-c", ".air.toml"]
-    environment:
-      TZ: Asia/Shanghai
-      GOMODCACHE: /go/pkg/mod
-      GOCACHE: /go/cache
-      GOWORK: /workspace/go.work
-    volumes:
-      - ./:/workspace
-      - ./.cache/go-mod:/go/pkg/mod
-      - ./.cache/go-build:/go/cache
-      - ./app/sayhello/service/configs/docker/:/app/configs/
-      - sayhello-logs:/app/logs
-    ports:
-      - "10002:8000"
-    depends_on:
-      consul:
-        condition: service_healthy
-    networks:
-      - iam-network
+    worker:
+        container_name: worker
+        pull_policy: never
+        build:
+            context: .
+            dockerfile: Dockerfile.air
+        working_dir: /workspace/app/worker/service
+        command: ["air", "-c", ".air.toml"]
+        environment:
+            TZ: Asia/Shanghai
+            GOMODCACHE: /go/pkg/mod
+            GOCACHE: /go/cache
+            GOWORK: /workspace/go.work
+        volumes:
+            - ./:/workspace
+            - ./.cache/go-mod:/go/pkg/mod
+            - ./.cache/go-build:/go/cache
+            - ./app/worker/service/configs/docker/:/app/configs/
+            - worker-logs:/app/logs
+        ports:
+            - "10002:8000"
+        depends_on:
+            consul:
+                condition: service_healthy
+        networks:
+            - master-network
 
 volumes:
-  iam-logs:
-  sayhello-logs:
+    master-logs:
+    worker-logs:

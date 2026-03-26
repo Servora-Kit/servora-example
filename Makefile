@@ -1,5 +1,5 @@
 # ============================================================================
-# Makefile for servora-iam
+# Makefile for servora-example
 # ============================================================================
 
 ifeq ($(OS),Windows_NT)
@@ -21,9 +21,9 @@ ROOT_DIR    := $(dir $(realpath $(lastword $(MAKEFILE_LIST))))
 BUF_GO_GEN_TEMPLATE := buf.go.gen.yaml
 BUF_TS_GEN_TEMPLATE := buf.typescript.gen.yaml
 
-SRCS_MK := $(foreach dir, app, $(wildcard $(dir)/*/*/Makefile))
-SERVICE_DIRS := $(dir $(realpath $(SRCS_MK)))
-BUF_TS_SERVICE_TEMPLATES := $(wildcard $(addsuffix api/buf.typescript.gen.yaml,$(SERVICE_DIRS)))
+SRCS_MK = $(foreach mod,$(GO_WORKSPACE_MODULES),$(wildcard $(mod)/Makefile))
+SERVICE_DIRS = $(sort $(dir $(realpath $(SRCS_MK))))
+BUF_TS_SERVICE_TEMPLATES = $(wildcard $(addsuffix api/buf.typescript.gen.yaml,$(SERVICE_DIRS)))
 
 GOPATH := $(shell go env GOPATH)
 GOVERSION := $(shell go version)
@@ -44,15 +44,15 @@ RESET := \033[0m
 COMPOSE := docker compose
 COMPOSE_FILES := -f docker-compose.yaml
 COMPOSE_DEV_FILES := -f docker-compose.yaml -f docker-compose.dev.yaml
-MICROSERVICES := iam sayhello
+MICROSERVICES := master worker
 
-WEB_APPS := iam
-WEB_DEV_APP ?= iam
+GO_WORKSPACE_MODULES := app/master/service app/worker/service
 
-GO_WORKSPACE_MODULES := app/iam/service app/sayhello/service
+WEB_APPS :=
+WEB_DEV_APP ?=
 
 WEB_PNPM_FILTERS := $(foreach app,$(WEB_APPS),--filter "./web/$(app)")
-INFRA_SERVICES := consul db redis openfga otel-collector jaeger loki prometheus grafana traefik
+INFRA_SERVICES := consul otel-collector jaeger loki prometheus grafana traefik
 COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
 COMPOSE_STACK_DOWN := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans
 COMPOSE_STACK_RESET := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes
@@ -162,7 +162,7 @@ ent:
 gen: api openapi wire ent
 	@echo "$(GREEN)✓ All code generated$(RESET)"
 
-api: api-go api-ts
+api: api-go
 	@echo "$(GREEN)✓ Protobuf code generated$(RESET)"
 
 api-go:
@@ -312,7 +312,7 @@ compose.dev.reset:
 
 OPENFGA_MODEL := manifests/openfga/model/servora.fga
 OPENFGA_TESTS := manifests/openfga/tests/servora.fga.yaml
-OPENFGA_ENV_PREFIX ?= IAM_
+OPENFGA_ENV_PREFIX ?= EXAMPLE_
 OPENFGA_API_URL ?= http://localhost:18080
 
 openfga.init:
@@ -343,7 +343,7 @@ clean:
 
 help:
 	@echo ""
-	@echo "$(CYAN)servora-iam$(RESET)"
+	@echo "$(CYAN)servora-example$(RESET)"
 	@echo "$(CYAN)===========$(RESET)"
 	@echo ""
 	@echo "Usage:"

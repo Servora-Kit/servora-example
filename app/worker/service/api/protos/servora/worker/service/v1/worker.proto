@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package servora.worker.service.v1;
+
+import "buf/validate/validate.proto";
+
+option go_package = "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1;workerpb";
+
+service WorkerService {
+  rpc Hello(HelloRequest) returns (HelloResponse);
+}
+
+message HelloRequest {
+  string greeting = 1 [(buf.validate.field).required = true];
+}
+
+message HelloResponse {
+  string reply = 1;
+}

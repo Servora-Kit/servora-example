@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package servora.master.service.v1;
+
+import "servora/worker/service/v1/worker.proto";
+
+option go_package = "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1;masterpb";
+
+service MasterService {
+  rpc Hello(servora.worker.service.v1.HelloRequest) returns (servora.worker.service.v1.HelloResponse);
+}

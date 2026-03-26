@@ -2,7 +2,7 @@ FROM --platform=$BUILDPLATFORM golang:1.26.1-alpine AS builder
 
 ARG TARGETOS=linux
 ARG TARGETARCH
-ARG SERVICE_NAME=iam
+ARG SERVICE_NAME=example
 ARG VERSION=dev
 
 RUN apk add --no-cache git
@@ -11,8 +11,8 @@ WORKDIR /src
 
 COPY go.work ./
 COPY api/gen/go.mod api/gen/go.sum ./api/gen/
-COPY app/iam/service/go.mod app/iam/service/go.sum ./app/iam/service/
-COPY app/sayhello/service/go.mod app/sayhello/service/go.sum ./app/sayhello/service/
+COPY app/master/service/go.mod app/master/service/go.sum ./app/master/service/
+COPY app/worker/service/go.mod app/worker/service/go.sum ./app/worker/service/
 
 RUN go mod download
 
@@ -24,7 +24,7 @@ RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build \
 
 FROM alpine:3.19
 
-ARG SERVICE_NAME=iam
+ARG SERVICE_NAME=example
 
 RUN apk add --no-cache ca-certificates tzdata
 

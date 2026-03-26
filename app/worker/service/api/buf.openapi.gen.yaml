@@ -1,0 +1,34 @@
+version: v2
+
+clean: false
+
+managed:
+  enabled: true
+
+  disable:
+    - module: buf.build/googleapis/googleapis
+    - module: buf.build/bufbuild/protovalidate
+    - module: buf.build/kratos/apis
+    - module: buf.build/gnostic/gnostic
+    - module: buf.build/gogo/protobuf
+    - module: buf.build/menta2k-org/redact
+
+  override:
+    - file_option: go_package_prefix
+      value: github.com/Servora-Kit/servora/api/gen/go
+
+inputs:
+  - directory: app/worker/service/api/protos
+    paths:
+      - app/worker/service/api/protos/servora/worker/service/v1
+
+plugins:
+  - local: protoc-gen-openapi
+    out: app/worker/service
+    opt:
+      - naming=json
+      - depth=2
+      - default_response=false
+      - enum_type=string
+      - output_mode=merged
+      - fq_schema_naming=false

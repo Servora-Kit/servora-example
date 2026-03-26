@@ -1,0 +1,33 @@
+server:
+  grpc:
+    addr: "0.0.0.0:8011"
+    timeout: 10s
+    advertise_host: "${G_ADVERTISE_HOST:}"
+    tls:
+      enable: true
+      cert_path: "./configs/certs/tls.crt"
+      key_path: "./configs/certs/tls.key"
+
+app:
+  env: "dev"
+  log:
+    level: 0
+    filename: "./logs/worker.service.log"
+    max_size: 20
+    max_age: 30
+    max_backups: 10
+
+metrics:
+  enable: true
+
+registry:
+  consul:
+    addr: "${REGISTRY_CONSUL_ADDR:localhost:8500}"
+    scheme: "${REGISTRY_CONSUL_SCHEME:http}"
+    datacenter: "${REGISTRY_CONSUL_DC:dc1}"
+
+discovery:
+  consul:
+    addr: "${DISCOVERY_CONSUL_ADDR:localhost:8500}"
+    scheme: "${DISCOVERY_CONSUL_SCHEME:http}"
+    datacenter: "${DISCOVERY_CONSUL_DC:dc1}"

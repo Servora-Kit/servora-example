@@ -1,9 +1,8 @@
 version: v2
 
 modules:
-  - path: app/iam/service/api/protos
-    name: buf.build/servora/servora-iam
-  - path: app/sayhello/service/api/protos
+  - path: app/master/service/api/protos
+  - path: app/worker/service/api/protos
 
 deps:
   - buf.build/servora/servora

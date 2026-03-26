@@ -1,0 +1,11 @@
+# Generated with protoc-gen-openapi
+# https://github.com/google/gnostic/tree/master/cmd/protoc-gen-openapi
+
+openapi: 3.0.3
+info:
+    title: Worker API
+    description: Worker 微服务 API 文档
+    version: "1.0"
+paths: {}
+components:
+    schemas: {}

@@ -1,0 +1,9 @@
+package server
+
+import (
+	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/platform/registry"
+	"github.com/google/wire"
+)
+
+var ProviderSet = wire.NewSet(registry.NewRegistrar, telemetry.NewMetrics, NewGRPCServer)

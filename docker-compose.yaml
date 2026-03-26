@@ -1,250 +1,33 @@
 services:
-  consul:
-    image: consul:1.15.4
-    container_name: iam_consul
-    restart: unless-stopped
-    command:
-      - agent
-      - -server
-      - -ui
-      - -node=consul-server-1
-      - -bootstrap-expect=1
-      - -client=0.0.0.0
-      - -data-dir=/consul/data
-    healthcheck:
-      test: ["CMD", "consul", "info"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    ports:
-      - "8500:8500"
-      - "8600:8600/udp"
-    volumes:
-      - iam-consul-data:/consul/data
-    networks:
-      - iam-network
-
-  jaeger:
-    image: jaegertracing/jaeger:latest
-    container_name: iam_jaeger
-    restart: unless-stopped
-    environment:
-      JAEGER_LISTEN_HOST: 0.0.0.0
-    ports:
-      - "16686:16686"
-    networks:
-      - iam-network
-
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
-    container_name: iam_otel_collector
-    user: "0:0"
-    restart: unless-stopped
-    command: ["--config=/etc/otelcol/config.yaml"]
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "/otelcol-contrib",
-          "validate",
-          "--config=/etc/otelcol/config.yaml",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    volumes:
-      - ./manifests/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
-      - iam-logs:/var/log/iam:ro
-      - sayhello-logs:/var/log/sayhello:ro
-    ports:
-      - "4317:4317"
-      - "4318:4318"
-    depends_on:
-      - jaeger
-      - loki
-    networks:
-      - iam-network
-
-  loki:
-    image: grafana/loki:latest
-    container_name: iam_loki
-    restart: unless-stopped
-    command: ["-config.file=/etc/loki/config.yaml"]
-    ports:
-      - "16685:3100"
-    volumes:
-      - ./manifests/loki/loki.yaml:/etc/loki/config.yaml:ro
-      - iam-loki-data:/loki
-    networks:
-      - iam-network
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: iam_prometheus
-    restart: unless-stopped
-    command:
-      - --config.file=/etc/prometheus/prometheus.yml
-      - --storage.tsdb.path=/prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./manifests/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-      - iam-prometheus-data:/prometheus
-    networks:
-      - iam-network
-
-  grafana:
-    image: grafana/grafana:latest
-    container_name: iam_grafana
-    restart: unless-stopped
-    environment:
-      GF_SECURITY_ADMIN_USER: "${GRAFANA_ADMIN_USER:-admin}"
-      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD:-admin}"
-      GF_METRICS_ENABLED: "true"
-      GF_USERS_ALLOW_SIGN_UP: "false"
-    ports:
-      - "3001:3000"
-    volumes:
-      - ./manifests/grafana/provisioning:/etc/grafana/provisioning:ro
-      - ./manifests/grafana/dashboards:/var/lib/grafana/dashboards:ro
-      - iam-grafana-data:/var/lib/grafana
-    depends_on:
-      - prometheus
-      - loki
-      - jaeger
-    networks:
-      - iam-network
-
-  db:
-    image: postgres:18-alpine
-    container_name: iam_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: postgres
-      POSTGRES_USER: servora
-      POSTGRES_PASSWORD: servora
-      TZ: Asia/Shanghai
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U servora -d postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "5432:5432"
-    volumes:
-      - iam-db-data:/var/lib/postgresql/data
-      - ./manifests/scripts/postgres-init:/docker-entrypoint-initdb.d:ro
-    networks:
-      - iam-network
-
-  openfga-migrate:
-    image: openfga/openfga:latest
-    container_name: iam_openfga_migrate
-    restart: "no"
-    depends_on:
-      db:
-        condition: service_healthy
-    command:
-      - migrate
-      - --datastore-engine
-      - postgres
-      - --datastore-uri
-      - postgres://servora:servora@db:5432/openfga?sslmode=disable
-    networks:
-      - iam-network
-
-  openfga:
-    image: openfga/openfga:latest
-    container_name: iam_openfga
-    restart: unless-stopped
-    depends_on:
-      db:
-        condition: service_healthy
-      openfga-migrate:
-        condition: service_completed_successfully
-    command:
-      - run
-      - --datastore-engine
-      - postgres
-      - --datastore-uri
-      - postgres://servora:servora@db:5432/openfga?sslmode=disable
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "curl -sf http://localhost:8080/healthz | grep -q SERVING",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 5s
-    ports:
-      - "18080:8080"
-      - "18081:8081"
-      - "3002:3000"
-    networks:
-      - iam-network
-
-  traefik:
-    image: traefik:v3.6
-    container_name: iam_traefik
-    restart: unless-stopped
-    depends_on:
-      consul:
-        condition: service_healthy
-    command:
-      - --configFile=/etc/traefik/traefik.yaml
-    ports:
-      - "8080:80"
-      - "8081:8080"
-      - "8082:8082"
-    volumes:
-      - ./manifests/traefik/traefik.yaml:/etc/traefik/traefik.yaml:ro
-    healthcheck:
-      test: ["CMD", "traefik", "healthcheck", "--ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-    networks:
-      - iam-network
-
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: iam_mailpit
-    restart: unless-stopped
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-    networks:
-      - iam-network
-
-  redis:
-    image: redis:8.6.1-alpine
-    container_name: iam_redis
-    restart: unless-stopped
-    command: redis-server --requirepass servora_redis_pwd --appendonly yes
-    healthcheck:
-      test: ["CMD", "redis-cli", "-a", "servora_redis_pwd", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    ports:
-      - "6379:6379"
-    volumes:
-      - iam-redis-data:/data
-    networks:
-      - iam-network
+    consul:
+        image: consul:1.15.4
+        container_name: example_consul
+        restart: unless-stopped
+        command:
+            - agent
+            - -server
+            - -ui
+            - -node=consul-server-1
+            - -bootstrap-expect=1
+            - -client=0.0.0.0
+            - -data-dir=/consul/data
+        healthcheck:
+            test: ["CMD", "consul", "info"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+        ports:
+            - "8500:8500"
+            - "8600:8600/udp"
+        volumes:
+            - example-consul-data:/consul/data
+        networks:
+            - master-network
 
 volumes:
-  iam-consul-data:
-  iam-db-data:
-  iam-redis-data:
-  iam-loki-data:
-  iam-prometheus-data:
-  iam-grafana-data:
-  iam-logs:
-  sayhello-logs:
+    example-consul-data:
+    master-logs:
+    worker-logs:
 
 networks:
-  iam-network:
+    master-network:

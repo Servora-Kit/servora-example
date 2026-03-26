@@ -106,5 +106,4 @@ __screenshots__/
 
 test-results/
 playwright-report/
-app/iam/service/server
 configs/keys/
