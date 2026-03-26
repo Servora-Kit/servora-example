@@ -7,7 +7,7 @@ import (
 	"math/big"
 	"os"
 
-	jwtpkg "github.com/Servora-Kit/servora/pkg/jwt"
+	jwtpkg "github.com/Servora-Kit/servora/security/jwt"
 )
 
 type Response struct {

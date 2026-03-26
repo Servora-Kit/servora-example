@@ -3,7 +3,7 @@
 package apppb
 
 import (
-	mapper "github.com/Servora-Kit/servora/pkg/mapper"
+	mapper "github.com/Servora-Kit/servora/core/mapper"
 )
 
 // ApplicationMapperPlan returns the declarative mapper plan

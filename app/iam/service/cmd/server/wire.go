@@ -13,9 +13,9 @@ import (
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/oidc"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/server"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/service"
-	"github.com/Servora-Kit/servora/pkg/bootstrap"
+	"github.com/Servora-Kit/servora/platform/bootstrap"
 	"github.com/Servora-Kit/servora-iam/pkg/cap"
-	"github.com/Servora-Kit/servora/pkg/transport/client"
+	"github.com/Servora-Kit/servora/transport/client"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

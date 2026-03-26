@@ -4,7 +4,7 @@ import (
 	apppb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/application/service/v1"
 	userpb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/user/service/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data/ent"
-	"github.com/Servora-Kit/servora/pkg/mapper"
+	"github.com/Servora-Kit/servora/core/mapper"
 )
 
 func newUserMapper() *mapper.CopierMapper[userpb.User, ent.User] {

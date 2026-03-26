@@ -13,8 +13,8 @@ import (
 	authnpb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/authn/service/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
 	"github.com/Servora-Kit/servora-iam/pkg/jwks"
-	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/redis"
+	"github.com/Servora-Kit/servora/obs/logging"
+	"github.com/Servora-Kit/servora/infra/redis"
 	kErrors "github.com/go-kratos/kratos/v2/errors"
 )
 

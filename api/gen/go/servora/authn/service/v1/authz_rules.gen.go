@@ -4,7 +4,7 @@ package authnpb
 
 import (
 	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authz/v1"
-	authz "github.com/Servora-Kit/servora/pkg/authz"
+	authz "github.com/Servora-Kit/servora/security/authz"
 )
 
 // _authzRules is the immutable backing store for AuthzRules.

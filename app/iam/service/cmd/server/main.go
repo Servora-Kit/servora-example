@@ -5,7 +5,7 @@ import (
 
 	iamconf "github.com/Servora-Kit/servora-iam/api/gen/go/servora/iam/conf/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data"
-	"github.com/Servora-Kit/servora/pkg/bootstrap"
+	"github.com/Servora-Kit/servora/platform/bootstrap"
 
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"

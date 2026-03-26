@@ -20,9 +20,9 @@ import (
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data/ent/application"
 	"github.com/Servora-Kit/servora-iam/pkg/helpers"
 	"github.com/Servora-Kit/servora-iam/pkg/jwks"
-	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/mapper"
-	"github.com/Servora-Kit/servora/pkg/redis"
+	"github.com/Servora-Kit/servora/obs/logging"
+	"github.com/Servora-Kit/servora/core/mapper"
+	"github.com/Servora-Kit/servora/infra/redis"
 )
 
 const (

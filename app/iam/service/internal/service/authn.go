@@ -8,7 +8,7 @@ import (
 
 	authnpb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/authn/service/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/pkg/actor"
+	"github.com/Servora-Kit/servora/core/actor"
 	"github.com/Servora-Kit/servora-iam/pkg/cap"
 )
 

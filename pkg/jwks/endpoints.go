@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
-	"github.com/Servora-Kit/servora/pkg/logger"
+	"github.com/Servora-Kit/servora/obs/logging"
 )
 
 const (

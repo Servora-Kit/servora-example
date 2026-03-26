@@ -5,7 +5,7 @@ import (
 
 	apppb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/application/service/v1"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/pkg/pagination"
+	"github.com/Servora-Kit/servora/core/pagination"
 )
 
 type ApplicationService struct {

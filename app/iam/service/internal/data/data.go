@@ -12,12 +12,12 @@ import (
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data/ent"
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/data/ent/migrate"
 
-	entdrv "github.com/Servora-Kit/servora/pkg/db/ent"
-	"github.com/Servora-Kit/servora/pkg/governance/registry"
-	"github.com/Servora-Kit/servora/pkg/logger"
+	entdrv "github.com/Servora-Kit/servora/infra/db/ent"
+	"github.com/Servora-Kit/servora/platform/registry"
+	"github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora-iam/pkg/mail"
-	"github.com/Servora-Kit/servora/pkg/redis"
-	"github.com/Servora-Kit/servora/pkg/transport/client"
+	"github.com/Servora-Kit/servora/infra/redis"
+	"github.com/Servora-Kit/servora/transport/client"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/google/wire"

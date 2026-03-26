@@ -16,7 +16,7 @@ import (
 	userpb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/user/service/v1"
 	"github.com/Servora-Kit/servora-iam/pkg/helpers"
 	"github.com/Servora-Kit/servora-iam/pkg/jwks"
-	"github.com/Servora-Kit/servora/pkg/logger"
+	"github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora-iam/pkg/mail"
 )
 

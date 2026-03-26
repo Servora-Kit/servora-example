@@ -6,11 +6,11 @@ import (
 	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	sayhellov1 "github.com/Servora-Kit/servora-iam/api/gen/go/servora/sayhello/service/v1"
 	"github.com/Servora-Kit/servora-iam/app/sayhello/service/internal/service"
-	"github.com/Servora-Kit/servora/pkg/audit"
-	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
-	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/transport/server/grpc"
-	"github.com/Servora-Kit/servora/pkg/transport/server/middleware"
+	"github.com/Servora-Kit/servora/obs/audit"
+	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/obs/logging"
+	"github.com/Servora-Kit/servora/transport/server/grpc"
+	"github.com/Servora-Kit/servora/transport/server/middleware"
 )
 
 func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, recorder *audit.Recorder, l logger.Logger, sayhello *service.SayHelloService) *kgrpc.Server {

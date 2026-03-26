@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/pkg/openfga"
-	"github.com/Servora-Kit/servora/pkg/redis"
+	"github.com/Servora-Kit/servora/infra/openfga"
+	"github.com/Servora-Kit/servora/infra/redis"
 )
 
 type authzRepo struct {

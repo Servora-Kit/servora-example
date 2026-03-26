@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	jwtpkg "github.com/Servora-Kit/servora/pkg/jwt"
+	jwtpkg "github.com/Servora-Kit/servora/security/jwt"
 )
 
 const defaultCacheTTL = 5 * time.Minute

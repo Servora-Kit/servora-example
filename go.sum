@@ -1,7 +1,3 @@
-github.com/Servora-Kit/servora v0.1.3 h1:FJYJL2zDgblKJZEr35TDnqWvi64tVU9xZ8HuSrxLRsg=
-github.com/Servora-Kit/servora v0.1.3/go.mod h1:k/+dzannGZjAA+R/tJ5j0BuruPaIUzhYPrSVuji68VI=
-github.com/Servora-Kit/servora/api/gen v0.1.3 h1:nrrOOJiyBF7rVlkh0VNZanboN9v42cgPcNWKXNdYxMo=
-github.com/Servora-Kit/servora/api/gen v0.1.3/go.mod h1:N3N3a4jc1ET6Eb/1dtqvaZhnmo3yuRA2WHM0xL4v5Uw=
 github.com/bsm/ginkgo/v2 v2.12.0 h1:Ny8MWAHyOepLGlLKYmXG4IEkioBysk6GpaRTLC8zwWs=
 github.com/bsm/ginkgo/v2 v2.12.0/go.mod h1:SwYbGRRDovPVboqFv0tPTcG1sN61LM1Z4ARdbAV9g4c=
 github.com/bsm/gomega v1.27.10 h1:yeMWxP2pV2fG3FgAODIY8EiRE3dy0aeFYt4l7wh6yKA=

@@ -133,6 +133,8 @@ lint: lint.go lint.ts
 	@echo "$(GREEN)✓ lint complete$(RESET)"
 
 lint.go:
+	@echo "$(CYAN)Linting Go (repo root module)...$(RESET)"
+	@(cd $(ROOT_DIR) && golangci-lint run)
 	@$(foreach mod,$(GO_WORKSPACE_MODULES),echo "$(CYAN)Linting Go ($(mod))...$(RESET)" && (cd $(ROOT_DIR)$(mod) && golangci-lint run) && ) true
 	@echo "$(GREEN)✓ Go lint complete$(RESET)"
 

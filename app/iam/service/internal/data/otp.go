@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/redis"
+	"github.com/Servora-Kit/servora/obs/logging"
+	"github.com/Servora-Kit/servora/infra/redis"
 )
 
 type otpRepo struct {

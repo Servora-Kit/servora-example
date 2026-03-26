@@ -3,7 +3,7 @@
 package sayhellopb
 
 import (
-	audit "github.com/Servora-Kit/servora/pkg/audit"
+	audit "github.com/Servora-Kit/servora/obs/audit"
 )
 
 // _auditRules is the immutable backing store for AuditRules.

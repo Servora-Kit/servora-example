@@ -2,11 +2,11 @@ package server
 
 import (
 	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
-	"github.com/Servora-Kit/servora/pkg/governance/registry"
-	"github.com/Servora-Kit/servora/pkg/governance/telemetry"
+	"github.com/Servora-Kit/servora/platform/registry"
+	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/Servora-Kit/servora-iam/pkg/jwks"
-	"github.com/Servora-Kit/servora/pkg/logger"
-	"github.com/Servora-Kit/servora/pkg/openfga"
+	"github.com/Servora-Kit/servora/obs/logging"
+	"github.com/Servora-Kit/servora/infra/openfga"
 	"github.com/google/wire"
 )
 

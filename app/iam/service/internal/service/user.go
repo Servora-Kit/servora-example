@@ -6,7 +6,7 @@ import (
 	userpb "github.com/Servora-Kit/servora-iam/api/gen/go/servora/user/service/v1"
 
 	"github.com/Servora-Kit/servora-iam/app/iam/service/internal/biz"
-	"github.com/Servora-Kit/servora/pkg/pagination"
+	"github.com/Servora-Kit/servora/core/pagination"
 )
 
 type UserService struct {

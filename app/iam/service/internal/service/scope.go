@@ -5,7 +5,7 @@ import (
 
 	"github.com/go-kratos/kratos/v2/errors"
 
-	"github.com/Servora-Kit/servora/pkg/actor"
+	"github.com/Servora-Kit/servora/core/actor"
 )
 
 // requireAuthenticatedUser extracts the authenticated user ID from context.
