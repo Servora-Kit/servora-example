@@ -6,6 +6,30 @@ info:
     title: Master API
     description: Master 微服务 API 文档
     version: "1.0"
-paths: {}
+paths:
+    /v1/hello:
+        get:
+            tags:
+                - MasterService
+            operationId: MasterService_Hello
+            parameters:
+                - name: greeting
+                  in: query
+                  schema:
+                    type: string
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/HelloResponse'
 components:
-    schemas: {}
+    schemas:
+        HelloResponse:
+            type: object
+            properties:
+                reply:
+                    type: string
+tags:
+    - name: MasterService

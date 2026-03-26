@@ -52,7 +52,7 @@ WEB_APPS :=
 WEB_DEV_APP ?=
 
 WEB_PNPM_FILTERS := $(foreach app,$(WEB_APPS),--filter "./web/$(app)")
-INFRA_SERVICES := consul otel-collector jaeger loki prometheus grafana traefik
+INFRA_SERVICES := consul
 COMPOSE_STACK_SERVICES := $(INFRA_SERVICES) $(MICROSERVICES)
 COMPOSE_STACK_DOWN := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans
 COMPOSE_STACK_RESET := $(COMPOSE) $(COMPOSE_DEV_FILES) down --remove-orphans --volumes

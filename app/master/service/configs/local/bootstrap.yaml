@@ -1,8 +1,14 @@
 server:
+  http:
+    listen:
+      addr: "0.0.0.0:8013"
+      timeout: 10s
   grpc:
-    addr: "0.0.0.0:8012"
-    timeout: 10s
-    advertise_host: "${G_ADVERTISE_HOST:}"
+    listen:
+      addr: "0.0.0.0:8012"
+      timeout: 10s
+    registry:
+      host: "${G_REGISTRY_HOST:}"
 
 data:
   client:

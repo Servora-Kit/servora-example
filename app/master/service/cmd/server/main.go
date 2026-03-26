@@ -8,6 +8,7 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v2/transport/http"
 
 	_ "go.uber.org/automaxprocs"
 )
@@ -22,14 +23,14 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(identity bootstrap.SvcIdentity, l log.Logger, reg registry.Registrar, gs *grpc.Server) *kratos.App {
+func newApp(identity bootstrap.SvcIdentity, l log.Logger, reg registry.Registrar, gs *grpc.Server, hs *http.Server) *kratos.App {
 	return kratos.New(
 		kratos.ID(identity.ID),
 		kratos.Name(identity.Name),
 		kratos.Version(identity.Version),
 		kratos.Metadata(identity.Metadata),
 		kratos.Logger(l),
-		kratos.Server(gs),
+		kratos.Server(gs, hs),
 		kratos.Registrar(reg),
 	)
 }

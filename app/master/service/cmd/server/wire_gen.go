@@ -7,6 +7,8 @@
 package main
 
 import (
+	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
+	"github.com/Servora-Kit/servora-example/app/master/service/internal/data"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
@@ -24,20 +26,23 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *conf.Registry, data *conf.Data, app *conf.App, trace *conf.Trace, metrics *conf.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *conf.Registry, confData *conf.Data, app *conf.App, trace *conf.Trace, metrics *conf.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
 	registrar := registry.NewRegistrar(confRegistry)
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	registryDiscovery := registry.NewDiscovery(discovery)
-	clientClient, err := client.NewClient(data, trace, registryDiscovery, logger)
+	clientClient, err := client.NewDefaultClient(confData, trace, registryDiscovery, logger)
 	if err != nil {
 		return nil, nil, err
 	}
-	masterService := service.NewMasterService(clientClient, logger)
+	workerRepo := data.NewWorkerRepo(clientClient, logger)
+	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
+	masterService := service.NewMasterService(masterUsecase)
 	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, masterService)
-	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer)
+	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, masterService)
+	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer)
 	return kratosApp, func() {
 	}, nil
 }
