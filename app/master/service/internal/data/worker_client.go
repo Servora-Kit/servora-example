@@ -8,6 +8,7 @@ import (
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
 	"github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/transport/client"
+	"github.com/Servora-Kit/servora/transport/runtime"
 	gogrpc "google.golang.org/grpc"
 )
 
@@ -27,7 +28,10 @@ func NewWorkerRepo(c client.Client, l logger.Logger) biz.WorkerRepo {
 }
 
 func (c *workerRepo) Hello(ctx context.Context, req *workerpb.HelloRequest) (*workerpb.HelloResponse, error) {
-	conn, err := client.GetConnValue[gogrpc.ClientConnInterface](ctx, c.client, client.GRPC, workerServiceName)
+	conn, err := client.GetValue[gogrpc.ClientConnInterface](ctx, c.client, runtime.ClientDialInput{
+		Protocol: "grpc",
+		Target:   workerServiceName,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("create worker grpc conn: %w", err)
 	}
