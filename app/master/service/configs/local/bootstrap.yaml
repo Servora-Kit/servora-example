@@ -12,13 +12,15 @@ server:
 
 data:
   client:
-    grpc:
-      - service_name: worker.service
-        endpoint: "discovery:///worker.service"
-        timeout: 5s
-        tls:
-          enable: true
-          ca_path: "./configs/certs/tls.crt"
+    services:
+      - name: worker.service
+        endpoints:
+          - protocol: grpc
+            endpoint: "discovery:///worker.service"
+            timeout: 5s
+            tls:
+              enable: true
+              ca_path: "./configs/certs/tls.crt"
 
 app:
   env: "dev"

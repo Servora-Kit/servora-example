@@ -10,10 +10,12 @@ server:
 
 data:
   client:
-    grpc:
-      - service_name: worker.service
-        endpoint: "discovery:///worker.service"
-        timeout: 5s
+    services:
+      - name: worker.service
+        endpoints:
+          - protocol: grpc
+            endpoint: "discovery:///worker.service"
+            timeout: 5s
 
 app:
   env: "prod"
