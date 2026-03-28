@@ -34,6 +34,11 @@ app:
 metrics:
   enable: true
 
+trace:
+  endpoint: "localhost:4317"
+  insecure: true
+  sampling_ratio: 1.0
+
 registry:
   consul:
     addr: "${REGISTRY_CONSUL_ADDR:localhost:8500}"

@@ -8,7 +8,7 @@
 
 ## 快速开始
 
-以下流程使用 1 个容器化 Consul + 2 个本地进程（`master`、`worker`）启动整套示例。
+以下流程使用 3 个容器化基础设施（Consul + OTel Collector + Jaeger）+ 2 个本地进程（`master`、`worker`）启动整套示例，并演示基础链路追踪。
 
 ### 1) 准备环境
 
@@ -27,7 +27,7 @@ G_REGISTRY_HOST=192.168.31.71
 
 > `G_REGISTRY_HOST` 会写入服务注册信息中的 `server.grpc.registry.host`。若不填写，容器化 Consul 可能无法访问到 `master` / `worker` 的健康检查端点。
 
-### 2) 启动 Consul（容器）
+### 2) 启动基础设施（容器）
 
 ```bash
 cd servora-example
@@ -35,6 +35,7 @@ make compose.up
 ```
 
 启动后可访问 Consul UI：<http://localhost:8500>
+启动后可访问 Jaeger UI：<http://localhost:16686>
 
 ### 3) 本地启动 worker（终端 A）
 
@@ -60,6 +61,14 @@ make run
 - `master` gRPC 监听：`0.0.0.0:8012`
 - `master` HTTP 监听：`0.0.0.0:8013`
 - Consul 中可看到 `master.service` 与 `worker.service` 已注册
+
+触发一次跨服务调用（master -> worker）：
+
+```bash
+curl 'http://127.0.0.1:8013/v1/hello?greeting=hello-from-http'
+```
+
+在 Jaeger UI 中查询 `master.service` 或 `worker.service` 可看到调用链路。
 
 ### 6) 停止环境
 

@@ -24,6 +24,45 @@ services:
         networks:
             - master-network
 
+    jaeger:
+        image: jaegertracing/jaeger:latest
+        container_name: example_jaeger
+        restart: unless-stopped
+        environment:
+            JAEGER_LISTEN_HOST: 0.0.0.0
+        ports:
+            - "16686:16686"
+        networks:
+            - master-network
+
+    otel-collector:
+        image: otel/opentelemetry-collector-contrib:latest
+        container_name: example_otel_collector
+        user: "0:0"
+        restart: unless-stopped
+        command: ["--config=/etc/otelcol/config.yaml"]
+        healthcheck:
+            test:
+                [
+                    "CMD",
+                    "/otelcol-contrib",
+                    "validate",
+                    "--config=/etc/otelcol/config.yaml",
+                ]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+            start_period: 10s
+        volumes:
+            - ./manifests/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+        ports:
+            - "4317:4317"
+            - "4318:4318"
+        depends_on:
+            - jaeger
+        networks:
+            - master-network
+
 volumes:
     example-consul-data:
     master-logs:
