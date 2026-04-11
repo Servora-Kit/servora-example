@@ -32,6 +32,9 @@ VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev
 BUILD_TIME := $(shell date +%Y-%m-%dT%H:%M:%S)
 GIT_COMMIT := $(shell git rev-parse HEAD 2>/dev/null || echo "unknown")
 GIT_BRANCH := $(shell git rev-parse --abbrev-ref HEAD 2>/dev/null || echo "unknown")
+# Docker image tags disallow "/" and many symbols. Normalize git-derived version for image tags.
+DOCKER_TAG_VERSION_RAW := $(shell printf '%s' "$(VERSION)" | sed -E 's/[^[:alnum:]_.-]+/-/g; s/^[.-]+//; s/-+/-/g; s/[.-]+$$//')
+DOCKER_TAG_VERSION := $(if $(DOCKER_TAG_VERSION_RAW),$(DOCKER_TAG_VERSION_RAW),dev)
 
 LDFLAGS := -X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT) -X main.GitBranch=$(GIT_BRANCH)
 
@@ -235,8 +238,8 @@ buf-push:
 
 # build production images for microservices
 compose.build:
-	@echo "$(CYAN)Build production images: $(MICROSERVICES) (version: $(VERSION))$(RESET)"
-	@$(foreach svc,$(MICROSERVICES),docker build --build-arg SERVICE_NAME=$(svc) --build-arg VERSION=$(VERSION) -t servora-$(svc):$(VERSION) . &&) true
+	@echo "$(CYAN)Build production images: $(MICROSERVICES) (version: $(DOCKER_TAG_VERSION))$(RESET)"
+	@$(foreach svc,$(MICROSERVICES),docker build --build-arg SERVICE_NAME=$(svc) --build-arg VERSION=$(VERSION) -t servora-$(svc):$(DOCKER_TAG_VERSION) . &&) true
 	@echo "$(GREEN)✓ Production images built$(RESET)"
 
 # start infrastructure compose stack

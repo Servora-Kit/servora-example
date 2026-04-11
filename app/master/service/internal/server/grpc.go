@@ -20,16 +20,17 @@ func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l 
 		WithoutRateLimit().
 		Build()
 
-	builder := svrgrpc.NewBuilder().
-		WithLogger(grpcLogger).
-		WithMiddleware(mw...).
-		WithServices(
+	opts := []svrgrpc.ServerOption{
+		svrgrpc.WithLogger(grpcLogger),
+		svrgrpc.WithMiddleware(mw...),
+		svrgrpc.WithServices(
 			func(s *kgrpc.Server) {
 				masterpb.RegisterMasterServiceServer(s, master)
 			},
-		)
-	if c != nil && c.Grpc != nil {
-		builder.WithConfig(c.Grpc)
+		),
 	}
-	return builder.MustBuild()
+	if c != nil && c.Grpc != nil {
+		opts = append(opts, svrgrpc.WithConfig(c.Grpc))
+	}
+	return svrgrpc.NewServer(opts...)
 }

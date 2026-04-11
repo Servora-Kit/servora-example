@@ -2,4 +2,4 @@ listen:
   addr: "0.0.0.0:8002"
   timeout: 10s
 registry:
-  host: "${TCP_REGISTRY_HOST:}"
+  endpoint: "${TCP_REGISTRY_ENDPOINT:tcp://master:8002}"

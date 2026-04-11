@@ -16,7 +16,6 @@ import (
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/Servora-Kit/servora/platform/bootstrap"
 	"github.com/Servora-Kit/servora/platform/registry"
-	"github.com/Servora-Kit/servora/transport/client"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -34,11 +33,8 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 		return nil, nil, err
 	}
 	registryDiscovery := registry.NewDiscovery(discovery)
-	clientClient, err := client.NewDefaultClient(confData, trace, registryDiscovery, logger)
-	if err != nil {
-		return nil, nil, err
-	}
-	workerRepo := data.NewWorkerRepo(clientClient, logger)
+	dialer := data.NewWorkerDialer(confData, trace, registryDiscovery, logger)
+	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
 	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, masterService)

@@ -20,18 +20,19 @@ func NewHTTPServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l 
 		WithoutRateLimit().
 		Build()
 
-	builder := svrhttp.NewBuilder().
-		WithLogger(httpLogger).
-		WithMiddleware(mw...).
-		WithMetrics(mtc).
-		WithServices(
+	opts := []svrhttp.ServerOption{
+		svrhttp.WithLogger(httpLogger),
+		svrhttp.WithMiddleware(mw...),
+		svrhttp.WithMetrics(mtc),
+		svrhttp.WithServices(
 			func(s *khttp.Server) {
 				masterpb.RegisterMasterServiceHTTPServer(s, master)
 			},
-		)
-	if c != nil && c.Http != nil {
-		builder.WithConfig(c.Http)
-		builder.WithCORS(c.Http.Cors)
+		),
 	}
-	return builder.MustBuild()
+	if c != nil && c.Http != nil {
+		opts = append(opts, svrhttp.WithConfig(c.Http))
+		opts = append(opts, svrhttp.WithCORS(c.Http.Cors))
+	}
+	return svrhttp.NewServer(opts...)
 }

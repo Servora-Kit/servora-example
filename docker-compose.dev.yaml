@@ -1,6 +1,7 @@
 services:
     master:
         container_name: master
+        hostname: master
         pull_policy: never
         build:
             context: .
@@ -15,12 +16,15 @@ services:
             GOWORK: /workspace/go.work
         volumes:
             - ./:/workspace
+            - ../servora:/servora
+            - ../servora-transport:/servora-transport
             - ./.cache/go-mod:/go/pkg/mod
             - ./.cache/go-build:/go/cache
             - ./app/master/service/configs/docker/:/app/configs/
             - master-logs:/app/logs
         ports:
             - "10000:8000"
+            - "10001:8001"
         depends_on:
             consul:
                 condition: service_healthy
@@ -29,6 +33,7 @@ services:
 
     worker:
         container_name: worker
+        hostname: worker
         pull_policy: never
         build:
             context: .
@@ -42,12 +47,12 @@ services:
             GOWORK: /workspace/go.work
         volumes:
             - ./:/workspace
+            - ../servora:/servora
+            - ../servora-transport:/servora-transport
             - ./.cache/go-mod:/go/pkg/mod
             - ./.cache/go-build:/go/cache
             - ./app/worker/service/configs/docker/:/app/configs/
             - worker-logs:/app/logs
-        ports:
-            - "10002:8000"
         depends_on:
             consul:
                 condition: service_healthy
