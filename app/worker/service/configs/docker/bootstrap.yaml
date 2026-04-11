@@ -1,7 +1,7 @@
 server:
   grpc:
     listen:
-      addr: "0.0.0.0:8000"
+      addr: "0.0.0.0:8010"
       timeout: 10s
 
 app:

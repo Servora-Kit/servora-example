@@ -1,0 +1,50 @@
+services:
+    master:
+        image: servora-master:latest
+        container_name: example_master
+        restart: unless-stopped
+        environment:
+            TZ: Asia/Shanghai
+        volumes:
+            - ./app/master/service/configs/docker:/app/configs:ro
+            - master-logs:/app/logs
+        ports:
+            - "8001:8001"
+            - "8000:8000"
+        depends_on:
+            consul:
+                condition: service_healthy
+            otel-collector:
+                condition: service_healthy
+        networks:
+            - master-network
+
+    worker:
+        image: servora-worker:latest
+        container_name: example_worker
+        restart: unless-stopped
+        environment:
+            TZ: Asia/Shanghai
+        volumes:
+            - ./app/worker/service/configs/docker:/app/configs:ro
+            - worker-logs:/app/logs
+        depends_on:
+            consul:
+                condition: service_healthy
+            otel-collector:
+                condition: service_healthy
+        networks:
+            - master-network
+
+volumes:
+    master-logs:
+        external: true
+        name: servora-example_master-logs
+    worker-logs:
+        external: true
+        name: servora-example_worker-logs
+
+networks:
+    master-network:
+        external: true
+        name: servora-example_master-network

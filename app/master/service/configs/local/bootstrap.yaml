@@ -1,14 +1,12 @@
 server:
   http:
     listen:
-      addr: "0.0.0.0:8013"
+      addr: "0.0.0.0:8001"
       timeout: 10s
   grpc:
     listen:
-      addr: "0.0.0.0:8012"
+      addr: "0.0.0.0:8000"
       timeout: 10s
-    registry:
-      host: "${G_REGISTRY_HOST:}"
 
 data:
   client:

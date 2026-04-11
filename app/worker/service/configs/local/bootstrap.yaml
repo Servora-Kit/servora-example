@@ -1,10 +1,8 @@
 server:
   grpc:
     listen:
-      addr: "0.0.0.0:8011"
+      addr: "0.0.0.0:8010"
       timeout: 10s
-    registry:
-      host: "${G_REGISTRY_HOST:}"
     tls:
       enable: true
       cert_path: "./configs/certs/tls.crt"

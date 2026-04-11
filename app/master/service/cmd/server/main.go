@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 
 	tcpk "github.com/Servora-Kit/servora-transport/server/tcp"
@@ -32,8 +33,15 @@ func newApp(identity bootstrap.SvcIdentity, l log.Logger, reg registry.Registrar
 		kratos.Version(identity.Version),
 		kratos.Metadata(identity.Metadata),
 		kratos.Logger(l),
-		kratos.Server(gs, hs, ts),
+		kratos.Server(gs, hs), // TCP server is managed manually to avoid Consul registration
 		kratos.Registrar(reg),
+		// 不将tcp server注册到consul，手动管理生命周期
+		kratos.AfterStart(func(ctx context.Context) error {
+			return ts.Start(ctx)
+		}),
+		kratos.BeforeStop(func(ctx context.Context) error {
+			return ts.Stop(ctx)
+		}),
 	)
 }
 
