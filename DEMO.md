@@ -18,19 +18,40 @@ servora 的审计管线提供两条互补的 emit 通道：
 
 本分支 master 演示 Tier 1（无业务事件），worker 演示两条通道叠加。
 
-## 一次 RPC 调用的事件流
+## 一次 RPC 调用的事件流（实测）
 
-`curl http://127.0.0.1:8001/v1/hello?greeting=demo` →
+`curl 'http://127.0.0.1:8001/v1/hello?greeting=demo'` 返回
+`{"reply":"master relay -> worker says hello, demo"}`，两个服务的 stdout 各自出
+audit 事件（servora zap logger，dev 模式 console + 颜色码；下面节选 prod 模式
+JSON 输出便于阅读）：
 
 ```
-master.service                 worker.service
-─────────────                  ─────────────
-[Tier 1] AUTHN_RESULT          [Tier 1] AUTHN_RESULT
-                               [Tier 2] RESOURCE_MUTATION (CREATE hello.reply)
+master.service.log:
+2026-05-08T17:23:35.067+0900  info  log/helper.go:122  {"service":"master.service",
+  "module":"audit/emitter/log",
+  "msg":"audit_event event_id=70b8668e... type=authn.result
+   service=master.service operation=/servora.master.service.v1.MasterService/Hello
+   payload={...\"authnDetail\":{\"method\":\"demo\",\"success\":true}...}"}
+
+worker.service.log:
+2026-05-08T17:23:35.067+0900  info  log/helper.go:122  {"service":"worker.service",
+  "module":"audit/emitter/log",
+  "msg":"audit_event event_id=2a8e4abd... type=resource.mutation
+   service=worker.service operation=/servora.worker.service.v1.WorkerService/Hello
+   payload={...\"resourceMutationDetail\":{\"mutationType\":\"RESOURCE_MUTATION_TYPE_CREATE\",
+   \"resourceType\":\"hello.reply\",\"resourceId\":\"demo\"}...}"}
+
+2026-05-08T17:23:35.067+0900  info  log/helper.go:122  {"service":"worker.service",
+  "module":"audit/emitter/log",
+  "msg":"audit_event event_id=5380dc67... type=authn.result
+   service=worker.service operation=/servora.worker.service.v1.WorkerService/Hello
+   payload={...\"authnDetail\":{\"method\":\"demo\",\"success\":true}...}"}
 ```
 
-3 条事件分别从 master log + worker log 的 `audit/emitter/log` 子 logger 输出（JSON
-proto 编码的 `auditpb.AuditEvent`）。
+3 条事件共享同一 `traceId`，说明 OTel trace 与 audit 正确关联。worker 端
+`resource.mutation`（Tier 2 直发）先于 `authn.result`（Tier 1 LIFO 后置）出，
+印证 v0.4.5 装配契约：handler 内直发立即生效，Collector 在 handler 返回后才读
+ctx → emit。
 
 ## 关键改动
 
@@ -83,13 +104,35 @@ make dev
 curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=demo'
 ```
 
-### 在两个终端的日志中查找
+### 在两个服务输出中查找
 
+audit 事件喂给 servora 服务主 logger（`logger.Logger` → `audit.NewLogEmitter`）。
+具体输出位置取决于 `app.env`：
+
+| `app.env` | logger sink | 在哪看 audit 事件 |
+|-----------|-------------|------------------|
+| `"dev"`（默认 local 配置） | console-only stdout | air dev / `make run` 终端 stdout 直接看 |
+| `"prod"` | tee stdout + `./logs/<svc>.service.log` | 终端或 log 文件均可 |
+
+> ℹ️ servora `obs/logging/log.go` 在 `env == "dev"` 分支里只构造 console core
+> （`zapcore.NewConsoleEncoder + os.Stdout`），bootstrap.yaml 里的 `filename` /
+> `max_size` / `max_backups` 字段在 dev 时**全部被忽略**——logs/ 目录恒空。
+> 不是 bug，是设计选择。想让本地也写文件，把 bootstrap.yaml 的 `app.env` 改成
+> `"prod"`。
+
+```bash
+# dev 模式直接看终端 stdout（或重定向后的文件）
+grep audit_event /path/to/master.stdout /path/to/worker.stdout
+
+# prod 模式还可以看 log 文件
+grep audit_event app/master/service/logs/master.service.log \
+                 app/worker/service/logs/worker.service.log
 ```
-audit/emitter/log msg=audit_event event_id=... type=AUTHN_RESULT  service=master.service operation=...
-audit/emitter/log msg=audit_event event_id=... type=AUTHN_RESULT  service=worker.service operation=...
-audit/emitter/log msg=audit_event event_id=... type=RESOURCE_MUTATION service=worker.service operation=...
-```
+
+应看到 3 行（master 1 条 authn.result，worker 1 条 authn.result + 1 条
+resource.mutation），共享同一 `traceId`。生产场景下若要把 audit 与服务主日志解耦
+（避免 audit 受主 logger 配置波及），应换成 `BrokerEmitter`（写 Kafka / NATS）
+或自定义 Emitter。
 
 ## 等 P0-4（proto-driven authn）落地后怎么演进
 
