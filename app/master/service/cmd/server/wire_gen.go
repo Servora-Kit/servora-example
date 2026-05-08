@@ -32,13 +32,15 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	if err != nil {
 		return nil, nil, err
 	}
+	emitter := server.ProvideAuditEmitter(logger)
+	recorder := server.ProvideAuditRecorder(emitter, svcIdentity)
 	registryDiscovery := registry.NewDiscovery(discovery)
 	dialer := data.NewWorkerDialer(confData, trace, registryDiscovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, masterService)
-	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, masterService)
+	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, recorder, masterService)
+	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, recorder, masterService)
 	tcpCommandService := service.NewTCPCommandService(masterService)
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer, tcpServer)

@@ -4,6 +4,7 @@ import (
 	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	"github.com/Servora-Kit/servora/obs/audit"
 	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	svrgrpc "github.com/Servora-Kit/servora/transport/server/grpc"
@@ -11,14 +12,19 @@ import (
 	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, master *service.MasterService) *kgrpc.Server {
+func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, rec *audit.Recorder, master *service.MasterService) *kgrpc.Server {
 	grpcLogger := logger.With(l, "grpc/server/master")
 
 	mw := middleware.NewChainBuilder(grpcLogger).
 		WithTrace(trace).
 		WithMetrics(mtc).
 		WithoutRateLimit().
+		WithAudit(rec).
 		Build()
+	// demo/audit fixture: push AuthnDetail into ctx so audit.Collector emits
+	// an AUTHN_RESULT event. INNER of Collector — replace with authn.Server(...)
+	// once P0-4 lands.
+	mw = append(mw, demoIdentityMiddleware())
 
 	opts := []svrgrpc.ServerOption{
 		svrgrpc.WithLogger(grpcLogger),
