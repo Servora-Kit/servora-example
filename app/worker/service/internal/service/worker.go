@@ -22,7 +22,7 @@ func (s *WorkerService) Hello(ctx context.Context, req *workerpb.HelloRequest) (
 	reply := fmt.Sprintf("worker says hello, %s", req.GetGreeting())
 
 	// Tier 2 demo: handler-level direct Emit for a business event.
-	// (Tier 1 push-ctx is wired by demoIdentityMiddleware → audit.Collector.)
+	// (AuthnDetail written by authn.Server; audit.Collector emits AUTHN_RESULT.)
 	s.rec.RecordResourceMutation(ctx,
 		"/servora.worker.service.v1.WorkerService/Hello", nil,
 		&auditpb.AuditTarget{Type: "hello.reply", Id: req.GetGreeting()},
