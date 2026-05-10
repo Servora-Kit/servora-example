@@ -6,6 +6,7 @@ package workerpb
 import (
 	validate "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
 	context "context"
+	authnpb "github.com/Servora-Kit/servora/api/gen/go/servora/authn/v1"
 	redact "github.com/menta2k/protoc-gen-redact/v3/redact/v3"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -20,6 +21,7 @@ var (
 	_ codes.Code
 	_ status.Status
 	_ validate.Rule
+	_ authnpb.AuthnRule
 )
 
 // RegisterRedactedWorkerServiceServer wraps the WorkerServiceServer with the redacted server and registers the service in GRPC

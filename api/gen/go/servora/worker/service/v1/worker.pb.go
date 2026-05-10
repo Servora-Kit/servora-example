@@ -8,6 +8,7 @@ package workerpb
 
 import (
 	_ "buf.build/gen/go/bufbuild/protovalidate/protocolbuffers/go/buf/validate"
+	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authn/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	reflect "reflect"
@@ -114,13 +115,13 @@ var File_servora_worker_service_v1_worker_proto protoreflect.FileDescriptor
 
 const file_servora_worker_service_v1_worker_proto_rawDesc = "" +
 	"\n" +
-	"&servora/worker/service/v1/worker.proto\x12\x19servora.worker.service.v1\x1a\x1bbuf/validate/validate.proto\"2\n" +
+	"&servora/worker/service/v1/worker.proto\x12\x19servora.worker.service.v1\x1a\x1bbuf/validate/validate.proto\x1a\"servora/authn/v1/annotations.proto\"2\n" +
 	"\fHelloRequest\x12\"\n" +
 	"\bgreeting\x18\x01 \x01(\tB\x06\xbaH\x03\xc8\x01\x01R\bgreeting\"%\n" +
 	"\rHelloResponse\x12\x14\n" +
-	"\x05reply\x18\x01 \x01(\tR\x05reply2k\n" +
-	"\rWorkerService\x12Z\n" +
-	"\x05Hello\x12'.servora.worker.service.v1.HelloRequest\x1a(.servora.worker.service.v1.HelloResponseB\x89\x02\n" +
+	"\x05reply\x18\x01 \x01(\tR\x05reply2\x80\x01\n" +
+	"\rWorkerService\x12o\n" +
+	"\x05Hello\x12'.servora.worker.service.v1.HelloRequest\x1a(.servora.worker.service.v1.HelloResponse\"\x13\xe2\xc7\x18\x0f\b\x02\x12\x03jwt\x12\x06apikeyB\x89\x02\n" +
 	"\x1dcom.servora.worker.service.v1B\vWorkerProtoP\x01ZTgithub.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1;workerpb\xa2\x02\x03SWS\xaa\x02\x19Servora.Worker.Service.V1\xca\x02\x19Servora\\Worker\\Service\\V1\xe2\x02%Servora\\Worker\\Service\\V1\\GPBMetadata\xea\x02\x1cServora::Worker::Service::V1b\x06proto3"
 
 var (
