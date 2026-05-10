@@ -6,6 +6,7 @@ import (
 
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
+	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
 	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	"github.com/Servora-Kit/servora/obs/logging"
 	grpcclient "github.com/Servora-Kit/servora/transport/client/grpc"
@@ -25,6 +26,7 @@ func NewWorkerDialer(data *conf.Data, trace *conf.Trace, discovery registry.Disc
 	mw := clientmw.NewChainBuilder(l).
 		WithTrace(trace).
 		Build()
+	mw = append(mw, stubauth.PassthroughAuthHeaders())
 	return grpcclient.NewDialer(
 		grpcclient.WithData(data),
 		grpcclient.WithDiscovery(discovery),
