@@ -12,6 +12,5 @@ var ProviderSet = wire.NewSet(
 	NewGRPCServer,
 	NewHTTPServer,
 	NewTCPServer,
-	ProvideAuditEmitter,
-	ProvideAuditRecorder,
+	ProvideAuditor,
 )

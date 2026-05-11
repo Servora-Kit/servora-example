@@ -16,18 +16,20 @@ import (
 	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, rec *audit.Recorder, worker *service.WorkerService) *kgrpc.Server {
+func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, worker *service.WorkerService) *kgrpc.Server {
 	grpcLogger := logger.With(l, "grpc/server/worker")
 
 	mw := middleware.NewChainBuilder(grpcLogger).
 		WithTrace(trace).
 		WithMetrics(mtc).
 		WithoutRateLimit().
-		WithAudit(rec).
 		Build()
+	// Business-mounted audit middleware with subject extraction from jwt + apikey.
+	mw = append(mw, audit.Middleware(auditor,
+		audit.WithSubjectFunc(authn.SubjectFromAny(authjwt.SubjectFrom, apikey.SubjectFrom)),
+		audit.WithAuthTypeFunc(authn.AuthTypeFrom),
+	))
 	// Lighthouse demo: real authn.Server dispatcher with jwt + apikey engines.
-	// AuthnDetail is written by authn.Server; the OUTER audit.Collector emits
-	// AUTHN_RESULT.
 	_, jwtVerifier := stubauth.SharedKeypair()
 	mw = append(mw, authn.Server(
 		authn.Multi(

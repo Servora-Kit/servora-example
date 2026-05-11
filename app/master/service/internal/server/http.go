@@ -16,18 +16,20 @@ import (
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-func NewHTTPServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, rec *audit.Recorder, master *service.MasterService) *khttp.Server {
+func NewHTTPServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {
 	httpLogger := logger.With(l, "http/server/master")
 
 	mw := middleware.NewChainBuilder(httpLogger).
 		WithTrace(trace).
 		WithMetrics(mtc).
 		WithoutRateLimit().
-		WithAudit(rec).
 		Build()
+	// Business-mounted audit middleware with subject extraction from jwt + apikey.
+	mw = append(mw, audit.Middleware(auditor,
+		audit.WithSubjectFunc(authn.SubjectFromAny(authjwt.SubjectFrom, apikey.SubjectFrom)),
+		audit.WithAuthTypeFunc(authn.AuthTypeFrom),
+	))
 	// Lighthouse demo: real authn.Server dispatcher with jwt + apikey engines.
-	// AuthnDetail is written by authn.Server; the OUTER audit.Collector emits
-	// AUTHN_RESULT.
 	_, jwtVerifier := stubauth.SharedKeypair()
 	mw = append(mw, authn.Server(
 		authn.Multi(

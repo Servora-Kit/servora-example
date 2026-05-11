@@ -10,6 +10,5 @@ var ProviderSet = wire.NewSet(
 	registry.NewRegistrar,
 	telemetry.NewMetrics,
 	NewGRPCServer,
-	ProvideAuditEmitter,
-	ProvideAuditRecorder,
+	ProvideAuditor,
 )

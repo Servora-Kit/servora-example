@@ -8,7 +8,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/Servora-Kit/servora/core/actor"
 	"github.com/Servora-Kit/servora/security/authn/apikey"
 )
 
@@ -17,23 +16,26 @@ import (
 const DemoAPIKey = "lighthouse-demo-key"
 
 // NewAPIKeyStore returns an apikey.Store backed by an in-memory map with
-// a single demo key mapped to a service actor. It is intentionally trivial:
+// a single demo key mapped to a service key meta. It is intentionally trivial:
 // the lighthouse demo only cares about success/failure paths, not realistic
 // key management.
 func NewAPIKeyStore() apikey.Store {
-	return &store{m: map[string]actor.Actor{
-		DemoAPIKey: actor.NewServiceActor("lighthouse-svc", "Lighthouse Demo Service"),
+	return &store{m: map[string]apikey.KeyMeta{
+		DemoAPIKey: {
+			KeyID:   "lighthouse-demo-key-id",
+			OwnerID: "lighthouse-svc",
+		},
 	}}
 }
 
 type store struct {
-	m map[string]actor.Actor
+	m map[string]apikey.KeyMeta
 }
 
-func (s *store) Lookup(_ context.Context, key string) (actor.Actor, error) {
-	a, ok := s.m[key]
+func (s *store) Lookup(_ context.Context, key string) (apikey.KeyMeta, error) {
+	meta, ok := s.m[key]
 	if !ok {
-		return nil, errors.New("apikey: unknown key")
+		return apikey.KeyMeta{}, errors.New("apikey: unknown key")
 	}
-	return a, nil
+	return meta, nil
 }

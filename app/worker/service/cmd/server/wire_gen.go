@@ -29,10 +29,9 @@ func wireApp(confServer *conf.Server, confRegistry *conf.Registry, data *conf.Da
 	if err != nil {
 		return nil, nil, err
 	}
-	emitter := server.ProvideAuditEmitter(logger)
-	recorder := server.ProvideAuditRecorder(emitter, svcIdentity)
-	workerService := service.NewWorkerService(recorder)
-	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, recorder, workerService)
+	auditor := server.ProvideAuditor()
+	workerService := service.NewWorkerService(auditor)
+	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, auditor, workerService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer)
 	return kratosApp, func() {
 	}, nil

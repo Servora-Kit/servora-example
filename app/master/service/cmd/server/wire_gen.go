@@ -11,8 +11,8 @@ import (
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/data"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
-	"github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
+	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/Servora-Kit/servora/platform/bootstrap"
 	"github.com/Servora-Kit/servora/platform/registry"
@@ -32,15 +32,14 @@ func wireApp(confServer *conf.Server, discovery *conf.Discovery, confRegistry *c
 	if err != nil {
 		return nil, nil, err
 	}
-	emitter := server.ProvideAuditEmitter(logger)
-	recorder := server.ProvideAuditRecorder(emitter, svcIdentity)
+	auditor := server.ProvideAuditor()
 	registryDiscovery := registry.NewDiscovery(discovery)
 	dialer := data.NewWorkerDialer(confData, trace, registryDiscovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, recorder, masterService)
-	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, recorder, masterService)
+	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, auditor, masterService)
+	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, auditor, masterService)
 	tcpCommandService := service.NewTCPCommandService(masterService)
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer, tcpServer)

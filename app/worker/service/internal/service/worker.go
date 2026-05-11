@@ -5,34 +5,29 @@ import (
 	"fmt"
 
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
-	auditpb "github.com/Servora-Kit/servora/api/gen/go/servora/audit/v1"
 	"github.com/Servora-Kit/servora/obs/audit"
 )
 
 type WorkerService struct {
 	workerpb.UnimplementedWorkerServiceServer
-	rec *audit.Recorder
+	auditor audit.Auditor
 }
 
-func NewWorkerService(rec *audit.Recorder) *WorkerService {
-	return &WorkerService{rec: rec}
+func NewWorkerService(auditor audit.Auditor) *WorkerService {
+	return &WorkerService{auditor: auditor}
 }
 
 func (s *WorkerService) Hello(ctx context.Context, req *workerpb.HelloRequest) (*workerpb.HelloResponse, error) {
 	reply := fmt.Sprintf("worker says hello, %s", req.GetGreeting())
 
 	// Tier 2 demo: handler-level direct Emit for a business event.
-	// (AuthnDetail written by authn.Server; audit.Collector emits AUTHN_RESULT.)
-	s.rec.RecordResourceMutation(ctx,
-		"/servora.worker.service.v1.WorkerService/Hello", nil,
-		&auditpb.AuditTarget{Type: "hello.reply", Id: req.GetGreeting()},
-		&auditpb.ResourceMutationDetail{
-			MutationType: auditpb.ResourceMutationType_RESOURCE_MUTATION_TYPE_CREATE,
-			ResourceType: "hello.reply",
-			ResourceId:   req.GetGreeting(),
-		},
-		nil,
+	// Builds a CloudEvents envelope and emits via the Auditor interface.
+	event := audit.NewEvent(ctx,
+		audit.WithType("servora.worker.hello.created"),
+		audit.WithSubject(req.GetGreeting()),
+		audit.WithSeverity("INFO"),
 	)
+	_ = s.auditor.Emit(ctx, event)
 
 	return &workerpb.HelloResponse{Reply: reply}, nil
 }
