@@ -6,7 +6,7 @@ import (
 
 	tcpk "github.com/Servora-Kit/servora-transport/server/tcp"
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	"github.com/Servora-Kit/servora/platform/bootstrap"
+	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"

@@ -14,8 +14,8 @@ import (
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
 	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	"github.com/Servora-Kit/servora/obs/telemetry"
-	"github.com/Servora-Kit/servora/platform/bootstrap"
-	"github.com/Servora-Kit/servora/platform/registry"
+	"github.com/Servora-Kit/servora/core/bootstrap"
+	"github.com/Servora-Kit/servora/core/registry"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )

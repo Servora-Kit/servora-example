@@ -13,8 +13,8 @@ import (
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
 	confv1 "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	logger "github.com/Servora-Kit/servora/obs/logging"
-	"github.com/Servora-Kit/servora/platform/bootstrap"
-	bootconfig "github.com/Servora-Kit/servora/platform/bootstrap/config"
+	"github.com/Servora-Kit/servora/core/bootstrap"
+	bootconfig "github.com/Servora-Kit/servora/core/bootstrap/config"
 	"github.com/go-kratos/kratos/v2"
 	"google.golang.org/protobuf/proto"
 )

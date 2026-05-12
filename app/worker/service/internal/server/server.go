@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/Servora-Kit/servora/obs/telemetry"
-	"github.com/Servora-Kit/servora/platform/registry"
+	"github.com/Servora-Kit/servora/core/registry"
 	"github.com/google/wire"
 )
 
