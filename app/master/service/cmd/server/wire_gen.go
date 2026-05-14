@@ -11,11 +11,11 @@ import (
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/data"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
-	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
-	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
+	"github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
+	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -26,20 +26,20 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *corev1.Server, discovery *corev1.Discovery, confRegistry *corev1.Registry, confData *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, tcpconfServer *tcpconf.Server, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
-	registrar := registry.NewRegistrar(confRegistry)
+func wireApp(corev1Server *corev1.Server, discovery *corev1.Discovery, corev1Registry *corev1.Registry, corev1Data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, tcpconfServer *tcpconf.Server, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
+	registrar := registry.NewRegistrar(corev1Registry)
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor()
 	registryDiscovery := registry.NewDiscovery(discovery)
-	dialer := data.NewWorkerDialer(confData, trace, registryDiscovery, logger)
+	dialer := data.NewWorkerDialer(corev1Data, trace, registryDiscovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
-	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, auditor, masterService)
-	httpServer := server.NewHTTPServer(confServer, trace, telemetryMetrics, logger, auditor, masterService)
+	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, masterService)
+	httpServer := server.NewHTTPServer(corev1Server, trace, telemetryMetrics, logger, auditor, masterService)
 	tcpCommandService := service.NewTCPCommandService(masterService)
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer, tcpServer)

@@ -1,7 +1,7 @@
 package server
 
 import (
-	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1"
+	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/master/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
 	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"

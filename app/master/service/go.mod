@@ -3,10 +3,10 @@ module github.com/Servora-Kit/servora-example/app/master/service
 go 1.26.1
 
 require (
-	github.com/Servora-Kit/servora v0.3.1
+	github.com/Servora-Kit/servora v0.6.0
 	github.com/Servora-Kit/servora-example/api/gen v0.3.1
-	github.com/Servora-Kit/servora-transport/server/tcp v0.0.0-20260411111620-ec6e43bbd106
-	github.com/Servora-Kit/servora/api/gen v0.3.1
+	github.com/Servora-Kit/servora-transport/server/tcp v0.0.0-20260514080157-33a4aa95c228
+	github.com/Servora-Kit/servora/api/gen v0.6.0
 	github.com/go-kratos/kratos/v2 v2.9.2
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/wire v0.7.0

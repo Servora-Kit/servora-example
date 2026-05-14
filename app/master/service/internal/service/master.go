@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 
-	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1"
-	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
+	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/master/service/v1"
+	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
 )
 

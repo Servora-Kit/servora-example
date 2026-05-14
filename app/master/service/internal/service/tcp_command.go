@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
+	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
 )
 
 // TCPCommandService holds transport-independent command semantics for TCP adapter.

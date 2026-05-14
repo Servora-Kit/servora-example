@@ -20,7 +20,7 @@ managed:
 inputs:
   - directory: app/worker/service/api/protos
     paths:
-      - app/worker/service/api/protos/servora/worker/service/v1
+      - app/worker/service/api/protos/worker/service/v1
 
 plugins:
   - local: protoc-gen-openapi

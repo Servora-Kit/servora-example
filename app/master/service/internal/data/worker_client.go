@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
+	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
 	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"

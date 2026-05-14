@@ -9,10 +9,10 @@ package main
 import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
-	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
-	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
+	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/log"
 )
@@ -23,15 +23,15 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *corev1.Server, confRegistry *corev1.Registry, data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
-	registrar := registry.NewRegistrar(confRegistry)
+func wireApp(corev1Server *corev1.Server, corev1Registry *corev1.Registry, data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
+	registrar := registry.NewRegistrar(corev1Registry)
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor()
 	workerService := service.NewWorkerService(auditor)
-	grpcServer := server.NewGRPCServer(confServer, trace, telemetryMetrics, logger, auditor, workerService)
+	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, workerService)
 	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer)
 	return kratosApp, func() {
 	}, nil

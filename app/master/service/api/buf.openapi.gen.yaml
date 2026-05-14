@@ -20,7 +20,7 @@ managed:
 inputs:
   - directory: app/master/service/api/protos
     paths:
-      - app/master/service/api/protos/servora/master/service/v1
+      - app/master/service/api/protos/master/service/v1
 
 plugins:
   - local: protoc-gen-openapi
