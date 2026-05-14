@@ -101,6 +101,7 @@ plugin:
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-authz@latest
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-audit@latest
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-authn@latest
+	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-conf@latest
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-mapper@latest
 	@echo "$(GREEN)✓ Protoc plugins installed$(RESET)"
 
