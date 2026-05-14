@@ -35,8 +35,8 @@ func TestNewTCPServerLoadsConfigViaScanConf(t *testing.T) {
 	if err != nil {
 		t.Fatalf("scan tcp config: %v", err)
 	}
-	if got := tcpCfg.GetListen().GetAddr(); got != "0.0.0.0:8014" {
-		t.Fatalf("tcp listen addr=%q want=%q", got, "0.0.0.0:8014")
+	if got := tcpCfg.GetListen().GetAddr(); got != "0.0.0.0:8002" {
+		t.Fatalf("tcp listen addr=%q want=%q", got, "0.0.0.0:8002")
 	}
 
 	// 使用项目真实配置完成 ScanConf，再将监听地址覆写为随机端口，避免测试端口冲突。
