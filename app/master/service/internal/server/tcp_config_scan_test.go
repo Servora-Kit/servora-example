@@ -8,7 +8,6 @@ import (
 
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	confv1 "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
 	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	bootconfig "github.com/Servora-Kit/servora/core/bootstrap/config"
@@ -46,7 +45,7 @@ func TestNewTCPServerLoadsConfigViaScanConf(t *testing.T) {
 		t.Fatalf("clone tcp config failed, got %T", tcpCfg)
 	}
 	if runtimeCfg.Listen == nil {
-		runtimeCfg.Listen = &confv1.Server_Listen{}
+		runtimeCfg.Listen = &tcpconf.Listen{}
 	}
 	runtimeCfg.Listen.Addr = "127.0.0.1:0"
 

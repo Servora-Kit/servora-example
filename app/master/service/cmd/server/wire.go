@@ -9,7 +9,7 @@ import (
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
 	"github.com/go-kratos/kratos/v2"
@@ -17,6 +17,6 @@ import (
 	"github.com/google/wire"
 )
 
-func wireApp(*conf.Server, *conf.Discovery, *conf.Registry, *conf.Data, *conf.App, *conf.Trace, *conf.Metrics, *tcpconf.Server, bootstrap.SvcIdentity, log.Logger) (*kratos.App, func(), error) {
+func wireApp(*corev1.Server, *corev1.Discovery, *corev1.Registry, *corev1.Data, *corev1.App, *corev1.Trace, *corev1.Metrics, *tcpconf.Server, bootstrap.SvcIdentity, log.Logger) (*kratos.App, func(), error) {
 	panic(wire.Build(registry.NewDiscovery, data.ProviderSet, biz.ProviderSet, service.ProviderSet, server.ProviderSet, newApp))
 }

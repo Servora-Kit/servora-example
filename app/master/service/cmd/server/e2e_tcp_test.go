@@ -11,7 +11,7 @@ import (
 	"time"
 
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	confv1 "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	bootconfig "github.com/Servora-Kit/servora/core/bootstrap/config"
@@ -50,21 +50,21 @@ func TestMasterServiceTCPE2E(t *testing.T) {
 		t.Fatalf("tcp listen addr=%q want=%q", got, "0.0.0.0:8014")
 	}
 
-	serverCfg, ok := proto.Clone(bc.GetServer()).(*confv1.Server)
+	serverCfg, ok := proto.Clone(bc.GetServer()).(*corev1.Server)
 	if !ok {
 		t.Fatalf("clone server config failed, got %T", bc.GetServer())
 	}
 	if serverCfg.Http == nil {
-		serverCfg.Http = &confv1.Server_HTTP{}
+		serverCfg.Http = &corev1.Server_HTTP{}
 	}
 	if serverCfg.Http.Listen == nil {
-		serverCfg.Http.Listen = &confv1.Server_Listen{}
+		serverCfg.Http.Listen = &corev1.Server_Listen{}
 	}
 	if serverCfg.Grpc == nil {
-		serverCfg.Grpc = &confv1.Server_GRPC{}
+		serverCfg.Grpc = &corev1.Server_GRPC{}
 	}
 	if serverCfg.Grpc.Listen == nil {
-		serverCfg.Grpc.Listen = &confv1.Server_Listen{}
+		serverCfg.Grpc.Listen = &corev1.Server_Listen{}
 	}
 	serverCfg.Http.Listen.Addr = "127.0.0.1:0"
 	serverCfg.Grpc.Listen.Addr = "127.0.0.1:0"
@@ -74,7 +74,7 @@ func TestMasterServiceTCPE2E(t *testing.T) {
 		t.Fatalf("clone tcp config failed, got %T", scannedTCP)
 	}
 	if tcpRuntimeCfg.Listen == nil {
-		tcpRuntimeCfg.Listen = &confv1.Server_Listen{}
+		tcpRuntimeCfg.Listen = &tcpconf.Listen{}
 	}
 	tcpRuntimeCfg.Listen.Addr = "127.0.0.1:0"
 	tcpRuntimeCfg.Registry = nil

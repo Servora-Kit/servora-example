@@ -9,7 +9,7 @@ package main
 import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
-	"github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
@@ -23,7 +23,7 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(confServer *conf.Server, confRegistry *conf.Registry, data *conf.Data, app *conf.App, trace *conf.Trace, metrics *conf.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
+func wireApp(confServer *corev1.Server, confRegistry *corev1.Registry, data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, svcIdentity bootstrap.SvcIdentity, logger log.Logger) (*kratos.App, func(), error) {
 	registrar := registry.NewRegistrar(confRegistry)
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {

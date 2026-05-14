@@ -7,7 +7,7 @@ import (
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/worker/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
-	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/obs/logging"
 	grpcclient "github.com/Servora-Kit/servora/transport/client/grpc"
 	clientmw "github.com/Servora-Kit/servora/transport/client/middleware"
@@ -22,7 +22,7 @@ type workerRepo struct {
 	log    *logger.Helper
 }
 
-func NewWorkerDialer(data *conf.Data, trace *conf.Trace, discovery registry.Discovery, l logger.Logger) *grpcclient.Dialer {
+func NewWorkerDialer(data *corev1.Data, trace *corev1.Trace, discovery registry.Discovery, l logger.Logger) *grpcclient.Dialer {
 	mw := clientmw.NewChainBuilder(l).
 		WithTrace(trace).
 		Build()

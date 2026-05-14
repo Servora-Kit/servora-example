@@ -4,7 +4,7 @@ import (
 	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
-	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/obs/audit"
 	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/obs/telemetry"
@@ -16,7 +16,7 @@ import (
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-func NewHTTPServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {
+func NewHTTPServer(c *corev1.Server, trace *corev1.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {
 	httpLogger := logger.With(l, "http/server/master")
 
 	mw := middleware.NewChainBuilder(httpLogger).
@@ -51,7 +51,6 @@ func NewHTTPServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l 
 	}
 	if c != nil && c.Http != nil {
 		opts = append(opts, svrhttp.WithConfig(c.Http))
-		opts = append(opts, svrhttp.WithCORS(c.Http.Cors))
 	}
 	return svrhttp.NewServer(opts...)
 }

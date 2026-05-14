@@ -4,7 +4,7 @@ import (
 	masterpb "github.com/Servora-Kit/servora-example/api/gen/go/servora/master/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
-	conf "github.com/Servora-Kit/servora/api/gen/go/servora/conf/v1"
+	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/obs/audit"
 	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/obs/telemetry"
@@ -16,7 +16,7 @@ import (
 	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-func NewGRPCServer(c *conf.Server, trace *conf.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, master *service.MasterService) *kgrpc.Server {
+func NewGRPCServer(c *corev1.Server, trace *corev1.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, master *service.MasterService) *kgrpc.Server {
 	grpcLogger := logger.With(l, "grpc/server/master")
 
 	mw := middleware.NewChainBuilder(grpcLogger).
