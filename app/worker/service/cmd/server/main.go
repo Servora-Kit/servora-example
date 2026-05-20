@@ -3,9 +3,11 @@ package main
 import (
 	"flag"
 
+	"log/slog"
+
 	"github.com/Servora-Kit/servora/core/bootstrap"
+	"github.com/Servora-Kit/servora/obs/logger/kratosv2"
 	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/log"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
 
@@ -22,13 +24,13 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(identity bootstrap.SvcIdentity, l log.Logger, reg registry.Registrar, gs *grpc.Server) *kratos.App {
+func newApp(identity bootstrap.SvcIdentity, l *slog.Logger, reg registry.Registrar, gs *grpc.Server) *kratos.App {
 	return kratos.New(
 		kratos.ID(identity.ID),
 		kratos.Name(identity.Name),
 		kratos.Version(identity.Version),
 		kratos.Metadata(identity.Metadata),
-		kratos.Logger(l),
+		kratos.Logger(kratosv2.Wrap(l)),
 		kratos.Server(gs),
 		kratos.Registrar(reg),
 	)

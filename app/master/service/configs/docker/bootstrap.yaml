@@ -19,12 +19,15 @@ data:
 
 app:
   env: "prod"
-  log:
-    level: 0
-    filename: "/app/logs/master.service.log"
-    max_size: 20
-    max_age: 30
-    max_backups: 10
+
+log:
+  level: 1
+  backends:
+    - stdout: {}
+    - file:
+        path: "/app/logs/master.service.log"
+        max_backups: 10
+        max_age: 30
 
 trace:
   endpoint: "otel-collector:4317"

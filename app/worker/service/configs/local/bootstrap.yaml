@@ -10,12 +10,15 @@ server:
 
 app:
   env: "dev"
-  log:
-    level: 0
-    filename: "./logs/worker.service.log"
-    max_size: 20
-    max_age: 30
-    max_backups: 10
+
+log:
+  level: 1
+  backends:
+    - stdout: {}
+    - file:
+        path: "./logs/worker.service.log"
+        max_backups: 10
+        max_age: 30
 
 metrics:
   enable: true

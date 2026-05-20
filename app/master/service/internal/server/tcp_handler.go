@@ -9,17 +9,18 @@ import (
 	"strings"
 	"time"
 
+	"log/slog"
+
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
-	"github.com/go-kratos/kratos/v2/log"
 )
 
-func newTCPConnectionHandler(svc *service.TCPCommandService, l log.Logger) func(context.Context, net.Conn) {
+func newTCPConnectionHandler(svc *service.TCPCommandService, l *slog.Logger) func(context.Context, net.Conn) {
 	return func(ctx context.Context, conn net.Conn) {
 		if conn == nil {
 			return
 		}
 		if conn.RemoteAddr() != nil {
-			_ = l.Log(log.LevelDebug, "msg", "tcp connection accepted", "remote", conn.RemoteAddr().String())
+			l.Debug("tcp connection accepted", "remote", conn.RemoteAddr().String())
 		}
 		defer func() { _ = conn.Close() }()
 
@@ -30,7 +31,7 @@ func newTCPConnectionHandler(svc *service.TCPCommandService, l log.Logger) func(
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				_ = l.Log(log.LevelWarn, "msg", "tcp read failed", "err", err)
+				l.Warn("tcp read failed", "err", err)
 				return
 			}
 
@@ -47,14 +48,14 @@ func newTCPConnectionHandler(svc *service.TCPCommandService, l log.Logger) func(
 			}
 			resp, err := svc.Handle(ctx, cmd, arg)
 			if err != nil {
-				_ = l.Log(log.LevelWarn, "msg", "tcp command failed", "cmd", cmd, "err", err)
+				l.Warn("tcp command failed", "cmd", cmd, "err", err)
 				if writeErr := writeTCPLine(conn, "ERR "+err.Error()); writeErr != nil {
 					return
 				}
 				continue
 			}
 			if err := writeTCPLine(conn, resp); err != nil {
-				_ = l.Log(log.LevelWarn, "msg", "tcp write failed", "err", err)
+				l.Warn("tcp write failed", "err", err)
 				return
 			}
 		}

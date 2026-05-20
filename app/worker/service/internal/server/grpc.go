@@ -5,8 +5,9 @@ import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/stubauth"
 	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
+	"log/slog"
+
 	"github.com/Servora-Kit/servora/obs/audit"
-	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/Servora-Kit/servora/security/authn"
 	"github.com/Servora-Kit/servora/security/authn/apikey"
@@ -16,8 +17,8 @@ import (
 	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
 )
 
-func NewGRPCServer(c *corev1.Server, trace *corev1.Trace, mtc *telemetry.Metrics, l logger.Logger, auditor audit.Auditor, worker *service.WorkerService) *kgrpc.Server {
-	grpcLogger := logger.With(l, "grpc/server/worker")
+func NewGRPCServer(c *corev1.Server, trace *corev1.Trace, mtc *telemetry.Metrics, l *slog.Logger, auditor audit.Auditor, worker *service.WorkerService) *kgrpc.Server {
+	grpcLogger := l.With("scope", "grpc/server/worker")
 
 	mw := middleware.NewChainBuilder(grpcLogger).
 		WithTrace(trace).

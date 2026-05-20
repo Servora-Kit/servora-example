@@ -8,9 +8,10 @@ import (
 
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	logger "github.com/Servora-Kit/servora/obs/logging"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	bootconfig "github.com/Servora-Kit/servora/core/bootstrap/config"
+	slogger "github.com/Servora-Kit/servora/obs/logger"
+	"github.com/Servora-Kit/servora/obs/logger/kratosv2"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -25,10 +26,13 @@ func TestNewTCPServerLoadsConfigViaScanConf(t *testing.T) {
 	}
 	defer func() { _ = c.Close() }()
 
+	sl, logCloser := slogger.New(bc)
+	defer func() { _ = logCloser(context.Background()) }()
 	rt := &bootstrap.Runtime{
-		Bootstrap: bc,
-		Config:    c,
-		Logger:    logger.New(bc.GetApp()),
+		Bootstrap:    bc,
+		Config:       c,
+		Logger:       sl,
+		KratosLogger: kratosv2.Wrap(sl),
 	}
 
 	tcpCfg, err := bootstrap.ScanConf[tcpconf.Server](rt)

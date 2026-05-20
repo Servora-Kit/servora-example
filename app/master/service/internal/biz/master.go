@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"log/slog"
+
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
-	"github.com/Servora-Kit/servora/obs/logging"
 )
 
 type WorkerRepo interface {
@@ -14,20 +15,20 @@ type WorkerRepo interface {
 
 type MasterUsecase struct {
 	worker WorkerRepo
-	log    *logger.Helper
+	log    *slog.Logger
 }
 
-func NewMasterUsecase(worker WorkerRepo, l logger.Logger) *MasterUsecase {
+func NewMasterUsecase(worker WorkerRepo, l *slog.Logger) *MasterUsecase {
 	return &MasterUsecase{
 		worker: worker,
-		log:    logger.For(l, "master/biz"),
+		log:    l.With("scope", "master/biz"),
 	}
 }
 
 func (uc *MasterUsecase) Hello(ctx context.Context, req *workerpb.HelloRequest) (*workerpb.HelloResponse, error) {
 	resp, err := uc.worker.Hello(ctx, req)
 	if err != nil {
-		uc.log.Errorf("relay worker hello failed: %v", err)
+		uc.log.Error("relay worker hello failed", "err", err)
 		return nil, fmt.Errorf("relay worker hello: %w", err)
 	}
 

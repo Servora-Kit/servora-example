@@ -7,8 +7,9 @@ import (
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/biz"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/stubauth"
+	"log/slog"
+
 	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
-	"github.com/Servora-Kit/servora/obs/logging"
 	grpcclient "github.com/Servora-Kit/servora/transport/client/grpc"
 	clientmw "github.com/Servora-Kit/servora/transport/client/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -19,10 +20,10 @@ const workerServiceName = "worker.service"
 // workerRepo 封装 master 到 worker 的 RPC 访问。
 type workerRepo struct {
 	dialer *grpcclient.Dialer
-	log    *logger.Helper
+	log    *slog.Logger
 }
 
-func NewWorkerDialer(data *corev1.Data, trace *corev1.Trace, discovery registry.Discovery, l logger.Logger) *grpcclient.Dialer {
+func NewWorkerDialer(data *corev1.Data, trace *corev1.Trace, discovery registry.Discovery, l *slog.Logger) *grpcclient.Dialer {
 	mw := clientmw.NewChainBuilder(l).
 		WithTrace(trace).
 		Build()
@@ -35,10 +36,10 @@ func NewWorkerDialer(data *corev1.Data, trace *corev1.Trace, discovery registry.
 	)
 }
 
-func NewWorkerRepo(d *grpcclient.Dialer, l logger.Logger) biz.WorkerRepo {
+func NewWorkerRepo(d *grpcclient.Dialer, l *slog.Logger) biz.WorkerRepo {
 	return &workerRepo{
 		dialer: d,
-		log:    logger.For(l, "data/worker-client"),
+		log:    l.With("scope", "data/worker-client"),
 	}
 }
 
@@ -53,7 +54,7 @@ func (c *workerRepo) Hello(ctx context.Context, req *workerpb.HelloRequest) (*wo
 
 	resp, err := workerpb.NewWorkerServiceClient(conn).Hello(ctx, req)
 	if err != nil {
-		c.log.Errorf("worker hello failed: %v", err)
+		c.log.Error("worker hello failed", "err", err)
 		return nil, fmt.Errorf("call worker hello: %w", err)
 	}
 
