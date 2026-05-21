@@ -9,12 +9,10 @@ package main
 import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
-	"github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/go-kratos/kratos/v2"
-	"log/slog"
 )
 
 import (
@@ -23,8 +21,15 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(corev1Server *corev1.Server, corev1Registry *corev1.Registry, data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, svcIdentity bootstrap.SvcIdentity, logger *slog.Logger) (*kratos.App, func(), error) {
+func wireApp(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
+	corev1Bootstrap := runtime.Bootstrap
+	corev1Registry := corev1Bootstrap.Registry
 	registrar := registry.NewRegistrar(corev1Registry)
+	corev1Server := corev1Bootstrap.Server
+	trace := corev1Bootstrap.Trace
+	metrics := corev1Bootstrap.Metrics
+	app := corev1Bootstrap.App
+	logger := runtime.Logger
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
 		return nil, nil, err
@@ -32,7 +37,7 @@ func wireApp(corev1Server *corev1.Server, corev1Registry *corev1.Registry, data 
 	auditor := server.ProvideAuditor()
 	workerService := service.NewWorkerService(auditor)
 	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, workerService)
-	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer)
+	kratosApp := newApp(runtime, registrar, grpcServer)
 	return kratosApp, func() {
 	}, nil
 }
