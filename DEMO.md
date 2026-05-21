@@ -75,7 +75,7 @@ ctx → emit。
 ### Wire 代码
 
 `make wire`（或 `wire ./cmd/server/...`）已重新生成两个服务的 `wire_gen.go`，注入链
-为 `Logger → Emitter → SvcIdentity+Emitter → Recorder → Server`。
+为 `Runtime/Logger → Emitter → Recorder → Server`，服务身份由 `Runtime.NewApp` 注入。
 
 ## 如何运行
 
