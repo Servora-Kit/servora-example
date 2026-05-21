@@ -6,10 +6,8 @@ import (
 
 	tcpk "github.com/Servora-Kit/servora-transport/server/tcp"
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	"log/slog"
 
 	"github.com/Servora-Kit/servora/core/bootstrap"
-	"github.com/Servora-Kit/servora/obs/logger/kratosv2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/registry"
 	"github.com/go-kratos/kratos/v2/transport/grpc"
@@ -28,16 +26,11 @@ func init() {
 	flag.StringVar(&flagconf, "conf", "./configs", "config path, eg: -conf config.yaml")
 }
 
-func newApp(identity bootstrap.SvcIdentity, l *slog.Logger, reg registry.Registrar, gs *grpc.Server, hs *http.Server, ts *tcpk.Server) *kratos.App {
-	return kratos.New(
-		kratos.ID(identity.ID),
-		kratos.Name(identity.Name),
-		kratos.Version(identity.Version),
-		kratos.Metadata(identity.Metadata),
-		kratos.Logger(kratosv2.Wrap(l)),
+func newApp(rt *bootstrap.Runtime, reg registry.Registrar, gs *grpc.Server, hs *http.Server, ts *tcpk.Server) *kratos.App {
+	return rt.NewApp(
 		kratos.Server(gs, hs), // TCP server is managed manually to avoid Consul registration
 		kratos.Registrar(reg),
-		// 不将tcp server注册到consul，手动管理生命周期
+		// 不将 TCP server 注册到 Consul，手动管理生命周期。
 		kratos.AfterStart(func(ctx context.Context) error {
 			return ts.Start(ctx)
 		}),
@@ -49,16 +42,22 @@ func newApp(identity bootstrap.SvcIdentity, l *slog.Logger, reg registry.Registr
 
 func main() {
 	flag.Parse()
-
-	err := bootstrap.BootstrapAndRun(flagconf, Name, Version, func(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
-		bc := runtime.Bootstrap
-		tcpCfg, err := bootstrap.ScanConf[tcpconf.Server](runtime)
-		if err != nil {
-			return nil, nil, err
-		}
-		return wireApp(bc.Server, bc.Discovery, bc.Registry, bc.Data, bc.App, bc.Trace, bc.Metrics, tcpCfg, runtime.Identity, runtime.Logger)
-	})
-	if err != nil {
+	if err := run(); err != nil {
 		panic(err)
 	}
+}
+
+func run() (err error) {
+	rt, err := bootstrap.NewRuntime(flagconf, bootstrap.Name(Name), bootstrap.Version(Version))
+	if err != nil {
+		return err
+	}
+	tcpCfg := &tcpconf.Server{}
+	if err := bootstrap.Scan(rt, tcpCfg); err != nil {
+		return err
+	}
+
+	return rt.Run(func() (*kratos.App, func(), error) {
+		return wireApp(rt, tcpCfg)
+	})
 }

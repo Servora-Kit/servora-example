@@ -11,11 +11,10 @@ import (
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	bootconfig "github.com/Servora-Kit/servora/core/bootstrap/config"
 	slogger "github.com/Servora-Kit/servora/obs/logger"
-	"github.com/Servora-Kit/servora/obs/logger/kratosv2"
 	"google.golang.org/protobuf/proto"
 )
 
-func TestNewTCPServerLoadsConfigViaScanConf(t *testing.T) {
+func TestNewTCPServerLoadsConfigViaScan(t *testing.T) {
 	t.Parallel()
 
 	cfgDir := filepath.Join("..", "..", "configs", "local")
@@ -29,21 +28,20 @@ func TestNewTCPServerLoadsConfigViaScanConf(t *testing.T) {
 	sl, logCloser := slogger.New(bc)
 	defer func() { _ = logCloser(context.Background()) }()
 	rt := &bootstrap.Runtime{
-		Bootstrap:    bc,
-		Config:       c,
-		Logger:       sl,
-		KratosLogger: kratosv2.Wrap(sl),
+		Bootstrap: bc,
+		Config:    c,
+		Logger:    sl,
 	}
 
-	tcpCfg, err := bootstrap.ScanConf[tcpconf.Server](rt)
-	if err != nil {
+	tcpCfg := &tcpconf.Server{}
+	if err := bootstrap.Scan(rt, tcpCfg); err != nil {
 		t.Fatalf("scan tcp config: %v", err)
 	}
 	if got := tcpCfg.GetListen().GetAddr(); got != "0.0.0.0:8002" {
 		t.Fatalf("tcp listen addr=%q want=%q", got, "0.0.0.0:8002")
 	}
 
-	// 使用项目真实配置完成 ScanConf，再将监听地址覆写为随机端口，避免测试端口冲突。
+	// 使用项目真实配置完成 Scan，再将监听地址覆写为随机端口，避免测试端口冲突。
 	runtimeCfg, ok := proto.Clone(tcpCfg).(*tcpconf.Server)
 	if !ok {
 		t.Fatalf("clone tcp config failed, got %T", tcpCfg)

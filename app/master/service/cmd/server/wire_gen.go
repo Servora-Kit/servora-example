@@ -12,12 +12,10 @@ import (
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/server"
 	"github.com/Servora-Kit/servora-example/app/master/service/internal/service"
 	"github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
-	"github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
 	"github.com/Servora-Kit/servora/obs/telemetry"
 	"github.com/go-kratos/kratos/v2"
-	"log/slog"
 )
 
 import (
@@ -26,13 +24,22 @@ import (
 
 // Injectors from wire.go:
 
-func wireApp(corev1Server *corev1.Server, discovery *corev1.Discovery, corev1Registry *corev1.Registry, corev1Data *corev1.Data, app *corev1.App, trace *corev1.Trace, metrics *corev1.Metrics, tcpconfServer *tcpconf.Server, svcIdentity bootstrap.SvcIdentity, logger *slog.Logger) (*kratos.App, func(), error) {
+func wireApp(runtime *bootstrap.Runtime, tcpconfServer *tcpconf.Server) (*kratos.App, func(), error) {
+	corev1Bootstrap := runtime.Bootstrap
+	corev1Registry := corev1Bootstrap.Registry
 	registrar := registry.NewRegistrar(corev1Registry)
+	corev1Server := corev1Bootstrap.Server
+	trace := corev1Bootstrap.Trace
+	metrics := corev1Bootstrap.Metrics
+	app := corev1Bootstrap.App
+	logger := runtime.Logger
 	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor()
+	corev1Data := corev1Bootstrap.Data
+	discovery := corev1Bootstrap.Discovery
 	registryDiscovery := registry.NewDiscovery(discovery)
 	dialer := data.NewWorkerDialer(corev1Data, trace, registryDiscovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
@@ -42,7 +49,7 @@ func wireApp(corev1Server *corev1.Server, discovery *corev1.Discovery, corev1Reg
 	httpServer := server.NewHTTPServer(corev1Server, trace, telemetryMetrics, logger, auditor, masterService)
 	tcpCommandService := service.NewTCPCommandService(masterService)
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
-	kratosApp := newApp(svcIdentity, logger, registrar, grpcServer, httpServer, tcpServer)
+	kratosApp := newApp(runtime, registrar, grpcServer, httpServer, tcpServer)
 	return kratosApp, func() {
 	}, nil
 }
