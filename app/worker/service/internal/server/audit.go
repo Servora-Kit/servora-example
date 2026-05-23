@@ -1,12 +1,12 @@
 package server
 
 import (
+	"log/slog"
+
 	"github.com/Servora-Kit/servora/obs/audit"
-	"github.com/Servora-Kit/servora/obs/audit/stdout"
+	auditlog "github.com/Servora-Kit/servora/obs/audit/log"
 )
 
-// ProvideAuditor wires a stdout-based Auditor so audit events surface as
-// JSON on stdout. Zero external deps — fits the demo branch.
-func ProvideAuditor() audit.Auditor {
-	return stdout.NewAuditor()
+func ProvideAuditor(l *slog.Logger) audit.Auditor {
+	return auditlog.NewAuditor(l.With("scope", "audit"))
 }

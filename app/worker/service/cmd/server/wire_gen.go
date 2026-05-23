@@ -34,7 +34,7 @@ func wireApp(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	auditor := server.ProvideAuditor()
+	auditor := server.ProvideAuditor(logger)
 	workerService := service.NewWorkerService(auditor)
 	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, workerService)
 	kratosApp := newApp(runtime, registrar, grpcServer)
