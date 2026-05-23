@@ -37,7 +37,7 @@ func wireApp(runtime *bootstrap.Runtime, tcpconfServer *tcpconf.Server) (*kratos
 	if err != nil {
 		return nil, nil, err
 	}
-	auditor := server.ProvideAuditor()
+	auditor := server.ProvideAuditor(logger)
 	corev1Data := corev1Bootstrap.Data
 	discovery := corev1Bootstrap.Discovery
 	registryDiscovery := registry.NewDiscovery(discovery)
