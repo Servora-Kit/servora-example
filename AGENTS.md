@@ -1,6 +1,6 @@
 # AGENTS.md - servora-example
 
-<!-- Updated: 2026-04-11 -->
+<!-- Updated: 2026-05-24 -->
 
 ## 项目概览
 
@@ -71,6 +71,22 @@ servora-example/
 ### 环境变量
 
 本地开发不依赖 `.env`，容器部署通过 `docker-compose.apps.yaml` 的 `environment` 注入（如需覆盖配置）。
+
+## Authn 试验田约定
+
+master / worker 是 Servora authn 破坏性变更的工作区验证目标。认证装配必须使用：
+
+```go
+authn.Server(
+    authn.Multi(
+        authn.Named(authjwt.Scheme, authjwt.NewAuthenticator(authjwt.WithVerifier(verifier))),
+        authn.Named(apikey.Scheme, apikey.NewAuthenticator(apikey.WithStore(store))),
+    ),
+    authn.WithRulesFuncs(...),
+)
+```
+
+不要恢复 `jwt.Server()`、`authn.WithJWT(...)` 或单 engine wrapper 路径。JWT 无 Bearer 与 APIKey 缺 header 都应通过 `authn.ErrNoCredentials` 进入 Multi 调度；坏 JWT 和坏 API key 必须 fail-fast。
 
 ## 框架版本
 

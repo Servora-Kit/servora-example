@@ -146,7 +146,13 @@ mw = append(mw, demoIdentityMiddleware())
 替换为：
 
 ```go
-mw = append(mw, authn.Server(authn.WithJWT(...), authn.WithObserver(rec.AuthnObserver())))
+mw = append(mw, authn.Server(
+    authn.Multi(
+        authn.Named(authjwt.Scheme, authjwt.NewAuthenticator(authjwt.WithVerifier(verifier))),
+        authn.Named(apikey.Scheme, apikey.NewAuthenticator(apikey.WithStore(keyStore))),
+    ),
+    authn.WithRulesFuncs(examplev1.AuthnRules),
+))
 ```
 
 链路其它部分（`.WithAudit(rec)` 装配位置、Tier 2 业务级 emit）保持不变 ——

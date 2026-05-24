@@ -1,7 +1,7 @@
 # AGENTS.md - app/sayhello/service/
 
 <!-- Parent: ../../AGENTS.md -->
-<!-- Generated: 2026-03-15 | Updated: 2026-03-15 -->
+<!-- Generated: 2026-03-15 | Updated: 2026-05-24 -->
 
 ## Purpose
 
@@ -20,3 +20,4 @@ make wire
 
 - 新增服务可参考本目录结构
 - Proto 由根 `make api` 统一生成到 `api/gen/go/`
+- authn wiring 使用 `authn.Server + authn.Multi + authn.Named`，覆盖 jwt + apikey 双后端；不要添加 `jwt.Server()` wrapper。
