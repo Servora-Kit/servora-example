@@ -11,31 +11,24 @@ server:
 app:
   env: "dev"
 
-log:
-  level: 1
-  backends:
-    - stdout: {}
-    - file:
-        path: "./logs/worker.service.log"
-        max_backups: 10
-        max_age: 30
-
-metrics:
-  enable: true
-
-trace:
-  endpoint: "localhost:4317"
-  insecure: true
-  sampling_ratio: 1.0
+obs:
+  log:
+    level: 1
+    backends:
+      - stdout: {}
+      - file:
+          path: "./logs/worker.service.log"
+          max_backups: 10
+          max_age: 30
+  metrics:
+    enable: true
+  trace:
+    endpoint: "localhost:4317"
+    insecure: true
+    sampling_ratio: 1.0
 
 registry:
   consul:
     addr: "${REGISTRY_CONSUL_ADDR:localhost:8500}"
     scheme: "${REGISTRY_CONSUL_SCHEME:http}"
     datacenter: "${REGISTRY_CONSUL_DC:dc1}"
-
-discovery:
-  consul:
-    addr: "${DISCOVERY_CONSUL_ADDR:localhost:8500}"
-    scheme: "${DISCOVERY_CONSUL_SCHEME:http}"
-    datacenter: "${DISCOVERY_CONSUL_DC:dc1}"

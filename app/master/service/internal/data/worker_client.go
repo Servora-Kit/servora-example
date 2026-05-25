@@ -23,9 +23,9 @@ type workerRepo struct {
 	log    *slog.Logger
 }
 
-func NewWorkerDialer(data *corev1.Data, trace *corev1.Trace, discovery registry.Discovery, l *slog.Logger) *grpcclient.Dialer {
+func NewWorkerDialer(data *corev1.Data, obs *corev1.Observability, discovery registry.Discovery, l *slog.Logger) *grpcclient.Dialer {
 	mw := clientmw.NewChainBuilder(l).
-		WithTrace(trace).
+		WithTrace(obs.GetTrace()).
 		Build()
 	mw = append(mw, stubauth.PassthroughAuthHeaders())
 	return grpcclient.NewDialer(

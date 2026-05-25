@@ -8,7 +8,7 @@ import (
 	"log/slog"
 
 	"github.com/Servora-Kit/servora/obs/audit"
-	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/obs/metrics"
 	"github.com/Servora-Kit/servora/security/authn"
 	"github.com/Servora-Kit/servora/security/authn/apikey"
 	authjwt "github.com/Servora-Kit/servora/security/authn/jwt"
@@ -17,11 +17,11 @@ import (
 	khttp "github.com/go-kratos/kratos/v2/transport/http"
 )
 
-func NewHTTPServer(c *corev1.Server, trace *corev1.Trace, mtc *telemetry.Metrics, l *slog.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {
+func NewHTTPServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Metrics, l *slog.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {
 	httpLogger := l.With("scope", "http/server/master")
 
 	mw := middleware.NewChainBuilder(httpLogger).
-		WithTrace(trace).
+		WithTrace(obs.GetTrace()).
 		WithMetrics(mtc).
 		WithoutRateLimit().
 		Build()

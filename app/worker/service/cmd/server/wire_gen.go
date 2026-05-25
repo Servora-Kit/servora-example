@@ -11,7 +11,7 @@ import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
-	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/obs/metrics"
 	"github.com/go-kratos/kratos/v2"
 )
 
@@ -26,17 +26,16 @@ func wireApp(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
 	corev1Registry := corev1Bootstrap.Registry
 	registrar := registry.NewRegistrar(corev1Registry)
 	corev1Server := corev1Bootstrap.Server
-	trace := corev1Bootstrap.Trace
-	metrics := corev1Bootstrap.Metrics
+	observability := corev1Bootstrap.Obs
 	app := corev1Bootstrap.App
 	logger := runtime.Logger
-	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
+	metricsMetrics, err := metrics.New(observability, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor(logger)
 	workerService := service.NewWorkerService(auditor)
-	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, workerService)
+	grpcServer := server.NewGRPCServer(corev1Server, observability, metricsMetrics, logger, auditor, workerService)
 	kratosApp := newApp(runtime, registrar, grpcServer)
 	return kratosApp, func() {
 	}, nil

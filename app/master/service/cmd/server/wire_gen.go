@@ -14,7 +14,7 @@ import (
 	"github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
-	"github.com/Servora-Kit/servora/obs/telemetry"
+	"github.com/Servora-Kit/servora/obs/metrics"
 	"github.com/go-kratos/kratos/v2"
 )
 
@@ -29,24 +29,22 @@ func wireApp(runtime *bootstrap.Runtime, tcpconfServer *tcpconf.Server) (*kratos
 	corev1Registry := corev1Bootstrap.Registry
 	registrar := registry.NewRegistrar(corev1Registry)
 	corev1Server := corev1Bootstrap.Server
-	trace := corev1Bootstrap.Trace
-	metrics := corev1Bootstrap.Metrics
+	observability := corev1Bootstrap.Obs
 	app := corev1Bootstrap.App
 	logger := runtime.Logger
-	telemetryMetrics, err := telemetry.NewMetrics(metrics, app, logger)
+	metricsMetrics, err := metrics.New(observability, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor(logger)
 	corev1Data := corev1Bootstrap.Data
-	discovery := corev1Bootstrap.Discovery
-	registryDiscovery := registry.NewDiscovery(discovery)
-	dialer := data.NewWorkerDialer(corev1Data, trace, registryDiscovery, logger)
+	discovery := registry.NewDiscovery(corev1Registry)
+	dialer := data.NewWorkerDialer(corev1Data, observability, discovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
-	grpcServer := server.NewGRPCServer(corev1Server, trace, telemetryMetrics, logger, auditor, masterService)
-	httpServer := server.NewHTTPServer(corev1Server, trace, telemetryMetrics, logger, auditor, masterService)
+	grpcServer := server.NewGRPCServer(corev1Server, observability, metricsMetrics, logger, auditor, masterService)
+	httpServer := server.NewHTTPServer(corev1Server, observability, metricsMetrics, logger, auditor, masterService)
 	tcpCommandService := service.NewTCPCommandService(masterService)
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
 	kratosApp := newApp(runtime, registrar, grpcServer, httpServer, tcpServer)
