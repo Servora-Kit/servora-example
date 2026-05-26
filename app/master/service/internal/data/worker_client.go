@@ -10,6 +10,7 @@ import (
 	"log/slog"
 
 	corev1 "github.com/Servora-Kit/servora/api/gen/go/servora/core/v1"
+	"github.com/Servora-Kit/servora/obs/metrics"
 	grpcclient "github.com/Servora-Kit/servora/transport/client/grpc"
 	clientmw "github.com/Servora-Kit/servora/transport/client/middleware"
 	"github.com/go-kratos/kratos/v2/registry"
@@ -23,9 +24,10 @@ type workerRepo struct {
 	log    *slog.Logger
 }
 
-func NewWorkerDialer(data *corev1.Data, obs *corev1.Observability, discovery registry.Discovery, l *slog.Logger) *grpcclient.Dialer {
+func NewWorkerDialer(data *corev1.Data, obs *corev1.Observability, mtc *metrics.Metrics, discovery registry.Discovery, l *slog.Logger) *grpcclient.Dialer {
 	mw := clientmw.NewChainBuilder(l).
 		WithTrace(obs.GetTrace()).
+		WithMetrics(mtc).
 		Build()
 	mw = append(mw, stubauth.PassthroughAuthHeaders())
 	return grpcclient.NewDialer(

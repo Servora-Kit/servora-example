@@ -29,7 +29,7 @@ func wireApp(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
 	observability := corev1Bootstrap.Obs
 	app := corev1Bootstrap.App
 	logger := runtime.Logger
-	metricsMetrics, err := metrics.New(observability, app, logger)
+	metricsMetrics, cleanup, err := metrics.New(observability, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -38,5 +38,6 @@ func wireApp(runtime *bootstrap.Runtime) (*kratos.App, func(), error) {
 	grpcServer := server.NewGRPCServer(corev1Server, observability, metricsMetrics, logger, auditor, workerService)
 	kratosApp := newApp(runtime, registrar, grpcServer)
 	return kratosApp, func() {
+		cleanup()
 	}, nil
 }

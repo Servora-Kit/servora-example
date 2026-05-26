@@ -32,14 +32,14 @@ func wireApp(runtime *bootstrap.Runtime, tcpconfServer *tcpconf.Server) (*kratos
 	observability := corev1Bootstrap.Obs
 	app := corev1Bootstrap.App
 	logger := runtime.Logger
-	metricsMetrics, err := metrics.New(observability, app, logger)
+	metricsMetrics, cleanup, err := metrics.New(observability, app, logger)
 	if err != nil {
 		return nil, nil, err
 	}
 	auditor := server.ProvideAuditor(logger)
 	corev1Data := corev1Bootstrap.Data
 	discovery := registry.NewDiscovery(corev1Registry)
-	dialer := data.NewWorkerDialer(corev1Data, observability, discovery, logger)
+	dialer := data.NewWorkerDialer(corev1Data, observability, metricsMetrics, discovery, logger)
 	workerRepo := data.NewWorkerRepo(dialer, logger)
 	masterUsecase := biz.NewMasterUsecase(workerRepo, logger)
 	masterService := service.NewMasterService(masterUsecase)
@@ -49,5 +49,6 @@ func wireApp(runtime *bootstrap.Runtime, tcpconfServer *tcpconf.Server) (*kratos
 	tcpServer := server.NewTCPServer(tcpconfServer, logger, tcpCommandService)
 	kratosApp := newApp(runtime, registrar, grpcServer, httpServer, tcpServer)
 	return kratosApp, func() {
+		cleanup()
 	}, nil
 }
