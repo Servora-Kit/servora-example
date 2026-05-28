@@ -24,7 +24,7 @@ make compose.build
 #### 2) 启动全部服务
 
 ```bash
-make compose.up.all
+COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.up
 ```
 
 启动后可访问：
@@ -41,9 +41,9 @@ curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=hello'
 #### 4) 停止并清理
 
 ```bash
-make compose.down    # 停止并移除容器/网络
+COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.down
 # 或
-make compose.reset   # 同上，并清除 volumes
+COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.reset
 ```
 
 ---
@@ -67,7 +67,7 @@ make init
 
 ```bash
 cd servora-example
-make compose.up.infra
+make compose.up
 ```
 
 启动后可访问 Consul UI：<http://localhost:8500>
@@ -140,6 +140,9 @@ servora-example/
 │       └── .air.toml
 ├── api/                    # Proto 定义及生成代码
 ├── docker-compose.yaml     # 基础设施（Consul/Jaeger/OTel）
-├── docker-compose.apps.yaml # 应用容器
-└── Makefile
+├── docker-compose.apps.yaml # 应用容器，可通过 COMPOSE_FILES 显式启用
+├── make/
+│   ├── core.mk              # 根目录/服务目录共享 Make 逻辑
+│   └── extra.mk             # API/Ent/OpenFGA 等仓库扩展
+└── Makefile                 # 项目变量 + include make/core.mk
 ```

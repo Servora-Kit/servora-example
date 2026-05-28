@@ -4,7 +4,7 @@
 
 ## 项目概览
 
-`servora-example` 是 [Servora](https://github.com/Servora-Kit/servora) 框架的**示例项目**，包含 master 和 worker 两个最小化实现的微服务，演示 Servora 框架的服务注册、服务发现、链路追踪等核心能力。
+`servora-example` 是 [Servora](https://github.com/Servora-Kit/servora) 框架的**示例项目**，包含 master 和 worker 两个精简微服务，演示 Servora 框架的服务注册、服务发现、链路追踪等核心能力。
 
 ## 仓库结构
 
@@ -17,7 +17,7 @@ servora-example/
 │   │   ├── configs/docker/     # 容器部署配置
 │   │   ├── internal/           # 业务逻辑（biz/data/service）
 │   │   ├── .air.toml           # air 热重载配置，入口 ./configs/local/
-│   │   └── Makefile            # 使用 app.mk，包含 dev/build/wire 等目标
+│   │   └── Makefile            # include ../../../make/core.mk
 │   └── worker/service/         # worker 微服务（gRPC）
 │       ├── configs/local/
 │       ├── configs/docker/
@@ -26,9 +26,12 @@ servora-example/
 │   ├── protos/                 # Proto 定义
 │   └── gen/go/                 # buf generate 产物（勿手动修改）
 ├── docker-compose.yaml         # 基础设施：consul / jaeger / otel-collector
-├── docker-compose.apps.yaml    # 应用容器：master / worker
+├── docker-compose.apps.yaml    # 应用容器：master / worker（通过 COMPOSE_FILES 显式启用）
+├── make/
+│   ├── core.mk                 # 根目录/服务目录共享 Make 逻辑
+│   └── extra.mk                # API/Ent/OpenFGA 等仓库扩展
 ├── Dockerfile                  # 多阶段构建，GOWORK=off，静态编译
-└── Makefile                    # 根 Makefile
+└── Makefile                    # 项目变量 + include make/core.mk
 ```
 
 ## 端口约定
@@ -101,18 +104,15 @@ authn.Server(
 
 | 目标                  | 说明                                       |
 |-----------------------|--------------------------------------------|
-| `make compose.up.infra` | 启动基础设施容器（Consul/Jaeger/OTel）       |
-| `make compose.up.all`  | 启动基础设施 + 应用容器                     |
+| `make compose.up`      | 启动 `COMPOSE_FILES` 指定的 Compose 服务    |
 | `make compose.build`   | 构建所有微服务 Docker 镜像                  |
-| `make compose.rebuild` | 重新构建镜像并启动基础设施                  |
-| `make compose.down`    | 停止并移除所有容器/网络                     |
-| `make compose.reset`   | 停止并移除所有容器/网络/volumes             |
-| `make compose.ps`      | 查看基础设施容器状态                        |
-| `make compose.logs`    | 跟踪基础设施容器日志                        |
+| `make compose.stop`    | 停止容器，不删除容器                        |
+| `make compose.down`    | 移除容器/网络，保留 volumes                 |
+| `make compose.reset`   | 移除容器/网络/volumes                       |
+| `make compose.ps`      | 查看 Compose 服务状态                       |
+| `make compose.logs`    | 跟踪 Compose 服务日志                       |
 | `make gen`             | 生成全部代码（proto / openapi / wire / ent）|
 | `make api-go`          | 仅生成 Go proto 代码（`buf.go.gen.yaml`）  |
-| `make tidy`            | 对所有模块执行 `go mod tidy`               |
-| `make test`            | 运行所有模块测试                            |
 | `make lint.go`         | Go lint                                     |
 
 ### 服务目录（`app/{master,worker}/service/`）
@@ -132,7 +132,7 @@ authn.Server(
 
 ```bash
 # 终端 0：启动基础设施
-cd servora-example && make compose.up.infra
+cd servora-example && make compose.up
 
 # 终端 A：启动 worker
 cd servora-example/app/worker/service && make dev
@@ -156,7 +156,8 @@ make wire        # 重新生成 wire 代码（如接口有变化）
 
 ```bash
 cd servora-example
-make compose.build && make compose.up.all
+make compose.build
+COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.up
 curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=hello'
 ```
 
