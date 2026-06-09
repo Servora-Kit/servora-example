@@ -1,72 +1,83 @@
 services:
-    consul:
-        image: consul:1.15.4
-        container_name: example_consul
-        restart: unless-stopped
-        command:
-            - agent
-            - -server
-            - -ui
-            - -node=consul-server-1
-            - -bootstrap-expect=1
-            - -client=0.0.0.0
-            - -data-dir=/consul/data
-        healthcheck:
-            test: ["CMD", "consul", "info"]
-            interval: 10s
-            timeout: 5s
-            retries: 10
-        ports:
-            - "8500:8500"
-            - "8600:8600/udp"
-        volumes:
-            - example-consul-data:/consul/data
-        networks:
-            - master-network
+  postgres:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: example
+    volumes:
+      - pg_data:/var/lib/postgresql
+  consul:
+    image: consul:1.15.4
+    container_name: example_consul
+    restart: unless-stopped
+    command:
+      - agent
+      - -server
+      - -ui
+      - -node=consul-server-1
+      - -bootstrap-expect=1
+      - -client=0.0.0.0
+      - -data-dir=/consul/data
+    healthcheck:
+      test: ["CMD", "consul", "info"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    ports:
+      - "8500:8500"
+      - "8600:8600/udp"
+    volumes:
+      - example-consul-data:/consul/data
+    networks:
+      - master-network
 
-    jaeger:
-        image: jaegertracing/jaeger:latest
-        container_name: example_jaeger
-        restart: unless-stopped
-        environment:
-            JAEGER_LISTEN_HOST: 0.0.0.0
-        ports:
-            - "16686:16686"
-        networks:
-            - master-network
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    container_name: example_jaeger
+    restart: unless-stopped
+    environment:
+      JAEGER_LISTEN_HOST: 0.0.0.0
+    ports:
+      - "16686:16686"
+    networks:
+      - master-network
 
-    otel-collector:
-        image: otel/opentelemetry-collector-contrib:latest
-        container_name: example_otel_collector
-        user: "0:0"
-        restart: unless-stopped
-        command: ["--config=/etc/otelcol/config.yaml"]
-        healthcheck:
-            test:
-                [
-                    "CMD",
-                    "/otelcol-contrib",
-                    "validate",
-                    "--config=/etc/otelcol/config.yaml",
-                ]
-            interval: 10s
-            timeout: 5s
-            retries: 5
-            start_period: 10s
-        volumes:
-            - ./manifests/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
-        ports:
-            - "4317:4317"
-            - "4318:4318"
-        depends_on:
-            - jaeger
-        networks:
-            - master-network
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    container_name: example_otel_collector
+    user: "0:0"
+    restart: unless-stopped
+    command: ["--config=/etc/otelcol/config.yaml"]
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "/otelcol-contrib",
+          "validate",
+          "--config=/etc/otelcol/config.yaml",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    volumes:
+      - ./manifests/otel/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - jaeger
+    networks:
+      - master-network
 
 volumes:
-    example-consul-data:
-    master-logs:
-    worker-logs:
+  example-consul-data:
+  master-logs:
+  worker-logs:
 
 networks:
-    master-network:
+  master-network:
