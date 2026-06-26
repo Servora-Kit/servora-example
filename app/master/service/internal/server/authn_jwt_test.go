@@ -10,7 +10,7 @@ import (
 	"github.com/Servora-Kit/servora/security/authn"
 	"github.com/Servora-Kit/servora/security/authn/apikey"
 	authjwt "github.com/Servora-Kit/servora/security/authn/jwt"
-	"github.com/go-kratos/kratos/v2/transport"
+	"github.com/go-kratos/kratos/v3/transport"
 	gojwt "github.com/golang-jwt/jwt/v5"
 )
 

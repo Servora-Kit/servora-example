@@ -13,7 +13,7 @@ import (
 	"github.com/Servora-Kit/servora/obs/metrics"
 	grpcclient "github.com/Servora-Kit/servora/transport/client/grpc"
 	clientmw "github.com/Servora-Kit/servora/transport/client/middleware"
-	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/go-kratos/kratos/v3/registry"
 )
 
 const workerServiceName = "worker.service"

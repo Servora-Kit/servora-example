@@ -4,9 +4,9 @@ import (
 	"flag"
 
 	"github.com/Servora-Kit/servora/core/bootstrap"
-	"github.com/go-kratos/kratos/v2"
-	"github.com/go-kratos/kratos/v2/registry"
-	"github.com/go-kratos/kratos/v2/transport/grpc"
+	"github.com/go-kratos/kratos/v3"
+	"github.com/go-kratos/kratos/v3/registry"
+	"github.com/go-kratos/kratos/v3/transport/grpc"
 
 	_ "go.uber.org/automaxprocs"
 )

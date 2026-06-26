@@ -14,7 +14,7 @@ import (
 	authjwt "github.com/Servora-Kit/servora/security/authn/jwt"
 	svrgrpc "github.com/Servora-Kit/servora/transport/server/grpc"
 	"github.com/Servora-Kit/servora/transport/server/middleware"
-	kgrpc "github.com/go-kratos/kratos/v2/transport/grpc"
+	kgrpc "github.com/go-kratos/kratos/v3/transport/grpc"
 )
 
 func NewGRPCServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Metrics, l *slog.Logger, auditor audit.Auditor, master *service.MasterService) *kgrpc.Server {

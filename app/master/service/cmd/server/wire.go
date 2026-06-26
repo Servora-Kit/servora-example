@@ -12,7 +12,7 @@ import (
 	tcpconf "github.com/Servora-Kit/servora-transport/server/tcp/gen/conf"
 	"github.com/Servora-Kit/servora/core/bootstrap"
 	"github.com/Servora-Kit/servora/core/registry"
-	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v3"
 	"github.com/google/wire"
 )
 

@@ -14,7 +14,7 @@ import (
 	authjwt "github.com/Servora-Kit/servora/security/authn/jwt"
 	svrhttp "github.com/Servora-Kit/servora/transport/server/http"
 	"github.com/Servora-Kit/servora/transport/server/middleware"
-	khttp "github.com/go-kratos/kratos/v2/transport/http"
+	khttp "github.com/go-kratos/kratos/v3/transport/http"
 )
 
 func NewHTTPServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Metrics, l *slog.Logger, auditor audit.Auditor, master *service.MasterService) *khttp.Server {

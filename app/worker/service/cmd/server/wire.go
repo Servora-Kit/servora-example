@@ -8,7 +8,7 @@ import (
 	"github.com/Servora-Kit/servora-example/app/worker/service/internal/service"
 
 	"github.com/Servora-Kit/servora/core/bootstrap"
-	"github.com/go-kratos/kratos/v2"
+	"github.com/go-kratos/kratos/v3"
 	"github.com/google/wire"
 )
 
