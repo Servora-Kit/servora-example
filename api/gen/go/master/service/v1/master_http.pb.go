@@ -9,16 +9,14 @@ package masterpb
 import (
 	context "context"
 	v1 "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
-	http "github.com/go-kratos/kratos/v2/transport/http"
-	binding "github.com/go-kratos/kratos/v2/transport/http/binding"
+	http "github.com/go-kratos/kratos/v3/transport/http"
 )
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the kratos package it is being compiled against.
 var _ = new(context.Context)
-var _ = binding.EncodeURL
 
-const _ = http.SupportPackageIsVersion1
+const _ = http.SupportPackageIsVersion3
 
 const OperationMasterServiceHello = "/master.service.v1.MasterService/Hello"
 
@@ -28,7 +26,7 @@ type MasterServiceHTTPServer interface {
 
 func RegisterMasterServiceHTTPServer(s *http.Server, srv MasterServiceHTTPServer) {
 	r := s.Route("/")
-	r.GET("/v1/hello", _MasterService_Hello0_HTTP_Handler(srv))
+	r.Handle("GET", "/v1/hello", _MasterService_Hello0_HTTP_Handler(srv))
 }
 
 func _MasterService_Hello0_HTTP_Handler(srv MasterServiceHTTPServer) func(ctx http.Context) error {
@@ -65,9 +63,12 @@ func NewMasterServiceHTTPClient(client *http.Client) MasterServiceHTTPClient {
 func (c *MasterServiceHTTPClientImpl) Hello(ctx context.Context, in *v1.HelloRequest, opts ...http.CallOption) (*v1.HelloResponse, error) {
 	var out v1.HelloResponse
 	pattern := "/v1/hello"
-	path := binding.EncodeURL(pattern, in, true)
-	opts = append(opts, http.Operation(OperationMasterServiceHello))
-	opts = append(opts, http.PathTemplate(pattern))
+	path := http.BuildPath(pattern, in, http.WithQueryParams())
+	opts = append([]http.CallOption{
+		http.Accept("application/protojson"),
+		http.Operation(OperationMasterServiceHello),
+		http.PathTemplate(pattern),
+	}, opts...)
 	err := c.cc.Invoke(ctx, "GET", path, nil, &out, opts...)
 	if err != nil {
 		return nil, err
