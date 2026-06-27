@@ -2,12 +2,10 @@ module github.com/Servora-Kit/servora-example/app/worker/service
 
 go 1.26.1
 
-replace github.com/go-kratos/kratos/v3 v3.0.0 => github.com/go-kratos/kratos/v3 v3.0.0-20260621094049-2726761cdd77
-
 require (
-	github.com/Servora-Kit/servora v0.7.6
+	github.com/Servora-Kit/servora v0.8.0
 	github.com/Servora-Kit/servora-example/api/gen v0.4.0
-	github.com/Servora-Kit/servora/api/gen v0.7.6
+	github.com/Servora-Kit/servora/api/gen v0.8.0
 	github.com/go-kratos/kratos/v3 v3.0.0
 	github.com/google/wire v0.7.0
 	go.uber.org/automaxprocs v1.6.0
