@@ -3,29 +3,27 @@
 package workerpb
 
 import (
-	authn "github.com/Servora-Kit/servora/security/authn"
+	v1 "github.com/Servora-Kit/servora/api/gen/go/servora/authn/v1"
+	proto "google.golang.org/protobuf/proto"
 )
 
 // _authnRules is the immutable backing store for AuthnRules.
-var _authnRules = authn.Rules{
-	PublicMethods: []string{},
-	MethodSchemes: map[string][]string{
-		"/worker.service.v1.WorkerService/Hello": {"jwt", "apikey"},
+var _authnRules = map[string]*v1.AuthnRule{
+	"/worker.service.v1.WorkerService/Hello": {
+		Mode: v1.AuthnRule_MODE_REQUIRED,
+		Schemes: []string{
+			"jwt",
+			"apikey",
+		},
 	},
 }
 
 // AuthnRules returns the authentication rules declared via authn proto
-// annotations. Each call allocates fresh slices and a fresh map (with
-// deep-copied inner slices); callers may mutate the returned value freely
-// without affecting other callers or package-internal state.
-func AuthnRules() authn.Rules {
-	pm := make([]string, len(_authnRules.PublicMethods))
-	copy(pm, _authnRules.PublicMethods)
-	ms := make(map[string][]string, len(_authnRules.MethodSchemes))
-	for k, v := range _authnRules.MethodSchemes {
-		cp := make([]string, len(v))
-		copy(cp, v)
-		ms[k] = cp
+// annotations. Each call returns a fresh map and cloned rule messages.
+func AuthnRules() map[string]*v1.AuthnRule {
+	m := make(map[string]*v1.AuthnRule, len(_authnRules))
+	for k, v := range _authnRules {
+		m[k] = proto.Clone(v).(*v1.AuthnRule)
 	}
-	return authn.Rules{PublicMethods: pm, MethodSchemes: ms}
+	return m
 }

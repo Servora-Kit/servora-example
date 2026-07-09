@@ -25,7 +25,6 @@ func (s *WorkerService) Hello(ctx context.Context, req *workerpb.HelloRequest) (
 	event := audit.NewEvent(ctx,
 		audit.WithType("servora.worker.hello.created"),
 		audit.WithSubject(req.GetGreeting()),
-		audit.WithSeverity("INFO"),
 	)
 	_ = s.auditor.Emit(ctx, event)
 

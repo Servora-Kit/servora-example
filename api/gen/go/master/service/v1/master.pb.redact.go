@@ -6,6 +6,7 @@ package masterpb
 import (
 	context "context"
 	workerpb "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
+	auditv1 "github.com/Servora-Kit/servora/api/gen/go/servora/audit/v1"
 	authnpb "github.com/Servora-Kit/servora/api/gen/go/servora/authn/v1"
 	redact "github.com/menta2k/protoc-gen-redact/v3/redact/v3"
 	grpc "google.golang.org/grpc"
@@ -20,6 +21,7 @@ var (
 	_ redact.Redactor
 	_ codes.Code
 	_ status.Status
+	_ auditv1.AuditRule
 	_ authnpb.AuthnRule
 	_ workerpb.HelloRequest
 )

@@ -3,11 +3,14 @@ syntax = "proto3";
 package worker.service.v1;
 
 import "buf/validate/validate.proto";
+import "servora/audit/v1/annotations.proto";
 import "servora/authn/v1/annotations.proto";
 
 option go_package = "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1;workerpb";
 
 service WorkerService {
+  option (servora.audit.v1.service_default) = { mode: AUDIT_MODE_ENABLED };
+
   rpc Hello(HelloRequest) returns (HelloResponse) {
     option (servora.authn.v1.rule) = {
       mode: MODE_REQUIRED

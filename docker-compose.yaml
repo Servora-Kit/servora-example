@@ -75,6 +75,7 @@ services:
       - master-network
 
 volumes:
+  pg_data:
   example-consul-data:
   master-logs:
   worker-logs:

@@ -25,10 +25,9 @@ func NewGRPCServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Met
 		WithMetrics(mtc).
 		WithoutRateLimit().
 		Build()
-	// Business-mounted audit middleware with subject extraction from jwt + apikey.
+	// Business-mounted audit middleware driven by generated audit rules.
 	mw = append(mw, audit.Middleware(auditor,
-		audit.WithSubjectFunc(authn.SubjectFromAny(authjwt.SubjectFrom, apikey.SubjectFrom)),
-		audit.WithAuthTypeFunc(authn.AuthTypeFrom),
+		audit.WithRulesFuncs(workerpb.AuditRules),
 	))
 	// Lighthouse demo: real authn.Server dispatcher with jwt + apikey engines.
 	_, jwtVerifier := stubauth.SharedKeypair()
