@@ -7,10 +7,8 @@ modules:
 deps:
   - buf.build/servora/servora
   - buf.build/googleapis/googleapis
-  - buf.build/kratos/apis
   - buf.build/bufbuild/protovalidate
   - buf.build/gnostic/gnostic
-  - buf.build/menta2k-org/redact
 
 breaking:
   use:

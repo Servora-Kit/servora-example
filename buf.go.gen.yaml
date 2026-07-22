@@ -11,7 +11,7 @@ managed:
         - module: buf.build/kratos/apis
         - module: buf.build/gnostic/gnostic
         - module: buf.build/gogo/protobuf
-        - module: buf.build/menta2k-org/redact
+        - module: buf.build/go-wind/redact
         - module: buf.build/servora/servora
         - file_option: go_package
           path: servora/iam/conf/v1/config.proto
@@ -45,7 +45,7 @@ plugins:
           - lang=go
 
     # generate redact code (field-level log redaction)
-    - local: protoc-gen-redact
+    - local: protoc-gen-go-redact
       out: api/gen/go
       opt:
           - paths=source_relative
@@ -58,8 +58,8 @@ plugins:
       out: api/gen/go
       opt: paths=source_relative
 
-    # generate mapper plans from proto annotations
-    - local: protoc-gen-servora-mapper
+    # generate typed CRUD descriptors, field paths, and resource-name helpers
+    - local: protoc-gen-servora-crud
       out: api/gen/go
       opt: paths=source_relative
 

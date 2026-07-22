@@ -8,141 +8,81 @@
 
 ## 快速开始
 
-### 场景一：快速体验（全容器化）
+### 前置要求
 
-使用 Docker 一键启动基础设施 + 应用容器，无需本地 Go 环境。
+- Go 1.26+
+- Make
+- Docker / Docker Compose
 
-**前置条件：** Docker Desktop / Docker Engine + Docker Compose
-
-#### 1) 构建应用镜像
+### 安装工具
 
 ```bash
-cd servora-example
-make compose.build
+make init    # 安装 protoc 插件与 CLI 工具
 ```
 
-#### 2) 启动全部服务
+### 生成代码
 
 ```bash
-COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.up
+make gen     # 统一生成（api + wire）
 ```
 
-启动后可访问：
+### 启动开发环境
 
-- Consul UI：<http://localhost:8500>（可查看 master/worker 注册状态）
-- Jaeger UI：<http://localhost:16686>（可查看调用链路）
-
-#### 3) 验证服务
+Compose 负责基础设施，应用通过 `make run` 在本机启动：
 
 ```bash
-curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=hello'
-```
-
-#### 4) 停止并清理
-
-```bash
-COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.down
-# 或
-COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.reset
-```
-
----
-
-### 场景二：快速开发（本地热重载）
-
-使用 [air](https://github.com/air-verse/air) 热重载在本地开发，基础设施仍通过 Docker 运行。
-
-**前置条件：** Go 1.23+、Docker
-
-#### 1) 初始化开发环境（首次）
-
-```bash
-cd servora-example
-make init
-```
-
-> `make init` 会安装所有 CLI 工具，包括 air、wire、buf、golangci-lint 等。
-
-#### 2) 启动基础设施容器
-
-```bash
-cd servora-example
+# 启动基础设施
 make compose.up
+
+# 终端 A：启动 worker
+cd app/worker/service && make run
+
+# 终端 B：启动 master
+cd app/master/service && make run
 ```
 
-启动后可访问 Consul UI：<http://localhost:8500>
+worker 读取 `./configs/local/`，gRPC 监听 `0.0.0.0:8010`；master 读取 `./configs/local/`，HTTP 监听 `0.0.0.0:8001`。
 
-#### 3) 启动 worker（终端 A）
-
-```bash
-cd servora-example/app/worker/service
-make dev
-```
-
-worker 读取 `./configs/local/`，gRPC 监听 `0.0.0.0:8010`，注册到 `localhost:8500`。
-
-#### 4) 启动 master（终端 B）
-
-```bash
-cd servora-example/app/master/service
-make dev
-```
-
-master 读取 `./configs/local/`，通过服务发现调用 worker，HTTP 监听 `0.0.0.0:8001`。
-
-#### 5) 验证服务
+### 验证服务
 
 ```bash
 curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=hello'
 ```
 
-在 Jaeger UI 中查询 `master.service` 或 `worker.service` 可查看完整调用链路。
-
-#### 6) 停止环境
-
-停止本地进程后，回到 `servora-example` 根目录：
+### 常用命令
 
 ```bash
-make compose.down
+# 代码生成
+make gen                    # 统一生成
+make api                    # 仅生成 proto 代码
+make wire                   # 仅生成 Wire
+
+# 质量检查
+make lint                   # Go lint
+make lint.proto             # Proto lint
+
+# 服务目录（app/master/service/、app/worker/service/）
+make run                    # 直接运行（读 configs/local/）
+make build                  # 编译二进制
+
+# Compose - 基础设施
+make compose.up             # 启动基础设施
+make compose.stop           # 停止容器，不删除容器
+make compose.down           # 移除容器/网络（保留数据卷）
+make compose.reset          # 移除容器/网络/数据卷
+make compose.ps             # 查看 Compose 服务状态
+make compose.logs           # 跟踪 Compose 服务日志
+
+# OpenFGA
+make openfga.init           # 初始化 store
+make openfga.model.validate # 验证 model
+make openfga.model.test     # 测试 model
+make openfga.model.apply    # 应用 model 更新
 ```
 
 ## 端口一览
 
-### 本地热重载（场景二）
-
-| 服务    | HTTP  | gRPC  | TCP（注册）|
-|---------|-------|-------|-----------|
-| master  | 8001  | 8000  | 8002      |
-| worker  | —     | 8010  | —         |
-| Consul  | 8500  | —     | —         |
-| Jaeger  | 16686 | —     | —         |
-
-### 全容器化（场景一）
-
-| 服务    | HTTP（宿主机:容器）| gRPC（宿主机:容器）|
-|---------|-------------------|-------------------|
-| master  | 8001:8001         | 8000:8000         |
-| Consul  | 8500              | —                 |
-| Jaeger  | 16686             | —                 |
-
-## 目录结构
-
-```
-servora-example/
-├── app/
-│   ├── master/service/     # master 微服务
-│   │   ├── configs/local/  # 本地开发配置
-│   │   ├── configs/docker/ # 容器环境配置
-│   │   └── .air.toml       # air 热重载配置
-│   └── worker/service/     # worker 微服务
-│       ├── configs/local/
-│       ├── configs/docker/
-│       └── .air.toml
-├── api/                    # Proto 定义及生成代码
-├── docker-compose.yaml     # 基础设施（Consul/Jaeger/OTel）
-├── docker-compose.apps.yaml # 应用容器，可通过 COMPOSE_FILES 显式启用
-├── make/
-│   ├── core.mk              # 根目录/服务目录共享 Make 逻辑
-│   └── extra.mk             # API/Ent/OpenFGA 等仓库扩展
-└── Makefile                 # 项目变量 + include make/core.mk
-```
+| 服务    | HTTP | gRPC |
+|---------|------|------|
+| master  | 8001 | 8000 |
+| worker  | —    | 8010 |

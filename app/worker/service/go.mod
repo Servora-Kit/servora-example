@@ -3,9 +3,9 @@ module github.com/Servora-Kit/servora-example/app/worker/service
 go 1.26.1
 
 require (
-	github.com/Servora-Kit/servora v0.8.0
+	github.com/Servora-Kit/servora v0.8.3
 	github.com/Servora-Kit/servora-example/api/gen v0.4.0
-	github.com/Servora-Kit/servora/api/gen v0.8.0
+	github.com/Servora-Kit/servora/api/gen v0.8.2
 	github.com/go-kratos/kratos/v3 v3.0.0
 	github.com/google/wire v0.7.0
 	go.uber.org/automaxprocs v1.6.0
@@ -174,5 +174,3 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.4.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
-
-replace github.com/Servora-Kit/servora-example/api/gen => ../../../api/gen
