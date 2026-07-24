@@ -10,9 +10,6 @@ MICROSERVICES := master worker
 COMPOSE_FILES := -f docker-compose.yaml
 COMPOSE_SERVICES ?=
 
-BUF_GO_GEN_TEMPLATE := buf.go.gen.yaml
-BUF_TS_GEN_TEMPLATE := buf.typescript.gen.yaml
-
 ENV_FILE ?= .env
 OPENFGA_ENV_PREFIX ?= EXAMPLE_
 OPENFGA_API_URL ?= http://localhost:18080
