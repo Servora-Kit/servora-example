@@ -1,53 +1,44 @@
 # AGENTS.md - app/
 
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-03-15 | Updated: 2026-03-15 -->
+<!-- Updated: 2026-07-25 -->
 
 ## 目录概览
 
-`app/` 存放可运行服务。当前仓库内有两个服务模块：
-- `app/iam/service/`：IAM 主服务（认证、授权、组织、项目），含后端与可选前端
-- `app/sayhello/service/`：独立示例服务
+`app/` 当前包含两个独立 Go module：
 
-每个服务目录都是独立 Go module，并通过根 `go.work` 纳管。
+- `app/master/service/`：HTTP、gRPC 与 TCP 注册示例
+- `app/worker/service/`：gRPC Worker 示例
+
+两个模块都通过根 `go.work` 纳管。
 
 ## 服务共同结构
 
 ```text
-app/{service}/service/
-├── api/         # 服务私有 proto、TS/OpenAPI 生成模板
-├── cmd/         # 启动入口
-├── configs/     # 配置
-├── internal/    # 实现代码
-├── Makefile     # include ../../../app.mk
-└── go.mod       # 独立模块
+app/{master,worker}/service/
+├── api/
+│   ├── protos/                 # 服务 Proto 源文件
+│   └── buf.openapi.gen.yaml    # 服务自有 OpenAPI 模板
+├── cmd/                        # 启动入口
+├── configs/                    # local/docker 配置
+├── internal/                   # 业务实现
+├── Makefile                    # include ../../../make/core.mk
+└── go.mod                      # 独立模块
 ```
-
-各服务目录可包含：
-- `web/`：前端（如有）
-- `manifests/`：服务专属补充资源
-- `openapi.yaml`：服务 OpenAPI 产物（由 buf 生成）
 
 ## 关键约定
 
-- 服务目录中的 `make gen` 会执行 `wire + api + openapi + gen.ent`
-- 服务目录中的 `make build` 会先执行 `make gen`，再编译当前服务
-- 服务目录中的 `make api` 会回到仓库根目录跑 `make api-go`
-- 若存在 `api/buf.typescript.gen.yaml`，服务级 `make api` 会额外生成 TypeScript 客户端
-- 服务级 `make openapi` 读取本目录 `api/buf.openapi.gen.yaml`
+- 服务目录中的 `make gen` 执行 `api + openapi + wire + gen.ent`
+- 服务目录中的 `make build` 先执行 `make gen`，再编译当前服务
+- 服务目录中的 `make api` 回到仓库根目录执行统一 Go API 生成
+- 服务级 `make openapi` 读取本服务 `api/buf.openapi.gen.yaml`
+- 当前没有 TypeScript 生成模板；空的 `app/master/web/` 不构成 TypeScript 消费方
 
 ## 常用命令
 
 ```bash
-cd app/iam/service && make run
-cd app/iam/service && make build
-cd app/iam/service && make wire
-cd app/iam/service && make gen.ent
-cd app/iam/service && make gen.gorm
-cd app/sayhello/service && make run
+cd app/master/service && make run
+cd app/master/service && make build
+cd app/master/service && make wire
+cd app/worker/service && make run
 ```
-
-## 维护提示
-
-- 部署清单以根 `manifests/` 为主；各服务可带 `manifests/` 补充资源
-- 若新增服务，优先参考 `app/sayhello/service/` 的最小结构，再按需要补齐 `api/` 与 `internal/`

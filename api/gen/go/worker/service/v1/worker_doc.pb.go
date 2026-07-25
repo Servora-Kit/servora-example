@@ -25,10 +25,9 @@ var File_worker_service_v1_worker_doc_proto protoreflect.FileDescriptor
 
 const file_worker_service_v1_worker_doc_proto_rawDesc = "" +
 	"\n" +
-	"\"worker/service/v1/worker_doc.proto\x12\x11worker.service.v1\x1a$gnostic/openapi/v3/annotations.protoB\x8e\x02\xbaG0\x12.\n" +
+	"\"worker/service/v1/worker_doc.proto\x12\x11worker.service.v1\x1a$gnostic/openapi/v3/annotations.protoB\x81\x01\xbaG0\x12.\n" +
 	"\n" +
-	"Worker API\x12\x1bWorker 微服务 API 文档2\x031.0\n" +
-	"\x15com.worker.service.v1B\x0eWorkerDocProtoP\x01ZLgithub.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1;workerpb\xa2\x02\x03WSX\xaa\x02\x11Worker.Service.V1\xca\x02\x11Worker\\Service\\V1\xe2\x02\x1dWorker\\Service\\V1\\GPBMetadata\xea\x02\x13Worker::Service::V1b\x06proto3"
+	"Worker API\x12\x1bWorker 微服务 API 文档2\x031.0ZLgithub.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1;workerpbb\x06proto3"
 
 var file_worker_service_v1_worker_doc_proto_goTypes = []any{}
 var file_worker_service_v1_worker_doc_proto_depIdxs = []int32{

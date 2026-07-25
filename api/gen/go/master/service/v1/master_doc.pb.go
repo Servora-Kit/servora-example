@@ -25,10 +25,9 @@ var File_master_service_v1_master_doc_proto protoreflect.FileDescriptor
 
 const file_master_service_v1_master_doc_proto_rawDesc = "" +
 	"\n" +
-	"\"master/service/v1/master_doc.proto\x12\x11master.service.v1\x1a$gnostic/openapi/v3/annotations.protoB\x8e\x02\xbaG0\x12.\n" +
+	"\"master/service/v1/master_doc.proto\x12\x11master.service.v1\x1a$gnostic/openapi/v3/annotations.protoB\x81\x01\xbaG0\x12.\n" +
 	"\n" +
-	"Master API\x12\x1bMaster 微服务 API 文档2\x031.0\n" +
-	"\x15com.master.service.v1B\x0eMasterDocProtoP\x01ZLgithub.com/Servora-Kit/servora-example/api/gen/go/master/service/v1;masterpb\xa2\x02\x03MSX\xaa\x02\x11Master.Service.V1\xca\x02\x11Master\\Service\\V1\xe2\x02\x1dMaster\\Service\\V1\\GPBMetadata\xea\x02\x13Master::Service::V1b\x06proto3"
+	"Master API\x12\x1bMaster 微服务 API 文档2\x031.0ZLgithub.com/Servora-Kit/servora-example/api/gen/go/master/service/v1;masterpbb\x06proto3"
 
 var file_master_service_v1_master_doc_proto_goTypes = []any{}
 var file_master_service_v1_master_doc_proto_depIdxs = []int32{

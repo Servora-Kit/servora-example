@@ -23,8 +23,7 @@ servora-example/
 │       ├── configs/docker/
 │       └── .air.toml
 ├── api/
-│   ├── protos/                 # Proto 定义
-│   └── gen/go/                 # buf generate 产物（勿手动修改）
+│   └── gen/go/                 # 仓库级 Go 生成产物（勿手动修改）
 ├── docker-compose.yaml         # 基础设施：consul / jaeger / otel-collector
 ├── docker-compose.apps.yaml    # 应用容器：master / worker（通过 COMPOSE_FILES 显式启用）
 ├── make/

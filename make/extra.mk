@@ -1,5 +1,4 @@
 BUF_GO_GEN_TEMPLATE ?= buf.go.gen.yaml
-BUF_TS_GEN_TEMPLATE ?= buf.typescript.gen.yaml
 SERVORA_PKG ?= github.com/Servora-Kit/servora
 
 PROTOC_GEN_GO_VERSION ?= latest
@@ -18,9 +17,9 @@ AIR_VERSION ?= latest
 
 ifeq ($(SERVORA_CONTEXT),root)
 GEN_TARGETS := api $(GEN_TARGETS) ent
-API_TARGETS += api-go api-ts
+API_TARGETS += api-go
 
-.PHONY: init plugin cli api api-go api-ts ent
+.PHONY: init plugin cli api api-go ent
 .PHONY: openfga.init openfga.model.validate openfga.model.test openfga.model.apply
 
 init: plugin cli ## Install protoc plugins and CLI tools
@@ -30,7 +29,6 @@ plugin: ## Install protoc-gen-* plugins
 	@go install google.golang.org/protobuf/cmd/protoc-gen-go@$(PROTOC_GEN_GO_VERSION)
 	@go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@$(PROTOC_GEN_GO_GRPC_VERSION)
 	@go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v3@$(PROTOC_GEN_GO_HTTP_VERSION)
-	@go install $(SERVORA_PKG)/cmd/protoc-gen-typescript-http@$(SERVORA_VERSION)
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-go-errors@$(SERVORA_VERSION)
 	@go install github.com/google/gnostic/cmd/protoc-gen-openapi@$(PROTOC_GEN_OPENAPI_VERSION)
 	@go install github.com/envoyproxy/protoc-gen-validate@$(PROTOC_GEN_VALIDATE_VERSION)
@@ -59,18 +57,6 @@ api: $(API_TARGETS) ## Generate configured protobuf API code
 api-go: ## Generate protobuf Go code
 	@buf generate --template $(BUF_GO_GEN_TEMPLATE)
 
-api-ts: ## Generate TypeScript API code where templates exist
-	@if [ -f "$(BUF_TS_GEN_TEMPLATE)" ]; then \
-		echo "==> Generating TypeScript via $(BUF_TS_GEN_TEMPLATE)"; \
-		buf generate --template "$(BUF_TS_GEN_TEMPLATE)"; \
-	fi
-	@set -e; for mod in $(SERVICE_MODULES); do \
-		tpl="$$mod/api/buf.typescript.gen.yaml"; \
-		if [ -f "$$tpl" ]; then \
-			echo "==> Generating TypeScript via $$tpl"; \
-			buf generate --template "$$tpl"; \
-		fi; \
-	done
 
 ent: ## Generate Ent code for services that define generators
 	$(call run-in-service-dirs,gen.ent)
@@ -102,11 +88,8 @@ RUN_DEPS := api $(RUN_DEPS)
 
 .PHONY: api gen.ent
 
-api: ## Generate repository Go API and current service API templates
+api: ## Generate repository Go API
 	@$(MAKE) -C $(REPO_ROOT) api-go
-	@if [ -f "./api/buf.typescript.gen.yaml" ]; then \
-		cd $(REPO_ROOT) && buf generate --template $(SERVICE_MODULE)/api/buf.typescript.gen.yaml; \
-	fi
 
 gen.ent: ## Generate Ent code if this service defines a generator
 	@if [ -f "./internal/data/generate.go" ]; then \
