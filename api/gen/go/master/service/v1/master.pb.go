@@ -9,7 +9,6 @@ package masterpb
 import (
 	v1 "github.com/Servora-Kit/servora-example/api/gen/go/worker/service/v1"
 	_ "github.com/Servora-Kit/servora/api/gen/go/servora/audit/v1"
-	_ "github.com/Servora-Kit/servora/api/gen/go/servora/authn/v1"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -28,9 +27,9 @@ var File_master_service_v1_master_proto protoreflect.FileDescriptor
 
 const file_master_service_v1_master_proto_rawDesc = "" +
 	"\n" +
-	"\x1emaster/service/v1/master.proto\x12\x11master.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\"servora/audit/v1/annotations.proto\x1a\"servora/authn/v1/annotations.proto\x1a\x1eworker/service/v1/worker.proto2\x89\x01\n" +
-	"\rMasterService\x12p\n" +
-	"\x05Hello\x12\x1f.worker.service.v1.HelloRequest\x1a .worker.service.v1.HelloResponse\"$\xe2\xc7\x18\x0f\b\x02\x12\x03jwt\x12\x06apikey\x82\xd3\xe4\x93\x02\v\x12\t/v1/hello\x1a\x06\xaa\xbb\x18\x02\b\x02BNZLgithub.com/Servora-Kit/servora-example/api/gen/go/master/service/v1;masterpbb\x06proto3"
+	"\x1emaster/service/v1/master.proto\x12\x11master.service.v1\x1a\x1cgoogle/api/annotations.proto\x1a\"servora/audit/v1/annotations.proto\x1a\x1eworker/service/v1/worker.proto2v\n" +
+	"\rMasterService\x12]\n" +
+	"\x05Hello\x12\x1f.worker.service.v1.HelloRequest\x1a .worker.service.v1.HelloResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/hello\x1a\x06\xaa\xbb\x18\x02\b\x02BNZLgithub.com/Servora-Kit/servora-example/api/gen/go/master/service/v1;masterpbb\x06proto3"
 
 var file_master_service_v1_master_proto_goTypes = []any{
 	(*v1.HelloRequest)(nil),  // 0: worker.service.v1.HelloRequest

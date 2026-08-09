@@ -1,175 +1,26 @@
-# AGENTS.md - servora-example
+# servora-example
 
-<!-- Updated: 2026-05-24 -->
+Master/Worker 基础示例，用于演示服务注册、发现、追踪和 Audit；具体 AuthN/AuthZ 能力在 `servora-platform` 实践。
 
-## 项目概览
+## 目录
 
-`servora-example` 是 [Servora](https://github.com/Servora-Kit/servora) 框架的**示例项目**，包含 master 和 worker 两个精简微服务，演示 Servora 框架的服务注册、服务发现、链路追踪等核心能力。
+- `app/master/service/`：HTTP、gRPC、TCP 示例
+- `app/worker/service/`：gRPC 示例
+- `api/gen/go/`：生成代码
+- `make/`：共享 Make 逻辑
 
-## 仓库结构
+本示例不装配 JWT/API Key Authenticator，不保留 sign-token、credential stub 或 AuthN scheme 注解。
 
-```
-servora-example/
-├── app/
-│   ├── master/service/         # master 微服务（HTTP + gRPC + TCP 注册）
-│   │   ├── cmd/server/         # 入口
-│   │   ├── configs/local/      # 本地开发配置（air 读取）
-│   │   ├── configs/docker/     # 容器部署配置
-│   │   ├── internal/           # 业务逻辑（biz/data/service）
-│   │   ├── .air.toml           # air 热重载配置，入口 ./configs/local/
-│   │   └── Makefile            # include ../../../make/core.mk
-│   └── worker/service/         # worker 微服务（gRPC）
-│       ├── configs/local/
-│       ├── configs/docker/
-│       └── .air.toml
-├── api/
-│   └── gen/go/                 # 仓库级 Go 生成产物（勿手动修改）
-├── docker-compose.yaml         # 基础设施：consul / jaeger / otel-collector
-├── docker-compose.apps.yaml    # 应用容器：master / worker（通过 COMPOSE_FILES 显式启用）
-├── make/
-│   ├── core.mk                 # 根目录/服务目录共享 Make 逻辑
-│   └── extra.mk                # API/Ent/OpenFGA 等仓库扩展
-├── Dockerfile                  # 多阶段构建，GOWORK=off，静态编译
-└── Makefile                    # 项目变量 + include make/core.mk
-```
-
-## 端口约定
-
-### 本地热重载（`configs/local/`）
-
-| 服务           | HTTP  | gRPC  | TCP（服务注册）|
-|----------------|-------|-------|--------------|
-| master         | 8001  | 8000  | 8002         |
-| worker         | —     | 8010  | —            |
-| Consul         | 8500  | —     | —            |
-| Jaeger UI      | 16686 | —     | —            |
-| OTel Collector | —     | 4317  | —            |
-
-### 全容器化（`configs/docker/`，宿主机端口）
-
-| 服务           | HTTP  | gRPC  |
-|----------------|-------|-------|
-| master         | 8001  | 8000  |
-| worker         | —     | 8010  |
-| Consul         | 8500  | —     |
-| Jaeger UI      | 16686 | —     |
-| OTel Collector | —     | 4317  |
-
-## 配置约定
-
-### 本地开发（`configs/local/`）
-
-- `bootstrap.yaml`：服务名称、logger、注册中心地址（`localhost:8500`）
-- `biz.yaml`：业务参数
-- `tcp.yaml`（master）：TCP server 配置，`registry.endpoint` 填 `tcp://host.docker.internal:<port>`，供容器化 Consul 回连时使用
-
-> ⚠️ `tcp.yaml` 中不要设置 `registry.host`，用 `registry.endpoint` 完整 URL 代替。
-
-### 容器部署（`configs/docker/`）
-
-- 与 `local/` 结构相同，`bootstrap.yaml` 中注册中心地址改为 `consul:8500`
-- 由 `docker-compose.apps.yaml` 通过 volume mount 注入
-
-### 环境变量
-
-本地开发不依赖 `.env`，容器部署通过 `docker-compose.apps.yaml` 的 `environment` 注入（如需覆盖配置）。
-
-## Authn 试验田约定
-
-master / worker 是 Servora authn 破坏性变更的工作区验证目标。认证装配必须使用：
-
-```go
-authn.Server(
-    authn.Multi(
-        authn.Named(authjwt.Scheme, authjwt.NewAuthenticator(authjwt.WithVerifier(verifier))),
-        authn.Named(apikey.Scheme, apikey.NewAuthenticator(apikey.WithStore(store))),
-    ),
-    authn.WithRulesFuncs(...),
-)
-```
-
-不要恢复 `jwt.Server()`、`authn.WithJWT(...)` 或单 engine wrapper 路径。JWT 无 Bearer 与 APIKey 缺 header 都应通过 `authn.ErrNoCredentials` 进入 Multi 调度；坏 JWT 和坏 API key 必须 fail-fast。
-
-## 框架版本
-
-| 模块                                      | 版本   |
-|-------------------------------------------|--------|
-| `github.com/Servora-Kit/servora`          | v0.3.1 |
-| `github.com/Servora-Kit/servora/api/gen`  | v0.3.1 |
-
-## 常用 Makefile 目标
-
-### 根目录（`servora-example/`）
-
-| 目标                  | 说明                                       |
-|-----------------------|--------------------------------------------|
-| `make compose.up`      | 启动 `COMPOSE_FILES` 指定的 Compose 服务    |
-| `make compose.build`   | 构建所有微服务 Docker 镜像                  |
-| `make compose.stop`    | 停止容器，不删除容器                        |
-| `make compose.down`    | 移除容器/网络，保留 volumes                 |
-| `make compose.reset`   | 移除容器/网络/volumes                       |
-| `make compose.ps`      | 查看 Compose 服务状态                       |
-| `make compose.logs`    | 跟踪 Compose 服务日志                       |
-| `make gen`             | 生成全部代码（proto / openapi / wire / ent）|
-| `make api-go`          | 仅生成 Go proto 代码（`buf.go.gen.yaml`）  |
-| `make lint.go`         | Go lint                                     |
-
-### 服务目录（`app/{master,worker}/service/`）
-
-| 目标         | 说明                          |
-|--------------|-------------------------------|
-| `make dev`   | air 热重载启动（读 `configs/local/`）|
-| `make wire`  | 生成 wire DI 代码             |
-| `make build` | 编译二进制                    |
-| `make openapi` | 生成 OpenAPI 文档            |
-
-## 开发工作流
-
-### 本地热重载开发
-
-> 首次开发前需在 `servora-example/` 根目录执行 `make init`，安装 air、wire、buf、golangci-lint 等所有 CLI 工具。
+## 命令
 
 ```bash
-# 终端 0：启动基础设施
-cd servora-example && make compose.up
-
-# 终端 A：启动 worker
-cd servora-example/app/worker/service && make dev
-
-# 终端 B：启动 master
-cd servora-example/app/master/service && make dev
-
-# 验证
-curl --location --request GET 'http://127.0.0.1:8013/v1/hello?greeting=hello'
-```
-
-### 修改 Proto
-
-```bash
-cd servora-example
-make api-go      # 重新生成 api/gen/go/
-make wire        # 重新生成 wire 代码（如接口有变化）
-```
-
-### 全容器化体验
-
-```bash
-cd servora-example
+make init
+make gen
+make lint.go
+make compose.up
 make compose.build
-COMPOSE_FILES="-f docker-compose.yaml -f docker-compose.apps.yaml" make compose.up
-curl --location --request GET 'http://127.0.0.1:8001/v1/hello?greeting=hello'
 ```
 
-## 提交规范
+服务目录使用 `make dev`、`make wire`、`make build`。生成代码由 `make gen` 维护；容器独立构建使用 `GOWORK=off`。
 
-格式：`type(scope): description`
-
-- type：`feat` / `fix` / `refactor` / `docs` / `test` / `chore`
-- scope 示例：`master` / `worker` / `api` / `docker` / `config`
-
-## 注意事项
-
-- `api/gen/go/` 为 buf 生成产物，**不要手动修改**
-- `Dockerfile` 使用 `GOWORK=off` + CGO 禁用静态编译，确保容器内可独立运行
-- `go.work` 仅存在于顶层 `servora-kit/` 工作区，本仓库 CI 独立构建时不使用 `go.work`
-- 修改框架依赖版本后，在 `servora-kit/` 根目录执行 `make sync` 同步 `go.work` replace 指令
+提交格式：`type(scope): description`。
