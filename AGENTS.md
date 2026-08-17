@@ -1,6 +1,6 @@
 # servora-example
 
-Master/Worker 基础示例，用于演示服务注册、发现、追踪和 Audit；具体 AuthN/AuthZ 能力在 `servora-platform` 实践。
+Master/Worker 基础示例，用于演示服务注册、发现、追踪和 Audit；具体 AuthN/AuthZ 能力在 `plateau` 实践。
 
 ## 目录
 
