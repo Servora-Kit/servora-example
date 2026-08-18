@@ -27,7 +27,6 @@ func NewHTTPServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Met
 	))
 
 	opts := []svrhttp.ServerOption{
-		svrhttp.WithLogger(httpLogger),
 		svrhttp.WithMiddleware(mw...),
 		svrhttp.WithMetrics(mtc),
 		svrhttp.WithServices(

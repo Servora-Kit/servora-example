@@ -27,7 +27,6 @@ func NewGRPCServer(c *corev1.Server, obs *corev1.Observability, mtc *metrics.Met
 	))
 
 	opts := []svrgrpc.ServerOption{
-		svrgrpc.WithLogger(grpcLogger),
 		svrgrpc.WithMiddleware(mw...),
 		svrgrpc.WithServices(
 			func(s *kgrpc.Server) {

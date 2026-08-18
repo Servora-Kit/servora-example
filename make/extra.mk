@@ -7,7 +7,7 @@ PROTOC_GEN_GO_HTTP_VERSION ?= latest
 PROTOC_GEN_OPENAPI_VERSION ?= latest
 PROTOC_GEN_VALIDATE_VERSION ?= latest
 PROTOC_GEN_GO_REDACT_VERSION ?= latest
-SERVORA_VERSION ?= v0.8.3
+SERVORA_VERSION ?= v0.9.0
 GNOSTIC_VERSION ?= latest
 BUF_VERSION ?= latest
 GOLANGCI_LINT_VERSION ?= latest
@@ -32,7 +32,7 @@ plugin: ## Install protoc-gen-* plugins
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-go-errors@$(SERVORA_VERSION)
 	@go install github.com/google/gnostic/cmd/protoc-gen-openapi@$(PROTOC_GEN_OPENAPI_VERSION)
 	@go install github.com/envoyproxy/protoc-gen-validate@$(PROTOC_GEN_VALIDATE_VERSION)
-	@go install github.com/tx7do/go-wind-toolkit/protoc-gen-go-redact@$(PROTOC_GEN_GO_REDACT_VERSION)
+	@go install $(SERVORA_PKG)/cmd/protoc-gen-redact@$(SERVORA_VERSION)
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-authz@$(SERVORA_VERSION)
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-audit@$(SERVORA_VERSION)
 	@go install $(SERVORA_PKG)/cmd/protoc-gen-servora-authn@$(SERVORA_VERSION)
